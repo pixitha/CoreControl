@@ -30,8 +30,21 @@ import {
     PaginationItem,
     PaginationLink,
     PaginationNext,
-    PaginationPrevious,
-  } from "@/components/ui/pagination"
+    PaginationPrevious,  } from "@/components/ui/pagination"
+import {
+AlertDialog,
+AlertDialogAction,
+AlertDialogCancel,
+AlertDialogContent,
+AlertDialogDescription,
+AlertDialogFooter,
+AlertDialogHeader,
+AlertDialogTitle,
+AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function Dashboard() {
   return (
@@ -62,9 +75,46 @@ export default function Dashboard() {
         <div className="pl-4 pr-4">
           <div className="flex justify-between">
             <span className="text-2xl font-semibold">Your Applications</span>
-            <Button variant="outline" size="icon">
-              <Plus />
-            </Button>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="icon">
+                        <Plus />
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Add an application</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            <p className="space-y-4 pt-4">
+                                <div className="grid w-full items-center gap-1.5">
+                                    <Label htmlFor="picture">Name</Label>
+                                    <Input id="name" type="text" placeholder="e.g. Portainer" />
+                                </div>
+                                <div className="grid w-full items-center gap-1.5">
+                                    <Label htmlFor="picture">Description <span className="text-stone-600">(optional)</span></Label>
+                                    <Textarea id="description" placeholder="e.g. Protainer is a self-hosted, open-source platform for managing Docker containers and services via an intuitive web interface."/>
+                                </div>
+                                <div className="grid w-full items-center gap-1.5">
+                                    <Label htmlFor="picture">Icon</Label>
+                                    <Input id="name" type="text" placeholder="e.g. https://www.portainer.io/hubfs/portainer-logo-black.svg" />
+                                </div>
+                                <div className="grid w-full items-center gap-1.5">
+                                    <Label htmlFor="picture">Public URL</Label>
+                                    <Input id="name" type="text" placeholder="e.g. https://portainer.lastname.com" />
+                                </div>
+                                <div className="grid w-full items-center gap-1.5">
+                                    <Label htmlFor="picture">Local URL</Label>
+                                    <Input id="name" type="text" placeholder="e.g. hhtp://localhost:3000" />
+                                </div>
+                            </p>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction>Add</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+                </AlertDialog>
           </div>
           <br />
           <Card className="w-full">
@@ -92,20 +142,21 @@ export default function Dashboard() {
               </div>
             </CardHeader>
           </Card>
-
-          <Pagination>
-            <PaginationContent>
-                <PaginationItem>
-                <PaginationPrevious href="#" />
-                </PaginationItem>
-                <PaginationItem>
-                <PaginationLink href="#">1</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                <PaginationNext href="#" />
-                </PaginationItem>
-            </PaginationContent>
-        </Pagination>
+            <div className="pt-4">
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                    <PaginationPrevious href="#" />
+                    </PaginationItem>
+                    <PaginationItem>
+                    <PaginationLink href="#">1</PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem>
+                    <PaginationNext href="#" />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+            </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
