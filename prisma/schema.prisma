@@ -21,4 +21,5 @@ model application {
   icon          String
   publicURL     String
   localURL      String?
+  createdAt     DateTime  @default(now())
 }

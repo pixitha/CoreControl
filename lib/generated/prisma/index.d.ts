@@ -896,6 +896,7 @@ export namespace Prisma {
     icon: string | null
     publicURL: string | null
     localURL: string | null
+    createdAt: Date | null
   }
 
   export type ApplicationMaxAggregateOutputType = {
@@ -905,6 +906,7 @@ export namespace Prisma {
     icon: string | null
     publicURL: string | null
     localURL: string | null
+    createdAt: Date | null
   }
 
   export type ApplicationCountAggregateOutputType = {
@@ -914,6 +916,7 @@ export namespace Prisma {
     icon: number
     publicURL: number
     localURL: number
+    createdAt: number
     _all: number
   }
 
@@ -933,6 +936,7 @@ export namespace Prisma {
     icon?: true
     publicURL?: true
     localURL?: true
+    createdAt?: true
   }
 
   export type ApplicationMaxAggregateInputType = {
@@ -942,6 +946,7 @@ export namespace Prisma {
     icon?: true
     publicURL?: true
     localURL?: true
+    createdAt?: true
   }
 
   export type ApplicationCountAggregateInputType = {
@@ -951,6 +956,7 @@ export namespace Prisma {
     icon?: true
     publicURL?: true
     localURL?: true
+    createdAt?: true
     _all?: true
   }
 
@@ -1047,6 +1053,7 @@ export namespace Prisma {
     icon: string
     publicURL: string
     localURL: string | null
+    createdAt: Date
     _count: ApplicationCountAggregateOutputType | null
     _avg: ApplicationAvgAggregateOutputType | null
     _sum: ApplicationSumAggregateOutputType | null
@@ -1075,6 +1082,7 @@ export namespace Prisma {
     icon?: boolean
     publicURL?: boolean
     localURL?: boolean
+    createdAt?: boolean
   }, ExtArgs["result"]["application"]>
 
   export type applicationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1084,6 +1092,7 @@ export namespace Prisma {
     icon?: boolean
     publicURL?: boolean
     localURL?: boolean
+    createdAt?: boolean
   }, ExtArgs["result"]["application"]>
 
   export type applicationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1093,6 +1102,7 @@ export namespace Prisma {
     icon?: boolean
     publicURL?: boolean
     localURL?: boolean
+    createdAt?: boolean
   }, ExtArgs["result"]["application"]>
 
   export type applicationSelectScalar = {
@@ -1102,9 +1112,10 @@ export namespace Prisma {
     icon?: boolean
     publicURL?: boolean
     localURL?: boolean
+    createdAt?: boolean
   }
 
-  export type applicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "icon" | "publicURL" | "localURL", ExtArgs["result"]["application"]>
+  export type applicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "icon" | "publicURL" | "localURL" | "createdAt", ExtArgs["result"]["application"]>
 
   export type $applicationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "application"
@@ -1116,6 +1127,7 @@ export namespace Prisma {
       icon: string
       publicURL: string
       localURL: string | null
+      createdAt: Date
     }, ExtArgs["result"]["application"]>
     composites: {}
   }
@@ -1545,6 +1557,7 @@ export namespace Prisma {
     readonly icon: FieldRef<"application", 'String'>
     readonly publicURL: FieldRef<"application", 'String'>
     readonly localURL: FieldRef<"application", 'String'>
+    readonly createdAt: FieldRef<"application", 'DateTime'>
   }
     
 
@@ -1931,7 +1944,8 @@ export namespace Prisma {
     description: 'description',
     icon: 'icon',
     publicURL: 'publicURL',
-    localURL: 'localURL'
+    localURL: 'localURL',
+    createdAt: 'createdAt'
   };
 
   export type ApplicationScalarFieldEnum = (typeof ApplicationScalarFieldEnum)[keyof typeof ApplicationScalarFieldEnum]
@@ -1995,6 +2009,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'DateTime'
+   */
+  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+  /**
+   * Reference to a field of type 'DateTime[]'
+   */
+  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2021,6 +2049,7 @@ export namespace Prisma {
     icon?: StringFilter<"application"> | string
     publicURL?: StringFilter<"application"> | string
     localURL?: StringNullableFilter<"application"> | string | null
+    createdAt?: DateTimeFilter<"application"> | Date | string
   }
 
   export type applicationOrderByWithRelationInput = {
@@ -2030,6 +2059,7 @@ export namespace Prisma {
     icon?: SortOrder
     publicURL?: SortOrder
     localURL?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
   }
 
   export type applicationWhereUniqueInput = Prisma.AtLeast<{
@@ -2042,6 +2072,7 @@ export namespace Prisma {
     icon?: StringFilter<"application"> | string
     publicURL?: StringFilter<"application"> | string
     localURL?: StringNullableFilter<"application"> | string | null
+    createdAt?: DateTimeFilter<"application"> | Date | string
   }, "id">
 
   export type applicationOrderByWithAggregationInput = {
@@ -2051,6 +2082,7 @@ export namespace Prisma {
     icon?: SortOrder
     publicURL?: SortOrder
     localURL?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
     _count?: applicationCountOrderByAggregateInput
     _avg?: applicationAvgOrderByAggregateInput
     _max?: applicationMaxOrderByAggregateInput
@@ -2068,6 +2100,7 @@ export namespace Prisma {
     icon?: StringWithAggregatesFilter<"application"> | string
     publicURL?: StringWithAggregatesFilter<"application"> | string
     localURL?: StringNullableWithAggregatesFilter<"application"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"application"> | Date | string
   }
 
   export type applicationCreateInput = {
@@ -2076,6 +2109,7 @@ export namespace Prisma {
     icon: string
     publicURL: string
     localURL?: string | null
+    createdAt?: Date | string
   }
 
   export type applicationUncheckedCreateInput = {
@@ -2085,6 +2119,7 @@ export namespace Prisma {
     icon: string
     publicURL: string
     localURL?: string | null
+    createdAt?: Date | string
   }
 
   export type applicationUpdateInput = {
@@ -2093,6 +2128,7 @@ export namespace Prisma {
     icon?: StringFieldUpdateOperationsInput | string
     publicURL?: StringFieldUpdateOperationsInput | string
     localURL?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type applicationUncheckedUpdateInput = {
@@ -2102,6 +2138,7 @@ export namespace Prisma {
     icon?: StringFieldUpdateOperationsInput | string
     publicURL?: StringFieldUpdateOperationsInput | string
     localURL?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type applicationCreateManyInput = {
@@ -2111,6 +2148,7 @@ export namespace Prisma {
     icon: string
     publicURL: string
     localURL?: string | null
+    createdAt?: Date | string
   }
 
   export type applicationUpdateManyMutationInput = {
@@ -2119,6 +2157,7 @@ export namespace Prisma {
     icon?: StringFieldUpdateOperationsInput | string
     publicURL?: StringFieldUpdateOperationsInput | string
     localURL?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type applicationUncheckedUpdateManyInput = {
@@ -2128,6 +2167,7 @@ export namespace Prisma {
     icon?: StringFieldUpdateOperationsInput | string
     publicURL?: StringFieldUpdateOperationsInput | string
     localURL?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -2171,6 +2211,17 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type DateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -2183,6 +2234,7 @@ export namespace Prisma {
     icon?: SortOrder
     publicURL?: SortOrder
     localURL?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type applicationAvgOrderByAggregateInput = {
@@ -2196,6 +2248,7 @@ export namespace Prisma {
     icon?: SortOrder
     publicURL?: SortOrder
     localURL?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type applicationMinOrderByAggregateInput = {
@@ -2205,6 +2258,7 @@ export namespace Prisma {
     icon?: SortOrder
     publicURL?: SortOrder
     localURL?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type applicationSumOrderByAggregateInput = {
@@ -2263,12 +2317,30 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type DateTimeFieldUpdateOperationsInput = {
+    set?: Date | string
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -2316,6 +2388,17 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedDateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -2388,6 +2471,20 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
 

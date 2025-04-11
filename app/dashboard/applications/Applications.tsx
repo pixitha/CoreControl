@@ -16,7 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { Plus, Link, Home } from "lucide-react" // Importiere Icons
+import { Plus, Link, Home, Trash2 } from "lucide-react" // Importiere Icons
 import {
   Card,
   CardContent,
@@ -26,29 +26,30 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,  } from "@/components/ui/pagination"
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import {
-AlertDialog,
-AlertDialogAction,
-AlertDialogCancel,
-AlertDialogContent,
-AlertDialogDescription,
-AlertDialogFooter,
-AlertDialogHeader,
-AlertDialogTitle,
-AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from 'axios';
 
 export default function Dashboard() {
@@ -58,9 +59,46 @@ export default function Dashboard() {
   const [publicURL, setPublicURL] = useState("");
   const [localURL, setLocalURL] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [maxPage, setMaxPage] = useState(1);
+  const [applications, setApplications] = useState([]);
+
   const add = async () => {
     try {
       const response = await axios.post('/api/applications/add', { name, description, icon, publicURL, localURL });
+      // Nach erfolgreichem Hinzufügen kannst du auch die Liste neu laden:
+      getApplications();
+    } catch (error: any) {
+      console.log(error.response.data);
+    }
+  }
+
+  const getApplications = async () => {
+    try {
+      const response = await axios.post('/api/applications/get', { page: currentPage });
+      setApplications(response.data.applications);
+      setMaxPage(response.data.maxPage);
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
+
+  useEffect(() => {
+    getApplications();
+  }, [currentPage]);
+
+  const handlePrevious = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  }
+
+  const handleNext = () => {
+    setCurrentPage(prev => Math.min(maxPage, prev + 1));
+  }
+
+  const deleteApplication = async (id: number) => {
+    try {
+      await axios.post('/api/applications/delete', { id });
+      getApplications();
     } catch (error: any) {
       console.log(error.response.data);
     }
@@ -95,87 +133,125 @@ export default function Dashboard() {
           <div className="flex justify-between">
             <span className="text-2xl font-semibold">Your Applications</span>
             <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="icon">
-                        <Plus />
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Add an application</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            <p className="space-y-4 pt-4">
-                                <div className="grid w-full items-center gap-1.5">
-                                    <Label htmlFor="picture">Name</Label>
-                                    <Input id="name" type="text" placeholder="e.g. Portainer" onChange={(e) => setName(e.target.value)}/>
-                                </div>
-                                <div className="grid w-full items-center gap-1.5">
-                                    <Label htmlFor="picture">Description <span className="text-stone-600">(optional)</span></Label>
-                                    <Textarea id="description" placeholder="e.g. Protainer is a self-hosted, open-source platform for managing Docker containers and services via an intuitive web interface." onChange={(e) => setDescription(e.target.value)}/>
-                                </div>
-                                <div className="grid w-full items-center gap-1.5">
-                                    <Label htmlFor="picture">Icon</Label>
-                                    <Input id="name" type="text" placeholder="e.g. https://www.portainer.io/hubfs/portainer-logo-black.svg" onChange={(e) => setIcon(e.target.value)}/>
-                                </div>
-                                <div className="grid w-full items-center gap-1.5">
-                                    <Label htmlFor="picture">Public URL</Label>
-                                    <Input id="name" type="text" placeholder="e.g. https://portainer.lastname.com" onChange={(e) => setPublicURL(e.target.value)}/>
-                                </div>
-                                <div className="grid w-full items-center gap-1.5">
-                                    <Label htmlFor="picture">Local URL <span className="text-stone-600">(optional)</span></Label>
-                                    <Input id="name" type="text" placeholder="e.g. hhtp://localhost:3000" onChange={(e) => setLocalURL(e.target.value)}/>
-                                </div>
-                            </p>
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <Button onClick={add}>Add</Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-                </AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Plus />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Add an application</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    <div className="space-y-4 pt-4">
+                      <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="name">Name</Label>
+                        <Input id="name" type="text" placeholder="e.g. Portainer" onChange={(e) => setName(e.target.value)}/>
+                      </div>
+                      <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="description">Description <span className="text-stone-600">(optional)</span></Label>
+                        <Textarea id="description" placeholder="e.g. Portainer is a self-hosted, open-source platform for managing Docker containers." onChange={(e) => setDescription(e.target.value)}/>
+                      </div>
+                      <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="icon">Icon</Label>
+                        <Input id="icon" type="text" placeholder="e.g. https://www.portainer.io/hubfs/portainer-logo-black.svg" onChange={(e) => setIcon(e.target.value)}/>
+                      </div>
+                      <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="publicURL">Public URL</Label>
+                        <Input id="publicURL" type="text" placeholder="e.g. https://portainer.lastname.com" onChange={(e) => setPublicURL(e.target.value)}/>
+                      </div>
+                      <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="localURL">Local URL <span className="text-stone-600">(optional)</span></Label>
+                        <Input id="localURL" type="text" placeholder="e.g. http://localhost:3000" onChange={(e) => setLocalURL(e.target.value)}/>
+                      </div>
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <Button onClick={add}>Add</Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           <br />
-          <Card className="w-full">
-            <CardHeader>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center">
-                  <div className="bg-gray-300 w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
-                    <span className="text-gray-500 text-xs">Image</span>
+          {applications.map((app) => (
+            <Card key={app.id} className="w-full mb-4">
+              <CardHeader>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
+                      {app.icon ? (
+                        <img src={app.icon} alt={app.name} className="w-full h-full object-contain rounded-md" />
+                      ) : (
+                        <span className="text-gray-500 text-xs">Image</span>
+                      )}
+                    </div>
+                    <div className="ml-4">
+                      <CardTitle className="text-2xl font-bold">{app.name}</CardTitle>
+                      <CardDescription className="text-md">{app.description}</CardDescription>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <CardTitle>Project Name</CardTitle>
-                    <CardDescription>Project Name Description</CardDescription>
+                  <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
+                    <div className="flex items-center gap-2 w-full">
+                      <div className="flex flex-col space-y-2 flex-grow">
+                        <Button 
+                          variant="outline" 
+                          className="gap-2 w-full"
+                          onClick={() => window.open(app.publicURL, "_blank")}
+                        >
+                          <Link className="h-4 w-4" />
+                          Open Public URL
+                        </Button>
+                        {app.localURL && (
+                          <Button 
+                            variant="outline" 
+                            className="gap-2 w-full"
+                            onClick={() => window.open(app.localURL, "_blank")}
+                          >
+                            <Home className="h-4 w-4" />
+                            Open Local URL
+                          </Button>
+                        )}
+                      </div>
+                      <Button 
+                        variant="destructive" 
+                        size="icon"
+                        className="h-[72px] w-10"
+                        onClick={() => deleteApplication(app.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-end justify-start space-y-2 w-[250px]">
-                    <Button variant="outline" className="gap-2 w-full">
-                        <Link className="h-4 w-4" />
-                        Open Public URL
-                    </Button>
-                    <Button variant="outline" className="gap-2 w-full">
-                        <Home className="h-4 w-4" />
-                        Open Local URL
-                    </Button>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-            <div className="pt-4">
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                    <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                    <PaginationLink href="#">1</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                    <PaginationNext href="#" />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-            </div>
+              </CardHeader>
+            </Card>
+          ))}
+          <div className="pt-4">
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious 
+              href="#" 
+              onClick={handlePrevious}
+              isActive={currentPage > 1}
+            />
+          </PaginationItem>
+          
+          <PaginationItem>
+            <PaginationLink isActive>{currentPage}</PaginationLink>
+          </PaginationItem>
+
+          <PaginationItem>
+            <PaginationNext 
+              href="#" 
+              onClick={handleNext}
+              isActive={currentPage < maxPage}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
