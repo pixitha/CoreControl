@@ -13,6 +13,25 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import { Plus, Link, Home } from "lucide-react" // Importiere Icons
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+  } from "@/components/ui/pagination"
 
 export default function Dashboard() {
   return (
@@ -26,9 +45,7 @@ export default function Dashboard() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbPage>
-                    /
-                  </BreadcrumbPage>
+                  <BreadcrumbPage>/</BreadcrumbPage>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
@@ -42,8 +59,53 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="pl-4">
-          Test
+        <div className="pl-4 pr-4">
+          <div className="flex justify-between">
+            <span className="text-2xl font-semibold">Your Applications</span>
+            <Button variant="outline" size="icon">
+              <Plus />
+            </Button>
+          </div>
+          <br />
+          <Card className="w-full">
+            <CardHeader>
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center">
+                  <div className="bg-gray-300 w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
+                    <span className="text-gray-500 text-xs">Image</span>
+                  </div>
+                  <div className="ml-4">
+                    <CardTitle>Project Name</CardTitle>
+                    <CardDescription>Project Name Description</CardDescription>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end justify-start space-y-2 w-[250px]">
+                    <Button variant="outline" className="gap-2 w-full">
+                        <Link className="h-4 w-4" />
+                        Open Public URL
+                    </Button>
+                    <Button variant="outline" className="gap-2 w-full">
+                        <Home className="h-4 w-4" />
+                        Open Local URL
+                    </Button>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+
+          <Pagination>
+            <PaginationContent>
+                <PaginationItem>
+                <PaginationPrevious href="#" />
+                </PaginationItem>
+                <PaginationItem>
+                <PaginationLink href="#">1</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                <PaginationNext href="#" />
+                </PaginationItem>
+            </PaginationContent>
+        </Pagination>
         </div>
       </SidebarInset>
     </SidebarProvider>
