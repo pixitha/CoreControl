@@ -10,8 +10,8 @@ export async function POST(request: NextRequest) {
     try {
         const body: LoginRequest = await request.json();
         const { username, password } = body;
-
-        if(username !== process.env.LOGIN_USERNAME || password !== process.env.LOGIN_PASSWORD) {
+        
+        if(username !== process.env.LOGIN_EMAIL || password !== process.env.LOGIN_PASSWORD) {
             throw new Error('Invalid credentials');
         }
         
