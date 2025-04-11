@@ -18,6 +18,8 @@ import {
 import { Button } from "@/components/ui/button"
 
 import Link from "next/link"
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 // This is sample data.
 const data = {
@@ -46,9 +48,14 @@ const data = {
     },
   ],
 }
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  return (
+    const router = useRouter()
+    const logout = async () => {
+        Cookies.remove('token')
+        router.push("/")
+    }
+
+    return (
     <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
@@ -97,7 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         {/* 🚀 Hier kommt der Logout-Button ganz unten */}
         <div className="p-4">
-            <Button variant="destructive" className="w-full">
+            <Button variant="destructive" className="w-full" onClick={logout}>
             Logout
             </Button>
         </div>
