@@ -103,7 +103,7 @@ export default function Dashboard() {
                                     <Input id="name" type="text" placeholder="e.g. https://portainer.lastname.com" />
                                 </div>
                                 <div className="grid w-full items-center gap-1.5">
-                                    <Label htmlFor="picture">Local URL</Label>
+                                    <Label htmlFor="picture">Local URL <span className="text-stone-600">(optional)</span></Label>
                                     <Input id="name" type="text" placeholder="e.g. hhtp://localhost:3000" />
                                 </div>
                             </p>
