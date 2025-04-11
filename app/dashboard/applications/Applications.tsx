@@ -1,3 +1,5 @@
+"use client";
+
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -46,7 +48,24 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
+import { useState } from "react";
+import axios from 'axios';
+
 export default function Dashboard() {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [icon, setIcon] = useState("");
+  const [publicURL, setPublicURL] = useState("");
+  const [localURL, setLocalURL] = useState("");
+
+  const add = async () => {
+    try {
+      const response = await axios.post('/api/applications/add', { name, description, icon, publicURL, localURL });
+    } catch (error: any) {
+      console.log(error.response.data);
+    }
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -88,30 +107,30 @@ export default function Dashboard() {
                             <p className="space-y-4 pt-4">
                                 <div className="grid w-full items-center gap-1.5">
                                     <Label htmlFor="picture">Name</Label>
-                                    <Input id="name" type="text" placeholder="e.g. Portainer" />
+                                    <Input id="name" type="text" placeholder="e.g. Portainer" onChange={(e) => setName(e.target.value)}/>
                                 </div>
                                 <div className="grid w-full items-center gap-1.5">
                                     <Label htmlFor="picture">Description <span className="text-stone-600">(optional)</span></Label>
-                                    <Textarea id="description" placeholder="e.g. Protainer is a self-hosted, open-source platform for managing Docker containers and services via an intuitive web interface."/>
+                                    <Textarea id="description" placeholder="e.g. Protainer is a self-hosted, open-source platform for managing Docker containers and services via an intuitive web interface." onChange={(e) => setDescription(e.target.value)}/>
                                 </div>
                                 <div className="grid w-full items-center gap-1.5">
                                     <Label htmlFor="picture">Icon</Label>
-                                    <Input id="name" type="text" placeholder="e.g. https://www.portainer.io/hubfs/portainer-logo-black.svg" />
+                                    <Input id="name" type="text" placeholder="e.g. https://www.portainer.io/hubfs/portainer-logo-black.svg" onChange={(e) => setIcon(e.target.value)}/>
                                 </div>
                                 <div className="grid w-full items-center gap-1.5">
                                     <Label htmlFor="picture">Public URL</Label>
-                                    <Input id="name" type="text" placeholder="e.g. https://portainer.lastname.com" />
+                                    <Input id="name" type="text" placeholder="e.g. https://portainer.lastname.com" onChange={(e) => setPublicURL(e.target.value)}/>
                                 </div>
                                 <div className="grid w-full items-center gap-1.5">
                                     <Label htmlFor="picture">Local URL <span className="text-stone-600">(optional)</span></Label>
-                                    <Input id="name" type="text" placeholder="e.g. hhtp://localhost:3000" />
+                                    <Input id="name" type="text" placeholder="e.g. hhtp://localhost:3000" onChange={(e) => setLocalURL(e.target.value)}/>
                                 </div>
                             </p>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction>Add</AlertDialogAction>
+                        <Button onClick={add}>Add</Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
                 </AlertDialog>
