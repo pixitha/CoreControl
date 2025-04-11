@@ -102,7 +102,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenu>
         </SidebarGroup>
 
-        {/* 🚀 Hier kommt der Logout-Button ganz unten */}
         <div className="p-4">
             <Button variant="destructive" className="w-full" onClick={logout}>
             Logout
