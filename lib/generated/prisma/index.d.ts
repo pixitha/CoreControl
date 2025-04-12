@@ -974,14 +974,17 @@ export namespace Prisma {
 
   export type ApplicationAvgAggregateOutputType = {
     id: number | null
+    serverId: number | null
   }
 
   export type ApplicationSumAggregateOutputType = {
     id: number | null
+    serverId: number | null
   }
 
   export type ApplicationMinAggregateOutputType = {
     id: number | null
+    serverId: number | null
     name: string | null
     description: string | null
     icon: string | null
@@ -992,6 +995,7 @@ export namespace Prisma {
 
   export type ApplicationMaxAggregateOutputType = {
     id: number | null
+    serverId: number | null
     name: string | null
     description: string | null
     icon: string | null
@@ -1002,6 +1006,7 @@ export namespace Prisma {
 
   export type ApplicationCountAggregateOutputType = {
     id: number
+    serverId: number
     name: number
     description: number
     icon: number
@@ -1014,14 +1019,17 @@ export namespace Prisma {
 
   export type ApplicationAvgAggregateInputType = {
     id?: true
+    serverId?: true
   }
 
   export type ApplicationSumAggregateInputType = {
     id?: true
+    serverId?: true
   }
 
   export type ApplicationMinAggregateInputType = {
     id?: true
+    serverId?: true
     name?: true
     description?: true
     icon?: true
@@ -1032,6 +1040,7 @@ export namespace Prisma {
 
   export type ApplicationMaxAggregateInputType = {
     id?: true
+    serverId?: true
     name?: true
     description?: true
     icon?: true
@@ -1042,6 +1051,7 @@ export namespace Prisma {
 
   export type ApplicationCountAggregateInputType = {
     id?: true
+    serverId?: true
     name?: true
     description?: true
     icon?: true
@@ -1139,6 +1149,7 @@ export namespace Prisma {
 
   export type ApplicationGroupByOutputType = {
     id: number
+    serverId: number
     name: string
     description: string | null
     icon: string
@@ -1168,6 +1179,7 @@ export namespace Prisma {
 
   export type applicationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    serverId?: boolean
     name?: boolean
     description?: boolean
     icon?: boolean
@@ -1178,6 +1190,7 @@ export namespace Prisma {
 
   export type applicationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    serverId?: boolean
     name?: boolean
     description?: boolean
     icon?: boolean
@@ -1188,6 +1201,7 @@ export namespace Prisma {
 
   export type applicationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    serverId?: boolean
     name?: boolean
     description?: boolean
     icon?: boolean
@@ -1198,6 +1212,7 @@ export namespace Prisma {
 
   export type applicationSelectScalar = {
     id?: boolean
+    serverId?: boolean
     name?: boolean
     description?: boolean
     icon?: boolean
@@ -1206,13 +1221,14 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type applicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "icon" | "publicURL" | "localURL" | "createdAt", ExtArgs["result"]["application"]>
+  export type applicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serverId" | "name" | "description" | "icon" | "publicURL" | "localURL" | "createdAt", ExtArgs["result"]["application"]>
 
   export type $applicationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "application"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: number
+      serverId: number
       name: string
       description: string | null
       icon: string
@@ -1643,6 +1659,7 @@ export namespace Prisma {
    */
   interface applicationFieldRefs {
     readonly id: FieldRef<"application", 'Int'>
+    readonly serverId: FieldRef<"application", 'Int'>
     readonly name: FieldRef<"application", 'String'>
     readonly description: FieldRef<"application", 'String'>
     readonly icon: FieldRef<"application", 'String'>
@@ -3060,6 +3077,7 @@ export namespace Prisma {
 
   export const ApplicationScalarFieldEnum: {
     id: 'id',
+    serverId: 'serverId',
     name: 'name',
     description: 'description',
     icon: 'icon',
@@ -3175,6 +3193,7 @@ export namespace Prisma {
     OR?: applicationWhereInput[]
     NOT?: applicationWhereInput | applicationWhereInput[]
     id?: IntFilter<"application"> | number
+    serverId?: IntFilter<"application"> | number
     name?: StringFilter<"application"> | string
     description?: StringNullableFilter<"application"> | string | null
     icon?: StringFilter<"application"> | string
@@ -3185,6 +3204,7 @@ export namespace Prisma {
 
   export type applicationOrderByWithRelationInput = {
     id?: SortOrder
+    serverId?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     icon?: SortOrder
@@ -3198,6 +3218,7 @@ export namespace Prisma {
     AND?: applicationWhereInput | applicationWhereInput[]
     OR?: applicationWhereInput[]
     NOT?: applicationWhereInput | applicationWhereInput[]
+    serverId?: IntFilter<"application"> | number
     name?: StringFilter<"application"> | string
     description?: StringNullableFilter<"application"> | string | null
     icon?: StringFilter<"application"> | string
@@ -3208,6 +3229,7 @@ export namespace Prisma {
 
   export type applicationOrderByWithAggregationInput = {
     id?: SortOrder
+    serverId?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     icon?: SortOrder
@@ -3226,6 +3248,7 @@ export namespace Prisma {
     OR?: applicationScalarWhereWithAggregatesInput[]
     NOT?: applicationScalarWhereWithAggregatesInput | applicationScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"application"> | number
+    serverId?: IntWithAggregatesFilter<"application"> | number
     name?: StringWithAggregatesFilter<"application"> | string
     description?: StringNullableWithAggregatesFilter<"application"> | string | null
     icon?: StringWithAggregatesFilter<"application"> | string
@@ -3289,6 +3312,7 @@ export namespace Prisma {
   }
 
   export type applicationCreateInput = {
+    serverId?: number
     name: string
     description?: string | null
     icon: string
@@ -3299,6 +3323,7 @@ export namespace Prisma {
 
   export type applicationUncheckedCreateInput = {
     id?: number
+    serverId?: number
     name: string
     description?: string | null
     icon: string
@@ -3308,6 +3333,7 @@ export namespace Prisma {
   }
 
   export type applicationUpdateInput = {
+    serverId?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: StringFieldUpdateOperationsInput | string
@@ -3318,6 +3344,7 @@ export namespace Prisma {
 
   export type applicationUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
+    serverId?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: StringFieldUpdateOperationsInput | string
@@ -3328,6 +3355,7 @@ export namespace Prisma {
 
   export type applicationCreateManyInput = {
     id?: number
+    serverId?: number
     name: string
     description?: string | null
     icon: string
@@ -3337,6 +3365,7 @@ export namespace Prisma {
   }
 
   export type applicationUpdateManyMutationInput = {
+    serverId?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: StringFieldUpdateOperationsInput | string
@@ -3347,6 +3376,7 @@ export namespace Prisma {
 
   export type applicationUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
+    serverId?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: StringFieldUpdateOperationsInput | string
@@ -3467,6 +3497,7 @@ export namespace Prisma {
 
   export type applicationCountOrderByAggregateInput = {
     id?: SortOrder
+    serverId?: SortOrder
     name?: SortOrder
     description?: SortOrder
     icon?: SortOrder
@@ -3477,10 +3508,12 @@ export namespace Prisma {
 
   export type applicationAvgOrderByAggregateInput = {
     id?: SortOrder
+    serverId?: SortOrder
   }
 
   export type applicationMaxOrderByAggregateInput = {
     id?: SortOrder
+    serverId?: SortOrder
     name?: SortOrder
     description?: SortOrder
     icon?: SortOrder
@@ -3491,6 +3524,7 @@ export namespace Prisma {
 
   export type applicationMinOrderByAggregateInput = {
     id?: SortOrder
+    serverId?: SortOrder
     name?: SortOrder
     description?: SortOrder
     icon?: SortOrder
@@ -3501,6 +3535,7 @@ export namespace Prisma {
 
   export type applicationSumOrderByAggregateInput = {
     id?: SortOrder
+    serverId?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -3601,6 +3636,14 @@ export namespace Prisma {
     id?: SortOrder
   }
 
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -3611,14 +3654,6 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {

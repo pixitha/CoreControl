@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,15 +8,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { Plus, Link, Home, Trash2 } from "lucide-react" // Importiere Icons
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Plus, Link, Home, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -24,7 +24,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -33,7 +33,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from "@/components/ui/pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,10 +44,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { useState, useEffect } from "react";
 import axios from 'axios';
@@ -58,14 +65,22 @@ export default function Dashboard() {
   const [icon, setIcon] = useState("");
   const [publicURL, setPublicURL] = useState("");
   const [localURL, setLocalURL] = useState("");
-
+  const [serverId, setServerId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
   const [applications, setApplications] = useState([]);
+  const [servers, setServers] = useState([]);
 
   const add = async () => {
     try {
-      const response = await axios.post('/api/applications/add', { name, description, icon, publicURL, localURL });
+      await axios.post('/api/applications/add', { 
+        name, 
+        description, 
+        icon, 
+        publicURL, 
+        localURL,
+        serverId 
+      });
       getApplications();
     } catch (error: any) {
       console.log(error.response.data);
@@ -76,6 +91,7 @@ export default function Dashboard() {
     try {
       const response = await axios.post('/api/applications/get', { page: currentPage });
       setApplications(response.data.applications);
+      setServers(response.data.servers);
       setMaxPage(response.data.maxPage);
     } catch (error: any) {
       console.log(error.response);
@@ -86,13 +102,8 @@ export default function Dashboard() {
     getApplications();
   }, [currentPage]);
 
-  const handlePrevious = () => {
-    setCurrentPage(prev => Math.max(1, prev - 1));
-  }
-
-  const handleNext = () => {
-    setCurrentPage(prev => Math.min(maxPage, prev + 1));
-  }
+  const handlePrevious = () => setCurrentPage(prev => Math.max(1, prev - 1));
+  const handleNext = () => setCurrentPage(prev => Math.min(maxPage, prev + 1));
 
   const deleteApplication = async (id: number) => {
     try {
@@ -129,48 +140,69 @@ export default function Dashboard() {
           </div>
         </header>
         <div className="pl-4 pr-4">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <span className="text-2xl font-semibold">Your Applications</span>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Plus />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Add an application</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    <div className="space-y-4 pt-4">
-                      <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" type="text" placeholder="e.g. Portainer" onChange={(e) => setName(e.target.value)}/>
+            {servers.length === 0 ? (
+              <p className="text-muted-foreground">You must first add a server.</p>
+            ) : (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Plus />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Add an application</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <div className="space-y-4 pt-4">
+                        <div className="grid w-full items-center gap-1.5">
+                          <Label>Name</Label>
+                          <Input placeholder="e.g. Portainer" onChange={(e) => setName(e.target.value)}/>
+                        </div>
+                        <div className="grid w-full items-center gap-1.5">
+                          <Label>Server</Label>
+                          <Select onValueChange={(v) => setServerId(Number(v))} required>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select server" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {servers.map((server) => (
+                                <SelectItem key={server.id} value={String(server.id)}>
+                                  {server.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid w-full items-center gap-1.5">
+                          <Label>Description <span className="text-stone-600">(optional)</span></Label>
+                          <Textarea placeholder="Application description" onChange={(e) => setDescription(e.target.value)}/>
+                        </div>
+                        <div className="grid w-full items-center gap-1.5">
+                          <Label>Icon URL <span className="text-stone-600">(optional)</span></Label>
+                          <Input placeholder="https://example.com/icon.png" onChange={(e) => setIcon(e.target.value)}/>
+                        </div>
+                        <div className="grid w-full items-center gap-1.5">
+                          <Label>Public URL</Label>
+                          <Input placeholder="https://example.com" onChange={(e) => setPublicURL(e.target.value)}/>
+                        </div>
+                        <div className="grid w-full items-center gap-1.5">
+                          <Label>Local URL <span className="text-stone-600">(optional)</span></Label>
+                          <Input placeholder="http://localhost:3000" onChange={(e) => setLocalURL(e.target.value)}/>
+                        </div>
                       </div>
-                      <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="description">Description <span className="text-stone-600">(optional)</span></Label>
-                        <Textarea id="description" placeholder="e.g. Portainer is a self-hosted, open-source platform for managing Docker containers." onChange={(e) => setDescription(e.target.value)}/>
-                      </div>
-                      <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="icon">Icon</Label>
-                        <Input id="icon" type="text" placeholder="e.g. https://www.portainer.io/hubfs/portainer-logo-black.svg" onChange={(e) => setIcon(e.target.value)}/>
-                      </div>
-                      <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="publicURL">Public URL</Label>
-                        <Input id="publicURL" type="text" placeholder="e.g. https://portainer.lastname.com" onChange={(e) => setPublicURL(e.target.value)}/>
-                      </div>
-                      <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="localURL">Local URL <span className="text-stone-600">(optional)</span></Label>
-                        <Input id="localURL" type="text" placeholder="e.g. http://localhost:3000" onChange={(e) => setLocalURL(e.target.value)}/>
-                      </div>
-                    </div>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <Button onClick={add}>Add</Button>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <Button onClick={add} disabled={!name || !publicURL || !serverId}>
+                      Add
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
           <br />
           {applications.map((app) => (
@@ -187,7 +219,10 @@ export default function Dashboard() {
                     </div>
                     <div className="ml-4">
                       <CardTitle className="text-2xl font-bold">{app.name}</CardTitle>
-                      <CardDescription className="text-md">{app.description}</CardDescription>
+                      <CardDescription className="text-md">
+                        {app.description}<br />
+                        Server: {app.server || 'No server'}
+                      </CardDescription>
                     </div>
                   </div>
                   <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
@@ -227,30 +262,28 @@ export default function Dashboard() {
             </Card>
           ))}
           <div className="pt-4">
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious 
-              href="#" 
-              onClick={handlePrevious}
-              isActive={currentPage > 1}
-            />
-          </PaginationItem>
-          
-          <PaginationItem>
-            <PaginationLink isActive>{currentPage}</PaginationLink>
-          </PaginationItem>
-
-          <PaginationItem>
-            <PaginationNext 
-              href="#" 
-              onClick={handleNext}
-              isActive={currentPage < maxPage}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#" 
+                    onClick={handlePrevious}
+                    isActive={currentPage > 1}
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink isActive>{currentPage}</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#" 
+                    onClick={handleNext}
+                    isActive={currentPage < maxPage}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

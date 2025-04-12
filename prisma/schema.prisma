@@ -16,6 +16,7 @@ datasource db {
 
 model application {
   id            Int       @id @default(autoincrement())
+  serverId      Int       @default(1)
   name          String
   description   String?
   icon          String

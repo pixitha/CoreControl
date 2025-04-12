@@ -19,11 +19,29 @@ export async function POST(request: NextRequest) {
             orderBy: { name: 'asc' }
         });
 
+        const serverIds = applications
+            .map(app => app.serverId)
+            .filter((id): id is number => id !== null);
+
+        const servers = await prisma.server.findMany({
+            where: { 
+                id: { 
+                    in: serverIds 
+                } 
+            }
+        });
+
+        const applicationsWithServers = applications.map(app => ({
+            ...app,
+            server: servers.find(s => s.id === app.serverId)?.name || 'No server'
+        }));
+
         const totalCount = await prisma.application.count();
         const maxPage = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
         return NextResponse.json({ 
-            applications,
+            applications: applicationsWithServers,
+            servers,
             maxPage
         });
     } catch (error: any) {
