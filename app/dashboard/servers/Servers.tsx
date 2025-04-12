@@ -321,7 +321,7 @@ export default function Dashboard() {
           <br />
           {!loading ?
             <div className={isGridLayout ? 
-              "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : 
+              "grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4" : 
               "space-y-4"}>
               {servers.map((server) => (
                 <Card 
