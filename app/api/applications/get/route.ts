@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
             orderBy: { name: 'asc' }
         });
 
-        // Gesamtanzahl für Seitenberechnung
         const totalCount = await prisma.application.count();
         const maxPage = Math.ceil(totalCount / ITEMS_PER_PAGE);
 

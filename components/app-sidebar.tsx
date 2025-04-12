@@ -1,7 +1,7 @@
 import * as React from "react"
 import Image from "next/image"
 
-import { AppWindow, Settings, LayoutDashboardIcon, Briefcase } from "lucide-react"
+import { AppWindow, Settings, LayoutDashboardIcon, Briefcase, Server } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -21,7 +21,6 @@ import Link from "next/link"
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 
-// This is sample data.
 const data = {
   navMain: [
     {
@@ -34,16 +33,21 @@ const data = {
         url: "#",
         icon: Briefcase,
         items: [
-            {
+          {
+            title: "Servers",
+            icon: Server,
+            url: "/dashboard/servers",
+          },
+          {
             title: "Applications",
             icon: AppWindow,
             url: "/dashboard/applications",
-        },
-        {
+          },
+          {
             title: "Settings",
             icon: Settings,
             url: "/Dashboard/setting",
-        },
+          },
       ],
     },
   ],

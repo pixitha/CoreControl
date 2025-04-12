@@ -23,3 +23,11 @@ model application {
   localURL      String?
   createdAt     DateTime  @default(now())
 }
+
+model server {
+  id            Int       @id @default(autoincrement())
+  name          String
+  os            String?
+  ip            String?
+  url           String?
+}

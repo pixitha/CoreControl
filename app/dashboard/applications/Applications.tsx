@@ -66,7 +66,6 @@ export default function Dashboard() {
   const add = async () => {
     try {
       const response = await axios.post('/api/applications/add', { name, description, icon, publicURL, localURL });
-      // Nach erfolgreichem Hinzufügen kannst du auch die Liste neu laden:
       getApplications();
     } catch (error: any) {
       console.log(error.response.data);
