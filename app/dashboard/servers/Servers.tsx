@@ -16,7 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { Plus, Link, MonitorCog, FileDigit, Trash2, LayoutGrid, List } from "lucide-react"
+import { Plus, Link, MonitorCog, FileDigit, Trash2, LayoutGrid, List, Pencil } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -75,6 +75,14 @@ export default function Dashboard() {
   const [isGridLayout, setIsGridLayout] = useState(false);
   const [loading, setLoading] = useState(true);
 
+
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editOs, setEditOs] = useState("");
+  const [editIp, setEditIp] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+
+  
   useEffect(() => {
     const savedLayout = Cookies.get('layoutPreference-servers');
     setIsGridLayout(savedLayout === 'grid');
@@ -127,6 +135,30 @@ export default function Dashboard() {
     try {
       await axios.post('/api/servers/delete', { id });
       getServers();
+    } catch (error: any) {
+      console.log(error.response.data);
+    }
+  }
+
+  const openEditDialog = (server: any) => {
+    setEditId(server.id);
+    setEditName(server.name);
+    setEditOs(server.os);
+    setEditIp(server.ip);
+    setEditUrl(server.url);
+  }
+
+  const edit = async () => {
+    try {
+      await axios.put('/api/servers/edit', { 
+        id: editId,
+        name: editName,
+        os: editOs,
+        ip: editIp,
+        url: editUrl
+      });
+      getServers();
+      setEditId(null);
     } catch (error: any) {
       console.log(error.response.data);
     }
@@ -268,7 +300,7 @@ export default function Dashboard() {
                         </CardDescription>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
+                      <div className="flex flex-col items-end justify-start space-y-2 w-[405px]">
                         <div className="flex items-center gap-2 w-full">
                         <div className="flex flex-col space-y-2 flex-grow">
                             {server.url && (
@@ -290,6 +322,76 @@ export default function Dashboard() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                size="icon"
+                                className="w-10"
+                                onClick={() => openEditDialog(server)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Server bearbeiten</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  <div className="space-y-4 pt-4">
+                                    <div className="grid w-full items-center gap-1.5">
+                                      <Label htmlFor="editName">Name</Label>
+                                      <Input 
+                                        id="editName" 
+                                        type="text" 
+                                        placeholder="e.g. Server1"
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid w-full items-center gap-1.5">
+                                      <Label htmlFor="editOs">Operating System</Label>
+                                      <Select 
+                                        value={editOs} 
+                                        onValueChange={setEditOs}
+                                      >
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue placeholder="Select OS" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="Windows">Windows</SelectItem>
+                                          <SelectItem value="Linux">Linux</SelectItem>
+                                          <SelectItem value="MacOS">MacOS</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="grid w-full items-center gap-1.5">
+                                      <Label htmlFor="editIp">IP Adress</Label>
+                                      <Input 
+                                        id="editIp" 
+                                        type="text" 
+                                        placeholder="e.g. 192.168.100.2"
+                                        value={editIp}
+                                        onChange={(e) => setEditIp(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid w-full items-center gap-1.5">
+                                      <Label htmlFor="editUrl">Management URL</Label>
+                                      <Input 
+                                        id="editUrl" 
+                                        type="text" 
+                                        placeholder="e.g. https://proxmox.server1.com"
+                                        value={editUrl}
+                                        onChange={(e) => setEditUrl(e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <Button onClick={edit}>Save</Button>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     </div>
