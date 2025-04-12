@@ -228,9 +228,9 @@ export default function Dashboard() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <Button onClick={add} disabled={!name || !publicURL || !serverId}>
+                      <AlertDialogAction onClick={add} disabled={!name || !publicURL || !serverId}>
                         Add
-                      </Button>
+                      </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

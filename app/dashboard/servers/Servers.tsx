@@ -265,7 +265,7 @@ export default function Dashboard() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <Button onClick={add}>Add</Button>
+                    <AlertDialogAction onClick={add}>Add</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
