@@ -32,6 +32,8 @@ export async function POST(request: NextRequest) {
             }
         });
 
+        const servers_all = await prisma.server.findMany()
+
         const applicationsWithServers = applications.map(app => ({
             ...app,
             server: servers.find(s => s.id === app.serverId)?.name || 'No server'
@@ -42,7 +44,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ 
             applications: applicationsWithServers,
-            servers,
+            servers: servers_all,
             maxPage
         });
     } catch (error: any) {

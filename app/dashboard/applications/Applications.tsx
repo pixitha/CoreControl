@@ -75,7 +75,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedLayout = Cookies.get('layoutPreference');
+    const savedLayout = Cookies.get('layoutPreference-app');
     const layout_bool = savedLayout === 'grid'
     setIsGridLayout(layout_bool);
     setItemsPerPage(layout_bool ? 15 : 5)
@@ -84,7 +84,7 @@ export default function Dashboard() {
   const toggleLayout = () => {
     const newLayout = !isGridLayout;
     setIsGridLayout(newLayout);
-    Cookies.set('layoutPreference', newLayout ? 'grid' : 'standard', {
+    Cookies.set('layoutPreference-app', newLayout ? 'grid' : 'standard', {
       expires: 365,
       path: '/',
       sameSite: 'strict'

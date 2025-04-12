@@ -76,14 +76,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedLayout = Cookies.get('layoutPreference');
+    const savedLayout = Cookies.get('layoutPreference-servers');
     setIsGridLayout(savedLayout === 'grid');
   }, []);
 
   const toggleLayout = () => {
     const newLayout = !isGridLayout;
     setIsGridLayout(newLayout);
-    Cookies.set('layoutPreference', newLayout ? 'grid' : 'standard', {
+    Cookies.set('layoutPreference-servers', newLayout ? 'grid' : 'standard', {
       expires: 365,
       path: '/',
       sameSite: 'strict'

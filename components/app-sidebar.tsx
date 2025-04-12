@@ -50,7 +50,7 @@ const data = {
     {
       title: "Settings",
       icon: Settings,
-      url: "/Dashboard/setting",
+      url: "/dashboard/settings",
     },
   ],
 }
