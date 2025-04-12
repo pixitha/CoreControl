@@ -244,7 +244,6 @@ export default function Dashboard() {
               className={isGridLayout ? "h-full flex flex-col justify-between relative" : "w-full mb-4 relative"}
             >
               <CardHeader>
-                {/* Online-/Offline-Indikator mit innerem Kreis */}
                 <div className="absolute top-2 right-2">
                   <div
                     className={`w-4 h-4 rounded-full flex items-center justify-center ${app.online ? "bg-green-700" : "bg-red-700"}`}
