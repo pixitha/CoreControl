@@ -13,8 +13,38 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { useEffect, useState } from "react"
+import axios from "axios"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Dashboard() {
+  const [serverCount, setServerCount] = useState(0)
+  const [applicationCount, setApplicationCount] = useState(0)
+  const [onlineApplicationsCount, setOnlineApplicationsCount] = useState(0)
+
+  const getStats = async () => {
+    try {
+      const response = await axios.post('/api/dashboard/get', { });
+      setServerCount(response.data.serverCount)
+      setApplicationCount(response.data.applicationCount)
+      setOnlineApplicationsCount(response.data.onlineApplicationsCount)
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
+
+  useEffect(() => {
+    getStats();
+  }, []);
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -38,8 +68,47 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="pl-4">
-          Test
+        <div className="pl-4 pr-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card className="w-full mb-4 relative">
+              <CardHeader>
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-2xl font-bold">{serverCount}</span>
+                    <span className="text-md">Servers</span>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+            <Card className="w-full mb-4 relative">
+              <CardHeader>
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-2xl font-bold">{applicationCount}</span>
+                    <span className="text-md">Applications</span>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+            <Card className="w-full mb-4 relative">
+              <CardHeader>
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-2xl font-bold">{onlineApplicationsCount}/{applicationCount}</span>
+                    <span className="text-md">Applications are online</span>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          </div>
+          <div className="h-72 w-full rounded-xl flex items-center justify-center bg-muted">
+            <span className="text-gray-400 text-2xl">COMMING SOON</span>
+          </div>
+          <div className="pt-4">
+            <div className="h-72 w-full rounded-xl flex items-center justify-center bg-muted">
+              <span className="text-gray-400 text-2xl">COMMING SOON</span>
+            </div>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
