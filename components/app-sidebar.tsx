@@ -29,7 +29,7 @@ const data = {
         url: "/dashboard"
     },
     {
-        title: "Customization",
+        title: "My Infrastructure",
         url: "#",
         icon: Briefcase,
         items: [
@@ -43,12 +43,14 @@ const data = {
             icon: AppWindow,
             url: "/dashboard/applications",
           },
-          {
-            title: "Settings",
-            icon: Settings,
-            url: "/Dashboard/setting",
-          },
+          
       ],
+      
+    },
+    {
+      title: "Settings",
+      icon: Settings,
+      url: "/Dashboard/setting",
     },
   ],
 }
