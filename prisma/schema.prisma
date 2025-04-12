@@ -23,6 +23,7 @@ model application {
   publicURL     String
   localURL      String?
   createdAt     DateTime  @default(now())
+  online         Boolean  @default(true)
 }
 
 model server {
