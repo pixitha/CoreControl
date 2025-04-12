@@ -32,3 +32,8 @@ model server {
   ip            String?
   url           String?
 }
+
+model settings {
+    id            Int       @id @default(autoincrement())
+    uptime_checks          Boolean       @default(true)
+}
