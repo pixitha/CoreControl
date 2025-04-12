@@ -1,7 +1,7 @@
 import * as React from "react"
 import Image from "next/image"
 
-import { AppWindow, Settings, LayoutDashboardIcon, Briefcase, Server } from "lucide-react"
+import { AppWindow, Settings, LayoutDashboardIcon, Briefcase, Server, Network } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -43,7 +43,11 @@ const data = {
             icon: AppWindow,
             url: "/dashboard/applications",
           },
-          
+          {
+            title: "Network",
+            icon: Network,
+            url: "/dashboard/network",
+          },          
       ],
       
     },
@@ -67,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <a href="https://github.com/crocofied/corecontrol">
                 <Image src="/logo.png" width={48} height={48} alt="Logo"/>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold">CoreControl</span>
