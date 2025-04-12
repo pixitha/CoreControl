@@ -16,7 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Plus, Link, Home, Trash2 } from "lucide-react";
+import { Plus, Link, Home, Trash2, LayoutGrid, List } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -55,7 +55,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
 import axios from 'axios';
 
@@ -70,6 +70,22 @@ export default function Dashboard() {
   const [maxPage, setMaxPage] = useState(1);
   const [applications, setApplications] = useState([]);
   const [servers, setServers] = useState([]);
+  const [isGridLayout, setIsGridLayout] = useState(false);
+
+  useEffect(() => {
+    const savedLayout = Cookies.get('layoutPreference');
+    setIsGridLayout(savedLayout === 'grid');
+  }, []);
+
+  const toggleLayout = () => {
+    const newLayout = !isGridLayout;
+    setIsGridLayout(newLayout);
+    Cookies.set('layoutPreference', newLayout ? 'grid' : 'standard', {
+      expires: 365,
+      path: '/',
+      sameSite: 'strict'
+    });
+  };
 
   const add = async () => {
     try {
@@ -142,20 +158,29 @@ export default function Dashboard() {
         <div className="pl-4 pr-4">
           <div className="flex justify-between items-center">
             <span className="text-2xl font-semibold">Your Applications</span>
-            {servers.length === 0 ? (
-              <p className="text-muted-foreground">You must first add a server.</p>
-            ) : (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Plus />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Add an application</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      <div className="space-y-4 pt-4">
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={toggleLayout}
+                title={isGridLayout ? "Switch to list view" : "Switch to grid view"}
+              >
+                {isGridLayout ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+              </Button>
+              {servers.length === 0 ? (
+                <p className="text-muted-foreground">You must first add a server.</p>
+              ) : (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <Plus />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Add an application</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        <div className="space-y-4 pt-4">
                         <div className="grid w-full items-center gap-1.5">
                           <Label>Name</Label>
                           <Input placeholder="e.g. Portainer" onChange={(e) => setName(e.target.value)}/>
@@ -191,41 +216,50 @@ export default function Dashboard() {
                           <Label>Local URL <span className="text-stone-600">(optional)</span></Label>
                           <Input placeholder="http://localhost:3000" onChange={(e) => setLocalURL(e.target.value)}/>
                         </div>
-                      </div>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <Button onClick={add} disabled={!name || !publicURL || !serverId}>
-                      Add
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <Button onClick={add} disabled={!name || !publicURL || !serverId}>
+                        Add
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+          </div>
           </div>
           <br />
-          {applications.map((app) => (
-            <Card key={app.id} className="w-full mb-4">
-              <CardHeader>
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center">
-                    <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
-                      {app.icon ? (
-                        <img src={app.icon} alt={app.name} className="w-full h-full object-contain rounded-md" />
-                      ) : (
-                        <span className="text-gray-500 text-xs">Image</span>
-                      )}
+          <div className={isGridLayout ? 
+            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : 
+            "space-y-4"}>
+            {applications.map((app) => (
+              <Card 
+                key={app.id} 
+                className={isGridLayout ? 
+                  "h-full flex flex-col justify-between" : 
+                  "w-full mb-4"}
+              >
+                <CardHeader>
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
+                        {app.icon ? (
+                          <img src={app.icon} alt={app.name} className="w-full h-full object-contain rounded-md" />
+                        ) : (
+                          <span className="text-gray-500 text-xs">Image</span>
+                        )}
+                      </div>
+                      <div className="ml-4">
+                        <CardTitle className="text-2xl font-bold">{app.name}</CardTitle>
+                        <CardDescription className="text-md">
+                          {app.description}<br />
+                          Server: {app.server || 'No server'}
+                        </CardDescription>
+                      </div>
                     </div>
-                    <div className="ml-4">
-                      <CardTitle className="text-2xl font-bold">{app.name}</CardTitle>
-                      <CardDescription className="text-md">
-                        {app.description}<br />
-                        Server: {app.server || 'No server'}
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
+                    <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
                     <div className="flex items-center gap-2 w-full">
                       <div className="flex flex-col space-y-2 flex-grow">
                         <Button 
@@ -261,6 +295,7 @@ export default function Dashboard() {
               </CardHeader>
             </Card>
           ))}
+          </div>
           <div className="pt-4">
             <Pagination>
               <PaginationContent>
