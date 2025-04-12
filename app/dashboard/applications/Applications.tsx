@@ -240,30 +240,37 @@ export default function Dashboard() {
             "space-y-4"}>
             {applications.map((app) => (
               <Card 
-                key={app.id} 
-                className={isGridLayout ? 
-                  "h-full flex flex-col justify-between" : 
-                  "w-full mb-4"}
-              >
-                <CardHeader>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
-                        {app.icon ? (
-                          <img src={app.icon} alt={app.name} className="w-full h-full object-contain rounded-md" />
-                        ) : (
-                          <span className="text-gray-500 text-xs">Image</span>
-                        )}
-                      </div>
-                      <div className="ml-4">
-                        <CardTitle className="text-2xl font-bold">{app.name}</CardTitle>
-                        <CardDescription className="text-md">
-                          {app.description}<br />
-                          Server: {app.server || 'No server'}
-                        </CardDescription>
-                      </div>
+              key={app.id} 
+              className={isGridLayout ? "h-full flex flex-col justify-between relative" : "w-full mb-4 relative"}
+            >
+              <CardHeader>
+                {/* Online-/Offline-Indikator mit innerem Kreis */}
+                <div className="absolute top-2 right-2">
+                  <div
+                    className={`w-4 h-4 rounded-full flex items-center justify-center ${app.online ? "bg-green-700" : "bg-red-700"}`}
+                    title={app.online ? "Online" : "Offline"}
+                  >
+                    <div className={`w-2 h-2 rounded-full ${app.online ? "bg-green-500" : "bg-red-500"}`} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
+                      {app.icon ? (
+                        <img src={app.icon} alt={app.name} className="w-full h-full object-contain rounded-md" />
+                      ) : (
+                        <span className="text-gray-500 text-xs">Image</span>
+                      )}
                     </div>
-                    <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
+                    <div className="ml-4">
+                      <CardTitle className="text-2xl font-bold">{app.name}</CardTitle>
+                      <CardDescription className="text-md">
+                        {app.description}<br />
+                        Server: {app.server || 'No server'}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
                     <div className="flex items-center gap-2 w-full">
                       <div className="flex flex-col space-y-2 flex-grow">
                         <Button 
@@ -297,7 +304,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </CardHeader>
-            </Card>
+            </Card>                 
           ))}
           </div>
           <div className="pt-4">

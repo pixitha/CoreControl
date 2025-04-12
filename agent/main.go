@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/jackc/pgx/v4/stdlib" // Wird für die Registrierung des pgx Treibers benötigt
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/joho/godotenv"
 )
 
