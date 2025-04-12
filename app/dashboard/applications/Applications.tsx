@@ -72,6 +72,7 @@ export default function Dashboard() {
   const [applications, setApplications] = useState([]);
   const [servers, setServers] = useState([]);
   const [isGridLayout, setIsGridLayout] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const savedLayout = Cookies.get('layoutPreference');
@@ -109,10 +110,12 @@ export default function Dashboard() {
 
   const getApplications = async () => {
     try {
+      setLoading(true)
       const response = await axios.post('/api/applications/get', { page: currentPage, ITEMS_PER_PAGE: itemsPerPage });
       setApplications(response.data.applications);
       setServers(response.data.servers);
       setMaxPage(response.data.maxPage);
+      setLoading(false)
     } catch (error: any) {
       console.log(error.response);
     }
@@ -235,77 +238,95 @@ export default function Dashboard() {
           </div>
           </div>
           <br />
-          <div className={isGridLayout ? 
-            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : 
-            "space-y-4"}>
-            {applications.map((app) => (
-              <Card 
-              key={app.id} 
-              className={isGridLayout ? "h-full flex flex-col justify-between relative" : "w-full mb-4 relative"}
-            >
-              <CardHeader>
-                <div className="absolute top-2 right-2">
-                  <div
-                    className={`w-4 h-4 rounded-full flex items-center justify-center ${app.online ? "bg-green-700" : "bg-red-700"}`}
-                    title={app.online ? "Online" : "Offline"}
-                  >
-                    <div className={`w-2 h-2 rounded-full ${app.online ? "bg-green-500" : "bg-red-500"}`} />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center">
-                    <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
-                      {app.icon ? (
-                        <img src={app.icon} alt={app.name} className="w-full h-full object-contain rounded-md" />
-                      ) : (
-                        <span className="text-gray-500 text-xs">Image</span>
-                      )}
-                    </div>
-                    <div className="ml-4">
-                      <CardTitle className="text-2xl font-bold">{app.name}</CardTitle>
-                      <CardDescription className="text-md">
-                        {app.description}<br />
-                        Server: {app.server || 'No server'}
-                      </CardDescription>
+          {!loading ?
+            <div className={isGridLayout ? 
+              "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : 
+              "space-y-4"}>
+              {applications.map((app) => (
+                <Card 
+                key={app.id} 
+                className={isGridLayout ? "h-full flex flex-col justify-between relative" : "w-full mb-4 relative"}
+              >
+                <CardHeader>
+                  <div className="absolute top-2 right-2">
+                    <div
+                      className={`w-4 h-4 rounded-full flex items-center justify-center ${app.online ? "bg-green-700" : "bg-red-700"}`}
+                      title={app.online ? "Online" : "Offline"}
+                    >
+                      <div className={`w-2 h-2 rounded-full ${app.online ? "bg-green-500" : "bg-red-500"}`} />
                     </div>
                   </div>
-                  <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="flex flex-col space-y-2 flex-grow">
-                        <Button 
-                          variant="outline" 
-                          className="gap-2 w-full"
-                          onClick={() => window.open(app.publicURL, "_blank")}
-                        >
-                          <Link className="h-4 w-4" />
-                          Open Public URL
-                        </Button>
-                        {app.localURL && (
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
+                        {app.icon ? (
+                          <img src={app.icon} alt={app.name} className="w-full h-full object-contain rounded-md" />
+                        ) : (
+                          <span className="text-gray-500 text-xs">Image</span>
+                        )}
+                      </div>
+                      <div className="ml-4">
+                        <CardTitle className="text-2xl font-bold">{app.name}</CardTitle>
+                        <CardDescription className="text-md">
+                          {app.description}<br />
+                          Server: {app.server || 'No server'}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
+                      <div className="flex items-center gap-2 w-full">
+                        <div className="flex flex-col space-y-2 flex-grow">
                           <Button 
                             variant="outline" 
                             className="gap-2 w-full"
-                            onClick={() => window.open(app.localURL, "_blank")}
+                            onClick={() => window.open(app.publicURL, "_blank")}
                           >
-                            <Home className="h-4 w-4" />
-                            Open Local URL
+                            <Link className="h-4 w-4" />
+                            Open Public URL
                           </Button>
-                        )}
+                          {app.localURL && (
+                            <Button 
+                              variant="outline" 
+                              className="gap-2 w-full"
+                              onClick={() => window.open(app.localURL, "_blank")}
+                            >
+                              <Home className="h-4 w-4" />
+                              Open Local URL
+                            </Button>
+                          )}
+                        </div>
+                        <Button 
+                          variant="destructive" 
+                          size="icon"
+                          className="h-[72px] w-10"
+                          onClick={() => deleteApplication(app.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button 
-                        variant="destructive" 
-                        size="icon"
-                        className="h-[72px] w-10"
-                        onClick={() => deleteApplication(app.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
+                </CardHeader>
+              </Card>                 
+            ))}
+            </div>
+          :
+          <div className="flex items-center justify-center">
+                <div className='inline-block' role='status' aria-label='loading'>
+                <svg className='w-6 h-6 stroke-white animate-spin ' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                <g clip-path='url(#clip0_9023_61563)'>
+                    <path d='M14.6437 2.05426C11.9803 1.2966 9.01686 1.64245 6.50315 3.25548C1.85499 6.23817 0.504864 12.4242 3.48756 17.0724C6.47025 21.7205 12.6563 23.0706 17.3044 20.088C20.4971 18.0393 22.1338 14.4793 21.8792 10.9444' stroke='stroke-current' stroke-width='1.4' stroke-linecap='round' class='my-path'></path>
+                </g>
+                <defs>
+                    <clipPath id='clip0_9023_61563'>
+                    <rect width='24' height='24' fill='white'></rect>
+                    </clipPath>
+                </defs>
+                </svg>
+                <span className='sr-only'>Loading...</span>
                 </div>
-              </CardHeader>
-            </Card>                 
-          ))}
-          </div>
+            </div>
+          }
           <div className="pt-4">
             <Pagination>
               <PaginationContent>

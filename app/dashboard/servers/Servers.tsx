@@ -73,6 +73,7 @@ export default function Dashboard() {
   const [maxPage, setMaxPage] = useState(1);
   const [servers, setServers] = useState([]);
   const [isGridLayout, setIsGridLayout] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const savedLayout = Cookies.get('layoutPreference');
@@ -100,9 +101,11 @@ export default function Dashboard() {
 
   const getServers = async () => {
     try {
+      setLoading(true);
       const response = await axios.post('/api/servers/get', { page: currentPage });
       setServers(response.data.servers);
       setMaxPage(response.data.maxPage);
+      setLoading(false);
     } catch (error: any) {
       console.log(error.response);
     }
@@ -237,62 +240,80 @@ export default function Dashboard() {
             </div>
           </div>
           <br />
-          <div className={isGridLayout ? 
-            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : 
-            "space-y-4"}>
-            {servers.map((server) => (
-              <Card 
-                key={server.id} 
-                className={isGridLayout ? 
-                  "h-full flex flex-col justify-between" : 
-                  "w-full mb-4"}
-              >
-                <CardHeader>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                    <div className="ml-4">
-                      <CardTitle className="text-2xl font-bold">{server.name}</CardTitle>
-                      <CardDescription className="text-sm space-y-1 mt-1">
-                          <div className="flex items-center gap-2 text-foreground/80">
-                          <MonitorCog className="h-4 w-4 text-muted-foreground" />
-                          <span>OS: {server.os || '-'}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-foreground/80">
-                          <FileDigit className="h-4 w-4 text-muted-foreground" />
-                          <span>IP: {server.ip || 'Nicht angegeben'}</span>
-                          </div>
-                      </CardDescription>
+          {!loading ?
+            <div className={isGridLayout ? 
+              "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : 
+              "space-y-4"}>
+              {servers.map((server) => (
+                <Card 
+                  key={server.id} 
+                  className={isGridLayout ? 
+                    "h-full flex flex-col justify-between" : 
+                    "w-full mb-4"}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                      <div className="ml-4">
+                        <CardTitle className="text-2xl font-bold">{server.name}</CardTitle>
+                        <CardDescription className="text-sm space-y-1 mt-1">
+                            <div className="flex items-center gap-2 text-foreground/80">
+                            <MonitorCog className="h-4 w-4 text-muted-foreground" />
+                            <span>OS: {server.os || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-foreground/80">
+                            <FileDigit className="h-4 w-4 text-muted-foreground" />
+                            <span>IP: {server.ip || 'Nicht angegeben'}</span>
+                            </div>
+                        </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
+                        <div className="flex items-center gap-2 w-full">
+                        <div className="flex flex-col space-y-2 flex-grow">
+                            {server.url && (
+                                <Button 
+                                variant="outline" 
+                                className="gap-2 w-full"
+                                onClick={() => window.open(server.url, "_blank")}
+                                >
+                                <Link className="h-4 w-4" />
+                                Open Management URL
+                                </Button>
+                            )}
+                            </div>
+                        <Button 
+                            variant="destructive" 
+                            size="icon"
+                            className="w-10"
+                            onClick={() => deleteApplication(server.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
-                      <div className="flex items-center gap-2 w-full">
-                      <div className="flex flex-col space-y-2 flex-grow">
-                          {server.url && (
-                              <Button 
-                              variant="outline" 
-                              className="gap-2 w-full"
-                              onClick={() => window.open(server.url, "_blank")}
-                              >
-                              <Link className="h-4 w-4" />
-                              Open Management URL
-                              </Button>
-                          )}
-                          </div>
-                      <Button 
-                          variant="destructive" 
-                          size="icon"
-                          className="w-10"
-                          onClick={() => deleteApplication(server.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          : 
+            <div className="flex items-center justify-center">
+                  <div className='inline-block' role='status' aria-label='loading'>
+                  <svg className='w-6 h-6 stroke-white animate-spin ' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                  <g clip-path='url(#clip0_9023_61563)'>
+                      <path d='M14.6437 2.05426C11.9803 1.2966 9.01686 1.64245 6.50315 3.25548C1.85499 6.23817 0.504864 12.4242 3.48756 17.0724C6.47025 21.7205 12.6563 23.0706 17.3044 20.088C20.4971 18.0393 22.1338 14.4793 21.8792 10.9444' stroke='stroke-current' stroke-width='1.4' stroke-linecap='round' class='my-path'></path>
+                  </g>
+                  <defs>
+                      <clipPath id='clip0_9023_61563'>
+                      <rect width='24' height='24' fill='white'></rect>
+                      </clipPath>
+                  </defs>
+                  </svg>
+                  <span className='sr-only'>Loading...</span>
                   </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+              </div>
+          }
           <div className="pt-4">
             <Pagination>
               <PaginationContent>
