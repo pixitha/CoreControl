@@ -16,7 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { Plus, Link, MonitorCog, FileDigit, Trash2, LayoutGrid, List, Pencil } from "lucide-react"
+import { Plus, Link, MonitorCog, FileDigit, Trash2, LayoutGrid, List, Pencil, Cpu, Microchip, MemoryStick, HardDrive } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -63,12 +63,18 @@ import {
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
 import axios from 'axios';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function Dashboard() {
   const [name, setName] = useState("");
   const [os, setOs] = useState("");
   const [ip, setIp] = useState("");
   const [url, setUrl] = useState("");
+  const [cpu, setCpu] = useState("");
+  const [gpu, setGpu] = useState("");
+  const [ram, setRam] = useState("");
+  const [disk, setDisk] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
   const [servers, setServers] = useState([]);
@@ -81,6 +87,10 @@ export default function Dashboard() {
   const [editOs, setEditOs] = useState("");
   const [editIp, setEditIp] = useState("");
   const [editUrl, setEditUrl] = useState("");
+  const [editCpu, setEditCpu] = useState("");
+  const [editGpu, setEditGpu] = useState("");
+  const [editRam, setEditRam] = useState("");
+  const [editDisk, setEditDisk] = useState("");
 
   
   useEffect(() => {
@@ -100,7 +110,7 @@ export default function Dashboard() {
 
   const add = async () => {
     try {
-      const response = await axios.post('/api/servers/add', { name, os, ip, url });
+      const response = await axios.post('/api/servers/add', { name, os, ip, url, cpu, gpu, ram, disk });
       getServers();
     } catch (error: any) {
       console.log(error.response.data);
@@ -112,6 +122,7 @@ export default function Dashboard() {
       setLoading(true);
       const response = await axios.post('/api/servers/get', { page: currentPage });
       setServers(response.data.servers);
+      console.log(response.data.servers)
       setMaxPage(response.data.maxPage);
       setLoading(false);
     } catch (error: any) {
@@ -146,7 +157,11 @@ export default function Dashboard() {
     setEditOs(server.os);
     setEditIp(server.ip);
     setEditUrl(server.url);
-  }
+    setEditCpu(server.cpu);
+    setEditGpu(server.gpu);
+    setEditRam(server.ram);
+    setEditDisk(server.disk);
+  };
 
   const edit = async () => {
     try {
@@ -155,7 +170,11 @@ export default function Dashboard() {
         name: editName,
         os: editOs,
         ip: editIp,
-        url: editUrl
+        url: editUrl,
+        cpu: editCpu,
+        gpu: editGpu,
+        ram: editRam,
+        disk: editDisk
       });
       getServers();
       setEditId(null);
@@ -225,42 +244,70 @@ export default function Dashboard() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Add an server</AlertDialogTitle>
                     <AlertDialogDescription>
-                      <div className="space-y-4 pt-4">
-                        <div className="grid w-full items-center gap-1.5">
-                          <Label htmlFor="name">Name</Label>
-                          <Input id="name" type="text" placeholder="e.g. Server1" onChange={(e) => setName(e.target.value)}/>
+                    <Tabs defaultValue="general" className="w-full">
+                      <TabsList className="w-full">
+                        <TabsTrigger value="general">General</TabsTrigger>
+                        <TabsTrigger value="hardware">Hardware</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="general">
+                        <div className="space-y-4 pt-4">
+                          <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="name">Name</Label>
+                            <Input id="name" type="text" placeholder="e.g. Server1" onChange={(e) => setName(e.target.value)}/>
+                          </div>
+                          <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="description">Operating System <span className="text-stone-600">(optional)</span></Label>
+                            <Select onValueChange={(value) => setOs(value)}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select OS" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Windows">Windows</SelectItem>
+                                    <SelectItem value="Linux">Linux</SelectItem>
+                                    <SelectItem value="MacOS">MacOS</SelectItem>
+                                </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="icon">IP Adress <span className="text-stone-600">(optional)</span></Label>
+                            <Input id="icon" type="text" placeholder="e.g. 192.168.100.2" onChange={(e) => setIp(e.target.value)}/>
+                          </div>
+                          <div className="grid w-full items-center gap-1.5">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Label htmlFor="publicURL">Management URL <span className="text-stone-600">(optional)</span></Label>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                    Link to a web interface (e.g. Proxmox or Portainer) with which the server can be managed
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <Input id="publicURL" type="text" placeholder="e.g. https://proxmox.server1.com" onChange={(e) => setUrl(e.target.value)}/>
+                          </div>
                         </div>
-                        <div className="grid w-full items-center gap-1.5">
-                          <Label htmlFor="description">Operating System <span className="text-stone-600">(optional)</span></Label>
-                          <Select onValueChange={(value) => setOs(value)}>
-                              <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select OS" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="Windows">Windows</SelectItem>
-                                  <SelectItem value="Linux">Linux</SelectItem>
-                                  <SelectItem value="MacOS">MacOS</SelectItem>
-                              </SelectContent>
-                          </Select>
+                      </TabsContent>
+                      <TabsContent value="hardware">
+                        <div className="space-y-4 pt-4">
+                          <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="name">CPU <span className="text-stone-600">(optional)</span></Label>
+                            <Input id="name" type="text" placeholder="e.g. AMD Ryzen™ 7 7800X3D" onChange={(e) => setCpu(e.target.value)}/>
+                          </div>
+                          <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="name">GPU <span className="text-stone-600">(optional)</span></Label>
+                              <Input id="name" type="text" placeholder="e.g. AMD Radeon™ Graphics" onChange={(e) => setGpu(e.target.value)}/>
+                          </div>
+                          <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="name">RAM <span className="text-stone-600">(optional)</span></Label>
+                              <Input id="name" type="text" placeholder="e.g. 64GB DDR5" onChange={(e) => setRam(e.target.value)}/>
+                          </div>
+                          <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="name">Disk <span className="text-stone-600">(optional)</span></Label>
+                              <Input id="name" type="text" placeholder="e.g. 2TB SSD" onChange={(e) => setDisk(e.target.value)}/>
+                          </div>
                         </div>
-                        <div className="grid w-full items-center gap-1.5">
-                          <Label htmlFor="icon">IP Adress <span className="text-stone-600">(optional)</span></Label>
-                          <Input id="icon" type="text" placeholder="e.g. 192.168.100.2" onChange={(e) => setIp(e.target.value)}/>
-                        </div>
-                        <div className="grid w-full items-center gap-1.5">
-                          <TooltipProvider>
-                              <Tooltip>
-                                  <TooltipTrigger>
-                                      <Label htmlFor="publicURL">Management URL <span className="text-stone-600">(optional)</span></Label>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                  Link to a web interface (e.g. Proxmox or Portainer) with which the server can be managed
-                                  </TooltipContent>
-                              </Tooltip>
-                          </TooltipProvider>
-                          <Input id="publicURL" type="text" placeholder="e.g. https://proxmox.server1.com" onChange={(e) => setUrl(e.target.value)}/>
-                        </div>
-                      </div>
+                      </TabsContent>
+                    </Tabs>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -286,18 +333,39 @@ export default function Dashboard() {
                   <CardHeader>
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center">
-                      <div className="ml-4">
-                        <CardTitle className="text-2xl font-bold">{server.name}</CardTitle>
-                        <CardDescription className="text-sm space-y-1 mt-1">
+                        <div className="ml-4">
+                          <CardTitle className="text-2xl font-bold">{server.name}</CardTitle>
+                          <CardDescription className={`text-sm mt-1 grid gap-y-1 ${isGridLayout ? "grid-cols-1" : "grid-cols-2 gap-x-4"}`}>
                             <div className="flex items-center gap-2 text-foreground/80">
-                            <MonitorCog className="h-4 w-4 text-muted-foreground" />
-                            <span>OS: {server.os || '-'}</span>
+                              <MonitorCog className="h-4 w-4 text-muted-foreground" />
+                              <span><b>OS:</b> {server.os || '-'}</span>
                             </div>
                             <div className="flex items-center gap-2 text-foreground/80">
-                            <FileDigit className="h-4 w-4 text-muted-foreground" />
-                            <span>IP: {server.ip || 'Nicht angegeben'}</span>
+                              <FileDigit className="h-4 w-4 text-muted-foreground" />
+                              <span><b>IP:</b> {server.ip || 'Nicht angegeben'}</span>
                             </div>
-                        </CardDescription>
+
+                            <div className="col-span-full pt-2 pb-2">
+                              <Separator />
+                            </div>
+
+                            <div className="flex items-center gap-2 text-foreground/80">
+                              <Cpu className="h-4 w-4 text-muted-foreground" />
+                              <span><b>CPU:</b> {server.cpu || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-foreground/80">
+                              <Microchip className="h-4 w-4 text-muted-foreground" />
+                              <span><b>GPU:</b> {server.gpu || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-foreground/80">
+                              <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                              <span><b>RAM:</b> {server.ram || '-'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-foreground/80">
+                              <HardDrive className="h-4 w-4 text-muted-foreground" />
+                              <span><b>Disk:</b> {server.disk || '-'}</span>
+                            </div>
+                          </CardDescription>
                         </div>
                       </div>
                       <div className="flex flex-col items-end justify-start space-y-2 w-[405px]">
@@ -334,19 +402,15 @@ export default function Dashboard() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Server bearbeiten</AlertDialogTitle>
+                                <AlertDialogTitle>Edit Server</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  <div className="space-y-4 pt-4">
-                                    <div className="grid w-full items-center gap-1.5">
-                                      <Label htmlFor="editName">Name</Label>
-                                      <Input 
-                                        id="editName" 
-                                        type="text" 
-                                        placeholder="e.g. Server1"
-                                        value={editName}
-                                        onChange={(e) => setEditName(e.target.value)}
-                                      />
-                                    </div>
+                                  <Tabs defaultValue="general" className="w-full">
+                                    <TabsList className="w-full">
+                                      <TabsTrigger value="general">General</TabsTrigger>
+                                      <TabsTrigger value="hardware">Hardware</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="general">
+                                      <div className="space-y-4 pt-4">
                                     <div className="grid w-full items-center gap-1.5">
                                       <Label htmlFor="editOs">Operating System</Label>
                                       <Select 
@@ -384,13 +448,52 @@ export default function Dashboard() {
                                       />
                                     </div>
                                   </div>
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <Button onClick={edit}>Save</Button>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
+                                </TabsContent>
+
+                                <TabsContent value="hardware">
+          <div className="space-y-4 pt-4">
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="editCpu">CPU</Label>
+              <Input 
+                id="editCpu" 
+                value={editCpu}
+                onChange={(e) => setEditCpu(e.target.value)}
+              />
+            </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="editGpu">GPU</Label>
+              <Input 
+                id="editGpu" 
+                value={editGpu}
+                onChange={(e) => setEditGpu(e.target.value)}
+              />
+            </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="editRam">RAM</Label>
+              <Input 
+                id="editRam" 
+                value={editRam}
+                onChange={(e) => setEditRam(e.target.value)}
+              />
+            </div>
+            <div className="grid w-full items-center gap-1.5">
+              <Label htmlFor="editDisk">Disk</Label>
+              <Input 
+                id="editDisk" 
+                value={editDisk}
+                onChange={(e) => setEditDisk(e.target.value)}
+              />
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+  <AlertDialogFooter>
+    <AlertDialogCancel>Cancel</AlertDialogCancel>
+    <Button onClick={edit}>Save</Button>
+  </AlertDialogFooter>
+</AlertDialogContent>
                           </AlertDialog>
                         </div>
                       </div>

@@ -6,6 +6,11 @@ interface AddRequest {
     os: string;
     ip: string;
     url: string;
+    cpu: string;
+    gpu: string;
+    ram: string;
+    disk: string;
+
 }
 
 const prisma = new PrismaClient();
@@ -13,7 +18,7 @@ const prisma = new PrismaClient();
 export async function POST(request: NextRequest) {
     try {
         const body: AddRequest = await request.json();
-        const { name, os, ip, url } = body;  
+        const { name, os, ip, url, cpu, gpu, ram, disk } = body;  
         
         const server = await prisma.server.create({
             data: {
@@ -21,6 +26,10 @@ export async function POST(request: NextRequest) {
                 os,
                 ip,
                 url,
+                cpu,
+                gpu,
+                ram,
+                disk
             }
         });
 

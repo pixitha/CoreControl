@@ -32,6 +32,10 @@ model server {
   os            String?
   ip            String?
   url           String?
+  cpu           String?
+  gpu           String?
+  ram           String?
+  disk          String?
 }
 
 model settings {

@@ -2162,6 +2162,10 @@ export namespace Prisma {
     os: string | null
     ip: string | null
     url: string | null
+    cpu: string | null
+    gpu: string | null
+    ram: string | null
+    disk: string | null
   }
 
   export type ServerMaxAggregateOutputType = {
@@ -2170,6 +2174,10 @@ export namespace Prisma {
     os: string | null
     ip: string | null
     url: string | null
+    cpu: string | null
+    gpu: string | null
+    ram: string | null
+    disk: string | null
   }
 
   export type ServerCountAggregateOutputType = {
@@ -2178,6 +2186,10 @@ export namespace Prisma {
     os: number
     ip: number
     url: number
+    cpu: number
+    gpu: number
+    ram: number
+    disk: number
     _all: number
   }
 
@@ -2196,6 +2208,10 @@ export namespace Prisma {
     os?: true
     ip?: true
     url?: true
+    cpu?: true
+    gpu?: true
+    ram?: true
+    disk?: true
   }
 
   export type ServerMaxAggregateInputType = {
@@ -2204,6 +2220,10 @@ export namespace Prisma {
     os?: true
     ip?: true
     url?: true
+    cpu?: true
+    gpu?: true
+    ram?: true
+    disk?: true
   }
 
   export type ServerCountAggregateInputType = {
@@ -2212,6 +2232,10 @@ export namespace Prisma {
     os?: true
     ip?: true
     url?: true
+    cpu?: true
+    gpu?: true
+    ram?: true
+    disk?: true
     _all?: true
   }
 
@@ -2307,6 +2331,10 @@ export namespace Prisma {
     os: string | null
     ip: string | null
     url: string | null
+    cpu: string | null
+    gpu: string | null
+    ram: string | null
+    disk: string | null
     _count: ServerCountAggregateOutputType | null
     _avg: ServerAvgAggregateOutputType | null
     _sum: ServerSumAggregateOutputType | null
@@ -2334,6 +2362,10 @@ export namespace Prisma {
     os?: boolean
     ip?: boolean
     url?: boolean
+    cpu?: boolean
+    gpu?: boolean
+    ram?: boolean
+    disk?: boolean
   }, ExtArgs["result"]["server"]>
 
   export type serverSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -2342,6 +2374,10 @@ export namespace Prisma {
     os?: boolean
     ip?: boolean
     url?: boolean
+    cpu?: boolean
+    gpu?: boolean
+    ram?: boolean
+    disk?: boolean
   }, ExtArgs["result"]["server"]>
 
   export type serverSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -2350,6 +2386,10 @@ export namespace Prisma {
     os?: boolean
     ip?: boolean
     url?: boolean
+    cpu?: boolean
+    gpu?: boolean
+    ram?: boolean
+    disk?: boolean
   }, ExtArgs["result"]["server"]>
 
   export type serverSelectScalar = {
@@ -2358,9 +2398,13 @@ export namespace Prisma {
     os?: boolean
     ip?: boolean
     url?: boolean
+    cpu?: boolean
+    gpu?: boolean
+    ram?: boolean
+    disk?: boolean
   }
 
-  export type serverOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "os" | "ip" | "url", ExtArgs["result"]["server"]>
+  export type serverOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "os" | "ip" | "url" | "cpu" | "gpu" | "ram" | "disk", ExtArgs["result"]["server"]>
 
   export type $serverPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "server"
@@ -2371,6 +2415,10 @@ export namespace Prisma {
       os: string | null
       ip: string | null
       url: string | null
+      cpu: string | null
+      gpu: string | null
+      ram: string | null
+      disk: string | null
     }, ExtArgs["result"]["server"]>
     composites: {}
   }
@@ -2799,6 +2847,10 @@ export namespace Prisma {
     readonly os: FieldRef<"server", 'String'>
     readonly ip: FieldRef<"server", 'String'>
     readonly url: FieldRef<"server", 'String'>
+    readonly cpu: FieldRef<"server", 'String'>
+    readonly gpu: FieldRef<"server", 'String'>
+    readonly ram: FieldRef<"server", 'String'>
+    readonly disk: FieldRef<"server", 'String'>
   }
     
 
@@ -4189,7 +4241,11 @@ export namespace Prisma {
     name: 'name',
     os: 'os',
     ip: 'ip',
-    url: 'url'
+    url: 'url',
+    cpu: 'cpu',
+    gpu: 'gpu',
+    ram: 'ram',
+    disk: 'disk'
   };
 
   export type ServerScalarFieldEnum = (typeof ServerScalarFieldEnum)[keyof typeof ServerScalarFieldEnum]
@@ -4381,6 +4437,10 @@ export namespace Prisma {
     os?: StringNullableFilter<"server"> | string | null
     ip?: StringNullableFilter<"server"> | string | null
     url?: StringNullableFilter<"server"> | string | null
+    cpu?: StringNullableFilter<"server"> | string | null
+    gpu?: StringNullableFilter<"server"> | string | null
+    ram?: StringNullableFilter<"server"> | string | null
+    disk?: StringNullableFilter<"server"> | string | null
   }
 
   export type serverOrderByWithRelationInput = {
@@ -4389,6 +4449,10 @@ export namespace Prisma {
     os?: SortOrderInput | SortOrder
     ip?: SortOrderInput | SortOrder
     url?: SortOrderInput | SortOrder
+    cpu?: SortOrderInput | SortOrder
+    gpu?: SortOrderInput | SortOrder
+    ram?: SortOrderInput | SortOrder
+    disk?: SortOrderInput | SortOrder
   }
 
   export type serverWhereUniqueInput = Prisma.AtLeast<{
@@ -4400,6 +4464,10 @@ export namespace Prisma {
     os?: StringNullableFilter<"server"> | string | null
     ip?: StringNullableFilter<"server"> | string | null
     url?: StringNullableFilter<"server"> | string | null
+    cpu?: StringNullableFilter<"server"> | string | null
+    gpu?: StringNullableFilter<"server"> | string | null
+    ram?: StringNullableFilter<"server"> | string | null
+    disk?: StringNullableFilter<"server"> | string | null
   }, "id">
 
   export type serverOrderByWithAggregationInput = {
@@ -4408,6 +4476,10 @@ export namespace Prisma {
     os?: SortOrderInput | SortOrder
     ip?: SortOrderInput | SortOrder
     url?: SortOrderInput | SortOrder
+    cpu?: SortOrderInput | SortOrder
+    gpu?: SortOrderInput | SortOrder
+    ram?: SortOrderInput | SortOrder
+    disk?: SortOrderInput | SortOrder
     _count?: serverCountOrderByAggregateInput
     _avg?: serverAvgOrderByAggregateInput
     _max?: serverMaxOrderByAggregateInput
@@ -4424,6 +4496,10 @@ export namespace Prisma {
     os?: StringNullableWithAggregatesFilter<"server"> | string | null
     ip?: StringNullableWithAggregatesFilter<"server"> | string | null
     url?: StringNullableWithAggregatesFilter<"server"> | string | null
+    cpu?: StringNullableWithAggregatesFilter<"server"> | string | null
+    gpu?: StringNullableWithAggregatesFilter<"server"> | string | null
+    ram?: StringNullableWithAggregatesFilter<"server"> | string | null
+    disk?: StringNullableWithAggregatesFilter<"server"> | string | null
   }
 
   export type settingsWhereInput = {
@@ -4551,6 +4627,10 @@ export namespace Prisma {
     os?: string | null
     ip?: string | null
     url?: string | null
+    cpu?: string | null
+    gpu?: string | null
+    ram?: string | null
+    disk?: string | null
   }
 
   export type serverUncheckedCreateInput = {
@@ -4559,6 +4639,10 @@ export namespace Prisma {
     os?: string | null
     ip?: string | null
     url?: string | null
+    cpu?: string | null
+    gpu?: string | null
+    ram?: string | null
+    disk?: string | null
   }
 
   export type serverUpdateInput = {
@@ -4566,6 +4650,10 @@ export namespace Prisma {
     os?: NullableStringFieldUpdateOperationsInput | string | null
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     url?: NullableStringFieldUpdateOperationsInput | string | null
+    cpu?: NullableStringFieldUpdateOperationsInput | string | null
+    gpu?: NullableStringFieldUpdateOperationsInput | string | null
+    ram?: NullableStringFieldUpdateOperationsInput | string | null
+    disk?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type serverUncheckedUpdateInput = {
@@ -4574,6 +4662,10 @@ export namespace Prisma {
     os?: NullableStringFieldUpdateOperationsInput | string | null
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     url?: NullableStringFieldUpdateOperationsInput | string | null
+    cpu?: NullableStringFieldUpdateOperationsInput | string | null
+    gpu?: NullableStringFieldUpdateOperationsInput | string | null
+    ram?: NullableStringFieldUpdateOperationsInput | string | null
+    disk?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type serverCreateManyInput = {
@@ -4582,6 +4674,10 @@ export namespace Prisma {
     os?: string | null
     ip?: string | null
     url?: string | null
+    cpu?: string | null
+    gpu?: string | null
+    ram?: string | null
+    disk?: string | null
   }
 
   export type serverUpdateManyMutationInput = {
@@ -4589,6 +4685,10 @@ export namespace Prisma {
     os?: NullableStringFieldUpdateOperationsInput | string | null
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     url?: NullableStringFieldUpdateOperationsInput | string | null
+    cpu?: NullableStringFieldUpdateOperationsInput | string | null
+    gpu?: NullableStringFieldUpdateOperationsInput | string | null
+    ram?: NullableStringFieldUpdateOperationsInput | string | null
+    disk?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type serverUncheckedUpdateManyInput = {
@@ -4597,6 +4697,10 @@ export namespace Prisma {
     os?: NullableStringFieldUpdateOperationsInput | string | null
     ip?: NullableStringFieldUpdateOperationsInput | string | null
     url?: NullableStringFieldUpdateOperationsInput | string | null
+    cpu?: NullableStringFieldUpdateOperationsInput | string | null
+    gpu?: NullableStringFieldUpdateOperationsInput | string | null
+    ram?: NullableStringFieldUpdateOperationsInput | string | null
+    disk?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type settingsCreateInput = {
@@ -4819,6 +4923,10 @@ export namespace Prisma {
     os?: SortOrder
     ip?: SortOrder
     url?: SortOrder
+    cpu?: SortOrder
+    gpu?: SortOrder
+    ram?: SortOrder
+    disk?: SortOrder
   }
 
   export type serverAvgOrderByAggregateInput = {
@@ -4831,6 +4939,10 @@ export namespace Prisma {
     os?: SortOrder
     ip?: SortOrder
     url?: SortOrder
+    cpu?: SortOrder
+    gpu?: SortOrder
+    ram?: SortOrder
+    disk?: SortOrder
   }
 
   export type serverMinOrderByAggregateInput = {
@@ -4839,6 +4951,10 @@ export namespace Prisma {
     os?: SortOrder
     ip?: SortOrder
     url?: SortOrder
+    cpu?: SortOrder
+    gpu?: SortOrder
+    ram?: SortOrder
+    disk?: SortOrder
   }
 
   export type serverSumOrderByAggregateInput = {
