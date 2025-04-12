@@ -3,15 +3,16 @@ import { PrismaClient } from '@/lib/generated/prisma'
 
 interface GetRequest {
     page: number;
+    ITEMS_PER_PAGE: number;
 }
 
 const prisma = new PrismaClient();
-const ITEMS_PER_PAGE = 5; 
 
 export async function POST(request: NextRequest) {
     try {
         const body: GetRequest = await request.json();
         const page = Math.max(1, body.page || 1);
+        const ITEMS_PER_PAGE = body.ITEMS_PER_PAGE;
         
         const applications = await prisma.application.findMany({
             skip: (page - 1) * ITEMS_PER_PAGE,

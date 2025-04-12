@@ -68,13 +68,16 @@ export default function Dashboard() {
   const [serverId, setServerId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [maxPage, setMaxPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [applications, setApplications] = useState([]);
   const [servers, setServers] = useState([]);
   const [isGridLayout, setIsGridLayout] = useState(false);
 
   useEffect(() => {
     const savedLayout = Cookies.get('layoutPreference');
-    setIsGridLayout(savedLayout === 'grid');
+    const layout_bool = savedLayout === 'grid'
+    setIsGridLayout(layout_bool);
+    setItemsPerPage(layout_bool ? 15 : 5)
   }, []);
 
   const toggleLayout = () => {
@@ -85,6 +88,7 @@ export default function Dashboard() {
       path: '/',
       sameSite: 'strict'
     });
+    setItemsPerPage(newLayout ? 15 : 5);
   };
 
   const add = async () => {
@@ -105,7 +109,7 @@ export default function Dashboard() {
 
   const getApplications = async () => {
     try {
-      const response = await axios.post('/api/applications/get', { page: currentPage });
+      const response = await axios.post('/api/applications/get', { page: currentPage, ITEMS_PER_PAGE: itemsPerPage });
       setApplications(response.data.applications);
       setServers(response.data.servers);
       setMaxPage(response.data.maxPage);
@@ -116,7 +120,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     getApplications();
-  }, [currentPage]);
+  }, [currentPage, itemsPerPage]);
 
   const handlePrevious = () => setCurrentPage(prev => Math.max(1, prev - 1));
   const handleNext = () => setCurrentPage(prev => Math.min(maxPage, prev + 1));
