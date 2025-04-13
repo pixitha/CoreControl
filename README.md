@@ -87,6 +87,10 @@ The application is build with:
 - Flowcharts by [React Flow](https://reactflow.dev/)
 - and a lot of love ❤️
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=crocofied/CoreControl&type=Date)](https://www.star-history.com/#crocofied/CoreControl&Date)
+
 ## License
 
 Licensed under the [MIT License](https://github.com/crocofied/CoreControl/blob/main/LICENSE).
