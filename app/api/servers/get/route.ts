@@ -1,11 +1,10 @@
 import { NextResponse, NextRequest } from "next/server";
-import { PrismaClient } from '@/lib/generated/prisma'
+import { prisma } from "@/lib/prisma";
 
 interface GetRequest {
     page: number;
 }
 
-const prisma = new PrismaClient();
 const ITEMS_PER_PAGE = 5; 
 
 export async function POST(request: NextRequest) {

@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,40 +6,38 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { useEffect, useState } from "react"
-import axios from "axios"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/ui/sidebar";
+import { useEffect, useState } from "react";
+import axios from "axios"; // Korrekter Import
+import { Card, CardHeader } from "@/components/ui/card";
+
+interface StatsResponse {
+  serverCount: number;
+  applicationCount: number;
+  onlineApplicationsCount: number;
+}
 
 export default function Dashboard() {
-  const [serverCount, setServerCount] = useState(0)
-  const [applicationCount, setApplicationCount] = useState(0)
-  const [onlineApplicationsCount, setOnlineApplicationsCount] = useState(0)
+  const [serverCount, setServerCount] = useState<number>(0);
+  const [applicationCount, setApplicationCount] = useState<number>(0);
+  const [onlineApplicationsCount, setOnlineApplicationsCount] = useState<number>(0);
 
   const getStats = async () => {
     try {
-      const response = await axios.post('/api/dashboard/get', { });
-      setServerCount(response.data.serverCount)
-      setApplicationCount(response.data.applicationCount)
-      setOnlineApplicationsCount(response.data.onlineApplicationsCount)
+      const response = await axios.post<StatsResponse>('/api/dashboard/get', {});
+      setServerCount(response.data.serverCount);
+      setApplicationCount(response.data.applicationCount);
+      setOnlineApplicationsCount(response.data.onlineApplicationsCount);
     } catch (error: any) {
-      console.log(error.response);
+      console.log("Axios error:", error.response?.data);
     }
-  }
+  };
 
   useEffect(() => {
     getStats();
@@ -94,7 +92,9 @@ export default function Dashboard() {
               <CardHeader>
                 <div className="flex items-center justify-center w-full">
                   <div className="flex flex-col items-center justify-center">
-                    <span className="text-2xl font-bold">{onlineApplicationsCount}/{applicationCount}</span>
+                    <span className="text-2xl font-bold">
+                      {onlineApplicationsCount}/{applicationCount}
+                    </span>
                     <span className="text-md">Applications are online</span>
                   </div>
                 </div>
@@ -102,15 +102,15 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="h-72 w-full rounded-xl flex items-center justify-center bg-muted">
-            <span className="text-gray-400 text-2xl">COMMING SOON</span>
+            <span className="text-gray-400 text-2xl">COMING SOON</span>
           </div>
           <div className="pt-4">
             <div className="h-72 w-full rounded-xl flex items-center justify-center bg-muted">
-              <span className="text-gray-400 text-2xl">COMMING SOON</span>
+              <span className="text-gray-400 text-2xl">COMING SOON</span>
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

@@ -1,0 +1,32 @@
+services:
+  web:
+    image: haedlessdev/corecontrol:latest
+    ports:
+      - "3000:3000"
+    environment:
+      LOGIN_EMAIL: "mail@example.com"
+      LOGIN_PASSWORD: "SecretPassword"
+      JWT_SECRET: RANDOM_SECRET
+      ACCOUNT_SECRET: RANDOM_SECRET
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres?sslmode=require&schema=public"
+    depends_on:
+      - db
+      - agent
+
+  agent:
+    image: haedlessdev/corecontrol-agent:latest
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres?sslmode=require&schema=public"
+
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

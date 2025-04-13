@@ -1,7 +1,40 @@
 import { NextResponse, NextRequest } from "next/server";
-import { PrismaClient } from "@/lib/generated/prisma";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+interface Node {
+  id: string;
+  type: string;
+  data: {
+    label: string;
+    [key: string]: any;
+  };
+  position: { x: number; y: number };
+  style: React.CSSProperties;
+}
+
+interface Edge {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  style: {
+    stroke: string;
+    strokeWidth: number;
+  };
+}
+
+interface Server {
+  id: number;
+  name: string;
+  ip: string;
+}
+
+interface Application {
+  id: number;
+  name: string;
+  localURL: string;
+  serverId: number;
+}
 
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 60;
@@ -15,13 +48,13 @@ export async function GET() {
     const [servers, applications] = await Promise.all([
       prisma.server.findMany({
         orderBy: { id: "asc" },
-      }),
+      }) as Promise<Server[]>,
       prisma.application.findMany({
         orderBy: { serverId: "asc" },
-      }),
+      }) as Promise<Application[]>,
     ]);
 
-    const rootNode = {
+    const rootNode: Node = {
       id: "root",
       type: "infrastructure",
       data: { label: "My Infrastructure" },
@@ -39,7 +72,7 @@ export async function GET() {
       },
     };
 
-    const serverNodes = servers.map((server, index) => {
+    const serverNodes: Node[] = servers.map((server, index) => {
       const xPos =
         index * HORIZONTAL_SPACING -
         ((servers.length - 1) * HORIZONTAL_SPACING) / 2;
@@ -67,11 +100,10 @@ export async function GET() {
       };
     });
 
-    const appNodes: any[] = [];
+    const appNodes: Node[] = [];
     servers.forEach((server) => {
       const serverX =
-        serverNodes.find((n) => n.id === `server-${server.id}`)?.position.x ||
-        0;
+        serverNodes.find((n) => n.id === `server-${server.id}`)?.position.x || 0;
       const serverY = START_Y;
 
       applications
@@ -104,7 +136,7 @@ export async function GET() {
         });
     });
 
-    const connections = [
+    const connections: Edge[] = [
       ...servers.map((server) => ({
         id: `conn-root-${server.id}`,
         source: "root",
@@ -131,10 +163,11 @@ export async function GET() {
       nodes: [rootNode, ...serverNodes, ...appNodes],
       edges: connections,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {
-        error: `Error fetching flowchart: ${error.message}`,
+        error: `Error fetching flowchart: ${errorMessage}`,
       },
       { status: 500 }
     );

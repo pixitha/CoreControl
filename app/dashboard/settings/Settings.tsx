@@ -1,29 +1,29 @@
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Card, CardHeader } from "@/components/ui/card"
-import { useTheme } from "next-themes"
+} from "@/components/ui/sidebar";
+import { Card, CardHeader } from "@/components/ui/card";
+import { useTheme } from "next-themes";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 export default function Settings() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
 
   return (
     <SidebarProvider>
@@ -56,10 +56,13 @@ export default function Settings() {
             <Card className="w-full mb-4 relative">
               <CardHeader>
                 <span className="text-xl font-bold">Theme</span>
-                <Select value={theme} onValueChange={setTheme}>
+                <Select 
+                  value={theme} 
+                  onValueChange={(value: string) => setTheme(value)}
+                >
                   <SelectTrigger className="w-full [&_svg]:hidden">
                     <SelectValue>
-                      {theme?.charAt(0).toUpperCase() + theme?.slice(1)}
+                      {(theme ?? 'system').charAt(0).toUpperCase() + (theme ?? 'system').slice(1)}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -74,5 +77,5 @@ export default function Settings() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

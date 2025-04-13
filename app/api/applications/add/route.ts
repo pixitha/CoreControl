@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { PrismaClient } from '@/lib/generated/prisma'
+import { prisma } from "@/lib/prisma";
 
 interface AddRequest {
     serverId: number;
@@ -9,8 +9,6 @@ interface AddRequest {
     publicURL: string;
     localURL: string;
 }
-
-const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
     try {

@@ -13,7 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { ReactFlow, Controls, Background } from "@xyflow/react";
+import { ReactFlow, Controls, Background, ConnectionLineType } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useEffect, useState } from "react";
 
@@ -78,12 +78,12 @@ export default function Dashboard() {
             className="dark:bg-black rounded-lg"
           >
             <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              fitView
-              fitViewOptions={{ padding: 0.2 }}
-              connectionLineType="straight"
-              className="dark:[&_.react-flow__edge-path]:stroke-slate-500"
+                nodes={nodes}
+                edges={edges}
+                fitView
+                fitViewOptions={{ padding: 0.2 }}
+                connectionLineType={ConnectionLineType.Straight}
+                className="dark:[&_.react-flow__edge-path]:stroke-slate-500"
             >
               <Background
                 color="#64748b"

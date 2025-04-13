@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { PrismaClient } from '@/lib/generated/prisma'
+import { prisma } from "@/lib/prisma";
 
 interface EditRequest {
     id: number;
@@ -12,8 +12,6 @@ interface EditRequest {
     ram: string;
     disk: string;
 }
-
-const prisma = new PrismaClient();
 
 export async function PUT(request: NextRequest) {
     try {

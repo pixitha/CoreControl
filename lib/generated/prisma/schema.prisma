@@ -15,10 +15,30 @@ datasource db {
 }
 
 model application {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
+  serverId    Int      @default(1)
   name        String
   description String?
   icon        String
   publicURL   String
   localURL    String?
+  createdAt   DateTime @default(now())
+  online      Boolean  @default(true)
+}
+
+model server {
+  id   Int     @id @default(autoincrement())
+  name String
+  os   String?
+  ip   String?
+  url  String?
+  cpu  String?
+  gpu  String?
+  ram  String?
+  disk String?
+}
+
+model settings {
+  id            Int     @id @default(autoincrement())
+  uptime_checks Boolean @default(true)
 }

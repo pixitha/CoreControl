@@ -57,28 +57,51 @@ import {
 } from "@/components/ui/select";
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
-import axios from 'axios';
+import axios from "axios";
+
+interface Application {
+  id: number;
+  name: string;
+  description?: string;
+  icon?: string;
+  publicURL: string;
+  localURL?: string;
+  server?: string;
+  online: boolean;
+  serverId: number;
+}
+
+interface Server {
+  id: number;
+  name: string;
+}
+
+interface ApplicationsResponse {
+  applications: Application[];
+  servers: Server[];
+  maxPage: number;
+}
 
 export default function Dashboard() {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [icon, setIcon] = useState("");
-  const [publicURL, setPublicURL] = useState("");
-  const [localURL, setLocalURL] = useState("");
+  const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [icon, setIcon] = useState<string>("");
+  const [publicURL, setPublicURL] = useState<string>("");
+  const [localURL, setLocalURL] = useState<string>("");
   const [serverId, setServerId] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [maxPage, setMaxPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [applications, setApplications] = useState([]);
-  const [servers, setServers] = useState([]);
-  const [isGridLayout, setIsGridLayout] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [maxPage, setMaxPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [servers, setServers] = useState<Server[]>([]);
+  const [isGridLayout, setIsGridLayout] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const savedLayout = Cookies.get('layoutPreference-app');
-    const layout_bool = savedLayout === 'grid'
+    const layout_bool = savedLayout === 'grid';
     setIsGridLayout(layout_bool);
-    setItemsPerPage(layout_bool ? 15 : 5)
+    setItemsPerPage(layout_bool ? 15 : 5);
   }, []);
 
   const toggleLayout = () => {
@@ -104,20 +127,23 @@ export default function Dashboard() {
       });
       getApplications();
     } catch (error: any) {
-      console.log(error.response.data);
+        console.log(error.response?.data);
     }
   }
 
   const getApplications = async () => {
     try {
-      setLoading(true)
-      const response = await axios.post('/api/applications/get', { page: currentPage, ITEMS_PER_PAGE: itemsPerPage });
+      setLoading(true);
+      const response = await axios.post<ApplicationsResponse>(
+        '/api/applications/get', 
+        { page: currentPage, ITEMS_PER_PAGE: itemsPerPage }
+      );
       setApplications(response.data.applications);
       setServers(response.data.servers);
       setMaxPage(response.data.maxPage);
-      setLoading(false)
+      setLoading(false);
     } catch (error: any) {
-      console.log(error.response);
+      console.log(error.response?.data);
     }
   }
 
@@ -133,7 +159,7 @@ export default function Dashboard() {
       await axios.post('/api/applications/delete', { id });
       getApplications();
     } catch (error: any) {
-      console.log(error.response.data);
+      console.log(error.response?.data);
     }
   }
 
@@ -315,7 +341,7 @@ export default function Dashboard() {
                 <div className='inline-block' role='status' aria-label='loading'>
                 <svg className='w-6 h-6 stroke-white animate-spin ' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
                 <g clip-path='url(#clip0_9023_61563)'>
-                    <path d='M14.6437 2.05426C11.9803 1.2966 9.01686 1.64245 6.50315 3.25548C1.85499 6.23817 0.504864 12.4242 3.48756 17.0724C6.47025 21.7205 12.6563 23.0706 17.3044 20.088C20.4971 18.0393 22.1338 14.4793 21.8792 10.9444' stroke='stroke-current' stroke-width='1.4' stroke-linecap='round' class='my-path'></path>
+                    <path d='M14.6437 2.05426C11.9803 1.2966 9.01686 1.64245 6.50315 3.25548C1.85499 6.23817 0.504864 12.4242 3.48756 17.0724C6.47025 21.7205 12.6563 23.0706 17.3044 20.088C20.4971 18.0393 22.1338 14.4793 21.8792 10.9444' stroke='stroke-current' stroke-width='1.4' stroke-linecap='round' className='my-path'></path>
                 </g>
                 <defs>
                     <clipPath id='clip0_9023_61563'>

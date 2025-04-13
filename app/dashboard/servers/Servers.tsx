@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,15 +8,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { Plus, Link, MonitorCog, FileDigit, Trash2, LayoutGrid, List, Pencil, Cpu, Microchip, MemoryStick, HardDrive } from "lucide-react"
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Plus, Link, MonitorCog, FileDigit, Trash2, LayoutGrid, List, Pencil, Cpu, Microchip, MemoryStick, HardDrive } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -24,7 +24,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -33,7 +33,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from "@/components/ui/pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,55 +44,70 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-  } from "@/components/ui/tooltip"
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
 import axios from 'axios';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface Server {
+  id: number;
+  name: string;
+  os?: string;
+  ip?: string;
+  url?: string;
+  cpu?: string;
+  gpu?: string;
+  ram?: string;
+  disk?: string;
+}
+
+interface GetServersResponse {
+  servers: Server[];
+  maxPage: number;
+}
 
 export default function Dashboard() {
-  const [name, setName] = useState("");
-  const [os, setOs] = useState("");
-  const [ip, setIp] = useState("");
-  const [url, setUrl] = useState("");
-  const [cpu, setCpu] = useState("");
-  const [gpu, setGpu] = useState("");
-  const [ram, setRam] = useState("");
-  const [disk, setDisk] = useState("");
+  const [name, setName] = useState<string>("");
+  const [os, setOs] = useState<string>("");
+  const [ip, setIp] = useState<string>("");
+  const [url, setUrl] = useState<string>("");
+  const [cpu, setCpu] = useState<string>("");
+  const [gpu, setGpu] = useState<string>("");
+  const [ram, setRam] = useState<string>("");
+  const [disk, setDisk] = useState<string>("");
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [maxPage, setMaxPage] = useState(1);
-  const [servers, setServers] = useState([]);
-  const [isGridLayout, setIsGridLayout] = useState(false);
-  const [loading, setLoading] = useState(true);
-
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [maxPage, setMaxPage] = useState<number>(1);
+  const [servers, setServers] = useState<Server[]>([]);
+  const [isGridLayout, setIsGridLayout] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const [editId, setEditId] = useState<number | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editOs, setEditOs] = useState("");
-  const [editIp, setEditIp] = useState("");
-  const [editUrl, setEditUrl] = useState("");
-  const [editCpu, setEditCpu] = useState("");
-  const [editGpu, setEditGpu] = useState("");
-  const [editRam, setEditRam] = useState("");
-  const [editDisk, setEditDisk] = useState("");
+  const [editName, setEditName] = useState<string>("");
+  const [editOs, setEditOs] = useState<string>("");
+  const [editIp, setEditIp] = useState<string>("");
+  const [editUrl, setEditUrl] = useState<string>("");
+  const [editCpu, setEditCpu] = useState<string>("");
+  const [editGpu, setEditGpu] = useState<string>("");
+  const [editRam, setEditRam] = useState<string>("");
+  const [editDisk, setEditDisk] = useState<string>("");
 
-  
   useEffect(() => {
     const savedLayout = Cookies.get('layoutPreference-servers');
     setIsGridLayout(savedLayout === 'grid');
@@ -110,7 +125,16 @@ export default function Dashboard() {
 
   const add = async () => {
     try {
-      const response = await axios.post('/api/servers/add', { name, os, ip, url, cpu, gpu, ram, disk });
+      await axios.post('/api/servers/add', { 
+        name, 
+        os, 
+        ip, 
+        url, 
+        cpu, 
+        gpu, 
+        ram, 
+        disk 
+      });
       getServers();
     } catch (error: any) {
       console.log(error.response.data);
@@ -120,9 +144,10 @@ export default function Dashboard() {
   const getServers = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/servers/get', { page: currentPage });
+      const response = await axios.post<GetServersResponse>('/api/servers/get', { 
+        page: currentPage 
+      });
       setServers(response.data.servers);
-      console.log(response.data.servers)
       setMaxPage(response.data.maxPage);
       setLoading(false);
     } catch (error: any) {
@@ -151,19 +176,21 @@ export default function Dashboard() {
     }
   }
 
-  const openEditDialog = (server: any) => {
+  const openEditDialog = (server: Server) => {
     setEditId(server.id);
     setEditName(server.name);
-    setEditOs(server.os);
-    setEditIp(server.ip);
-    setEditUrl(server.url);
-    setEditCpu(server.cpu);
-    setEditGpu(server.gpu);
-    setEditRam(server.ram);
-    setEditDisk(server.disk);
+    setEditOs(server.os || "");
+    setEditIp(server.ip || "");
+    setEditUrl(server.url || "");
+    setEditCpu(server.cpu || "");
+    setEditGpu(server.gpu || "");
+    setEditRam(server.ram || "");
+    setEditDisk(server.disk || "");
   };
 
   const edit = async () => {
+    if (!editId) return;
+    
     try {
       await axios.put('/api/servers/edit', { 
         id: editId,
@@ -507,7 +534,7 @@ export default function Dashboard() {
                   <div className='inline-block' role='status' aria-label='loading'>
                   <svg className='w-6 h-6 stroke-white animate-spin ' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
                   <g clip-path='url(#clip0_9023_61563)'>
-                      <path d='M14.6437 2.05426C11.9803 1.2966 9.01686 1.64245 6.50315 3.25548C1.85499 6.23817 0.504864 12.4242 3.48756 17.0724C6.47025 21.7205 12.6563 23.0706 17.3044 20.088C20.4971 18.0393 22.1338 14.4793 21.8792 10.9444' stroke='stroke-current' stroke-width='1.4' stroke-linecap='round' class='my-path'></path>
+                      <path d='M14.6437 2.05426C11.9803 1.2966 9.01686 1.64245 6.50315 3.25548C1.85499 6.23817 0.504864 12.4242 3.48756 17.0724C6.47025 21.7205 12.6563 23.0706 17.3044 20.088C20.4971 18.0393 22.1338 14.4793 21.8792 10.9444' stroke='stroke-current' stroke-width='1.4' stroke-linecap='round' className='my-path'></path>
                   </g>
                   <defs>
                       <clipPath id='clip0_9023_61563'>
