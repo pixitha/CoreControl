@@ -2,7 +2,7 @@
 ![Logo](https://i.ibb.co/hwSZTJH/Kopie-von-Cash-Mate.png)
 
 
-# Dashdict
+# CoreControl
 
 The only dashboard you'll ever need to manage your entire server infrastructure. Keep all your server data organized in one central place, easily add your self-hosted applications with quick access links, and monitor their availability in real-time with built-in uptime tracking. Designed for simplicity and control, it gives you a clear overview of your entire self-hosted setup at a glance.
 
@@ -14,13 +14,13 @@ The only dashboard you'll ever need to manage your entire server infrastructure.
 - Networks: Generate visually stunning network flowcharts with ease.
 
 ## Roadmap
-- [] Edit Applications, Applications searchbar
-- [] Customizable Dashboard
-- [] Notifications
-- [] Uptime History
-- [] Simple Server Monitoring
-- [] Improved Network Flowchart with custom elements (like Network switches)
-- [] Advanced Settings (Disable Uptime Tracking & more)
+- [ ] Edit Applications, Applications searchbar
+- [ ] Customizable Dashboard
+- [ ] Notifications
+- [ ] Uptime History
+- [ ] Simple Server Monitoring
+- [ ] Improved Network Flowchart with custom elements (like Network switches)
+- [ ] Advanced Settings (Disable Uptime Tracking & more)
 
 ## Deployment
 
