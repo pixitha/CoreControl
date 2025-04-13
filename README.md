@@ -13,6 +13,22 @@ The only dashboard you'll ever need to manage your entire server infrastructure.
 - Applications: Add all your self-hosted services to a clear list and track their up and down time
 - Networks: Generate visually stunning network flowcharts with ease.
 
+## Screenshots
+Login Page:
+![Login Page](https://i.ibb.co/QvvJvHxY/image.png)
+
+Dashboard Page:
+![Dashboard Page](https://i.ibb.co/G3FW5mVX/image.png)
+
+Servers Page:
+![Servers Page](https://i.ibb.co/v6Z79wJY/image.png)
+
+Applications Page:
+![Applications Page](https://i.ibb.co/zC1f6s9/image.png)
+
+Network Page:
+![Network Page](https://i.ibb.co/XkKYrGQX/image.png)
+
 ## Roadmap
 - [ ] Edit Applications, Applications searchbar
 - [ ] Customizable Dashboard
