@@ -755,7 +755,7 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-          <div className="pt-4">
+          <div className="pt-4 pb-4">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
