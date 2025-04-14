@@ -213,7 +213,7 @@ export default function Dashboard() {
       console.log(error.response.data);
     }
   };
-  
+
   const searchApplications = async () => {
     try {
       setIsSearching(true);
@@ -391,7 +391,6 @@ export default function Dashboard() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
           <br />
           {!loading ? (
             <div

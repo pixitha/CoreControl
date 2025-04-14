@@ -108,6 +108,9 @@ export default function Dashboard() {
   const [editRam, setEditRam] = useState<string>("");
   const [editDisk, setEditDisk] = useState<string>("");
 
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+
   useEffect(() => {
     const savedLayout = Cookies.get('layoutPreference-servers');
     setIsGridLayout(savedLayout === 'grid');
@@ -209,6 +212,33 @@ export default function Dashboard() {
       console.log(error.response.data);
     }
   }
+
+  const searchServers = async () => {
+    try {
+      setIsSearching(true);
+      const response = await axios.post<{ results: Server[] }>(
+        "/api/servers/search",
+        { searchterm: searchTerm }
+      );
+      setServers(response.data.results);
+      setIsSearching(false);
+    } catch (error: any) {
+      console.error("Search error:", error.response?.data);
+      setIsSearching(false);
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim() === "") {
+        getServers();
+      } else {
+        searchServers();
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
 
   return (
     <SidebarProvider>
@@ -344,6 +374,14 @@ export default function Dashboard() {
                 </AlertDialogContent>
               </AlertDialog>
             </div>
+          </div>
+          <div className="flex flex-col gap-2 mb-4 pt-2">
+            <Input
+              id="application-search"
+              placeholder="Type to search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
           <br />
           {!loading ?
