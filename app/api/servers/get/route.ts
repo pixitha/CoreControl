@@ -2,15 +2,16 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface GetRequest {
-    page: number;
+    page?: number;
+    ITEMS_PER_PAGE?: number;
 }
 
-const ITEMS_PER_PAGE = 5; 
 
 export async function POST(request: NextRequest) {
     try {
         const body: GetRequest = await request.json();
         const page = Math.max(1, body.page || 1);
+        const ITEMS_PER_PAGE = body.ITEMS_PER_PAGE || 4;
         
         const servers = await prisma.server.findMany({
             skip: (page - 1) * ITEMS_PER_PAGE,

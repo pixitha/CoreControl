@@ -107,6 +107,7 @@ export default function Dashboard() {
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [maxPage, setMaxPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(4);
   const [servers, setServers] = useState<Server[]>([]);
   const [isGridLayout, setIsGridLayout] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -126,7 +127,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     const savedLayout = Cookies.get("layoutPreference-servers");
-    setIsGridLayout(savedLayout === "grid");
+    const layout_bool = savedLayout === "grid";
+    setIsGridLayout(layout_bool);
+    setItemsPerPage(layout_bool ? 6 : 4);
   }, []);
 
   const toggleLayout = () => {
@@ -137,6 +140,7 @@ export default function Dashboard() {
       path: "/",
       sameSite: "strict",
     });
+    setItemsPerPage(newLayout ? 6 : 4);
   };
 
   const add = async () => {
@@ -164,6 +168,7 @@ export default function Dashboard() {
         "/api/servers/get",
         {
           page: currentPage,
+          ITEMS_PER_PAGE: itemsPerPage,
         }
       );
       setServers(response.data.servers);
@@ -176,7 +181,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     getServers();
-  }, [currentPage]);
+  }, [currentPage, itemsPerPage]);
 
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(1, prev - 1));
