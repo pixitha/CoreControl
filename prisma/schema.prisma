@@ -38,6 +38,12 @@ model server {
 }
 
 model settings {
-    id            Int       @id @default(autoincrement())
-    uptime_checks          Boolean       @default(true)
+  id            Int       @id @default(autoincrement())
+  uptime_checks          Boolean       @default(true)
+}
+
+model user {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
 }
