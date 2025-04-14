@@ -1,16 +1,18 @@
 import { NextResponse, NextRequest } from "next/server";
 import jwt from 'jsonwebtoken';
 import { prisma } from "@/lib/prisma";
+import bcrypt from 'bcrypt';
 
 interface EditEmailRequest {
-    newEmail: string;
+    oldPassword: string;
+    newPassword: string;
     jwtToken: string;
 }
 
 export async function POST(request: NextRequest) {
     try {
         const body: EditEmailRequest = await request.json();
-        const { newEmail, jwtToken } = body;
+        const { oldPassword, newPassword, jwtToken } = body;
 
         // Ensure JWT_SECRET is defined
         if (!process.env.JWT_SECRET) {
@@ -32,24 +34,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-
-        // Check if the new email is already in use
-        const existingUser = await prisma.user.findUnique({
-            where: { email: newEmail },
-        });
-
-        if (existingUser) {
-            return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
+        // Check if the old password is correct
+        const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+        if (!isOldPasswordValid) {
+            return NextResponse.json({ error: 'Old password is incorrect' }, { status: 401 });
         }
 
-        // Update the user's email
+        // Hash the new password
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        // Update the user's password
         await prisma.user.update({
             where: { id: user.id },
-            data: { email: newEmail },
+            data: { password: hashedNewPassword },
         });
-
     
-        return NextResponse.json({ message: 'Email updated successfully' });	
+        return NextResponse.json({ message: 'Password updated successfully' });	
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
