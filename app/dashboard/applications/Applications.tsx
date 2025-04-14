@@ -114,6 +114,9 @@ export default function Dashboard() {
   const [isGridLayout, setIsGridLayout] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+
   useEffect(() => {
     const savedLayout = Cookies.get("layoutPreference-app");
     const layout_bool = savedLayout === "grid";
@@ -210,6 +213,34 @@ export default function Dashboard() {
       console.log(error.response.data);
     }
   };
+  
+  const searchApplications = async () => {
+    try {
+      setIsSearching(true);
+      const response = await axios.post<{ results: Application[] }>(
+        "/api/applications/search",
+        { searchterm: searchTerm }
+      );
+      setApplications(response.data.results);
+      setIsSearching(false);
+    } catch (error: any) {
+      console.error("Search error:", error.response?.data);
+      setIsSearching(false);
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim() === "") {
+        getApplications();
+      } else {
+        searchApplications();
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
+
 
   return (
     <SidebarProvider>
@@ -352,6 +383,15 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+          <div className="flex flex-col gap-2 mb-4 pt-2">
+            <Input
+              id="application-search"
+              placeholder="Type to search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
           <br />
           {!loading ? (
             <div
