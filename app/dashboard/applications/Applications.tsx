@@ -474,140 +474,142 @@ export default function Dashboard() {
                               </Button>
                             )}
                           </div>
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="h-[72px] w-10"
-                            onClick={() => deleteApplication(app.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                size="icon"
-                                className="h-[72px] w-10"
-                                onClick={() => openEditDialog(app)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Edit Application
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  <div className="space-y-4 pt-4">
-                                    <div className="grid w-full items-center gap-1.5">
-                                      <Label>Name</Label>
-                                      <Input
-                                        placeholder="e.g. Portainer"
-                                        value={editName}
-                                        onChange={(e) =>
-                                          setEditName(e.target.value)
-                                        }
-                                      />
-                                    </div>
-                                    <div className="grid w-full items-center gap-1.5">
-                                      <Label>Server</Label>
-                                      <Select
-                                        value={
-                                          editServerId !== null
-                                            ? String(editServerId)
-                                            : undefined
-                                        }
-                                        onValueChange={(v) =>
-                                          setEditServerId(Number(v))
-                                        }
-                                        required
-                                      >
-                                        <SelectTrigger className="w-full">
-                                          <SelectValue placeholder="Select server" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {servers.map((server) => (
-                                            <SelectItem
-                                              key={server.id}
-                                              value={String(server.id)}
-                                            >
-                                              {server.name}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    <div className="grid w-full items-center gap-1.5">
-                                      <Label>
-                                        Description{" "}
-                                        <span className="text-stone-600">
-                                          (optional)
-                                        </span>
-                                      </Label>
-                                      <Textarea
-                                        placeholder="Application description"
-                                        value={editDescription}
-                                        onChange={(e) =>
-                                          setEditDescription(e.target.value)
-                                        }
-                                      />
-                                    </div>
-                                    <div className="grid w-full items-center gap-1.5">
-                                      <Label>
-                                        Icon URL{" "}
-                                        <span className="text-stone-600">
-                                          (optional)
-                                        </span>
-                                      </Label>
-                                      <Input
-                                        placeholder="https://example.com/icon.png"
-                                        value={editIcon}
-                                        onChange={(e) =>
-                                          setEditIcon(e.target.value)
-                                        }
-                                      />
-                                    </div>
-                                    <div className="grid w-full items-center gap-1.5">
-                                      <Label>Public URL</Label>
-                                      <Input
-                                        placeholder="https://example.com"
-                                        value={editPublicURL}
-                                        onChange={(e) =>
-                                          setEditPublicURL(e.target.value)
-                                        }
-                                      />
-                                    </div>
-                                    <div className="grid w-full items-center gap-1.5">
-                                      <Label>
-                                        Local URL{" "}
-                                        <span className="text-stone-600">
-                                          (optional)
-                                        </span>
-                                      </Label>
-                                      <Input
-                                        placeholder="http://localhost:3000"
-                                        value={editLocalURL}
-                                        onChange={(e) =>
-                                          setEditLocalURL(e.target.value)
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={edit}
-                                  disabled={
-                                    !editName || !editPublicURL || !editServerId
-                                  }
+                          <div className="flex flex-col gap-2">
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="h-9 w-9"
+                              onClick={() => deleteApplication(app.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  className="h-9 w-9"
+                                  onClick={() => openEditDialog(app)}
                                 >
-                                  Save Changes
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Edit Application
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    <div className="space-y-4 pt-4">
+                                      <div className="grid w-full items-center gap-1.5">
+                                        <Label>Name</Label>
+                                        <Input
+                                          placeholder="e.g. Portainer"
+                                          value={editName}
+                                          onChange={(e) =>
+                                            setEditName(e.target.value)
+                                          }
+                                        />
+                                      </div>
+                                      <div className="grid w-full items-center gap-1.5">
+                                        <Label>Server</Label>
+                                        <Select
+                                          value={
+                                            editServerId !== null
+                                              ? String(editServerId)
+                                              : undefined
+                                          }
+                                          onValueChange={(v) =>
+                                            setEditServerId(Number(v))
+                                          }
+                                          required
+                                        >
+                                          <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select server" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {servers.map((server) => (
+                                              <SelectItem
+                                                key={server.id}
+                                                value={String(server.id)}
+                                              >
+                                                {server.name}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <div className="grid w-full items-center gap-1.5">
+                                        <Label>
+                                          Description{" "}
+                                          <span className="text-stone-600">
+                                            (optional)
+                                          </span>
+                                        </Label>
+                                        <Textarea
+                                          placeholder="Application description"
+                                          value={editDescription}
+                                          onChange={(e) =>
+                                            setEditDescription(e.target.value)
+                                          }
+                                        />
+                                      </div>
+                                      <div className="grid w-full items-center gap-1.5">
+                                        <Label>
+                                          Icon URL{" "}
+                                          <span className="text-stone-600">
+                                            (optional)
+                                          </span>
+                                        </Label>
+                                        <Input
+                                          placeholder="https://example.com/icon.png"
+                                          value={editIcon}
+                                          onChange={(e) =>
+                                            setEditIcon(e.target.value)
+                                          }
+                                        />
+                                      </div>
+                                      <div className="grid w-full items-center gap-1.5">
+                                        <Label>Public URL</Label>
+                                        <Input
+                                          placeholder="https://example.com"
+                                          value={editPublicURL}
+                                          onChange={(e) =>
+                                            setEditPublicURL(e.target.value)
+                                          }
+                                        />
+                                      </div>
+                                      <div className="grid w-full items-center gap-1.5">
+                                        <Label>
+                                          Local URL{" "}
+                                          <span className="text-stone-600">
+                                            (optional)
+                                          </span>
+                                        </Label>
+                                        <Input
+                                          placeholder="http://localhost:3000"
+                                          value={editLocalURL}
+                                          onChange={(e) =>
+                                            setEditLocalURL(e.target.value)
+                                          }
+                                        />
+                                      </div>
+                                    </div>
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={edit}
+                                    disabled={
+                                      !editName || !editPublicURL || !editServerId
+                                    }
+                                  >
+                                    Save Changes
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       </div>
                     </div>
