@@ -760,9 +760,9 @@ export default function Dashboard() {
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
-                    href="#"
                     onClick={handlePrevious}
                     isActive={currentPage > 1}
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
                   />
                 </PaginationItem>
 
@@ -772,9 +772,9 @@ export default function Dashboard() {
 
                 <PaginationItem>
                   <PaginationNext
-                    href="#"
                     onClick={handleNext}
                     isActive={currentPage < maxPage}
+                    style={{ cursor: currentPage === maxPage ? 'not-allowed' : 'pointer' }}
                   />
                 </PaginationItem>
               </PaginationContent>
