@@ -50,10 +50,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      LOGIN_EMAIL: "mail@example.com"
-      LOGIN_PASSWORD: "SecretPassword"
       JWT_SECRET: RANDOM_SECRET
-      ACCOUNT_SECRET: RANDOM_SECRET
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres"
     depends_on:
       - db
