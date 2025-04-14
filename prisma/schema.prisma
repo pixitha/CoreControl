@@ -25,6 +25,13 @@ model application {
   online         Boolean  @default(true)
 }
 
+model uptime_history {
+  id            Int       @id @default(autoincrement())
+  applicationId Int       @default(1)
+  online        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+}
+
 model server {
   id            Int       @id @default(autoincrement())
   name          String
