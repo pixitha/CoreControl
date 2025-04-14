@@ -67,6 +67,12 @@ import {
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface Application {
   id: number;
@@ -358,9 +364,18 @@ export default function Dashboard() {
                                 placeholder="https://example.com/icon.png"
                                 onChange={(e) => setIcon(e.target.value)}
                               />
-                              <Button variant="outline" size="icon" onClick={generateIconURL}>
-                                <Zap />
-                              </Button>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <Button variant="outline" size="icon" onClick={generateIconURL}>
+                                      <Zap />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Generate Icon URL
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </div>
                           <div className="grid w-full items-center gap-1.5">
