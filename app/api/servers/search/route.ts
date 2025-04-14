@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
         const servers = await prisma.server.findMany({});
 
         const fuseOptions = {
-            keys: ['name', 'description'],
+            keys: ['name', 'description', 'cpu', 'gpu', 'ram', 'disk'],
             threshold: 0.3,
             includeScore: true,
         };
