@@ -24,6 +24,7 @@ import {
   LayoutGrid,
   List,
   Pencil,
+  Zap,
 } from "lucide-react";
 import {
   Card,
@@ -241,6 +242,13 @@ export default function Dashboard() {
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
 
+  const generateIconURL = async () => {
+    setIcon("https://cdn.jsdelivr.net/gh/selfhst/icons/png/" + name.toLowerCase() + ".png")
+  }
+
+  const generateEditIconURL = async () => {
+    setEditIcon("https://cdn.jsdelivr.net/gh/selfhst/icons/png/" + editName.toLowerCase() + ".png")
+  }
 
   return (
     <SidebarProvider>
@@ -344,10 +352,16 @@ export default function Dashboard() {
                               Icon URL{" "}
                               <span className="text-stone-600">(optional)</span>
                             </Label>
-                            <Input
-                              placeholder="https://example.com/icon.png"
-                              onChange={(e) => setIcon(e.target.value)}
-                            />
+                            <div className="flex gap-2">
+                              <Input
+                                value={icon}
+                                placeholder="https://example.com/icon.png"
+                                onChange={(e) => setIcon(e.target.value)}
+                              />
+                              <Button variant="outline" size="icon" onClick={generateIconURL}>
+                                <Zap />
+                              </Button>
+                            </div>
                           </div>
                           <div className="grid w-full items-center gap-1.5">
                             <Label>Public URL</Label>
@@ -560,13 +574,18 @@ export default function Dashboard() {
                                             (optional)
                                           </span>
                                         </Label>
-                                        <Input
-                                          placeholder="https://example.com/icon.png"
-                                          value={editIcon}
-                                          onChange={(e) =>
-                                            setEditIcon(e.target.value)
-                                          }
-                                        />
+                                        <div className="flex gap-2">
+                                          <Input
+                                            placeholder="https://example.com/icon.png"
+                                            value={editIcon}
+                                            onChange={(e) =>
+                                              setEditIcon(e.target.value)
+                                            }
+                                          />
+                                          <Button variant="outline" size="icon" onClick={generateEditIconURL}>
+                                            <Zap />
+                                          </Button>
+                                        </div>
                                       </div>
                                       <div className="grid w-full items-center gap-1.5">
                                         <Label>Public URL</Label>
