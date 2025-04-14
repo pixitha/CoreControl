@@ -472,7 +472,9 @@ export default function Dashboard() {
                           </CardTitle>
                           <CardDescription className="text-md">
                             {app.description}
-                            <br />
+                            {app.description && (
+                              <br className="hidden md:block" />
+                            )}
                             Server: {app.server || "No server"}
                           </CardDescription>
                         </div>
