@@ -60,7 +60,7 @@ export default function Home() {
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your Login data of the compose.yml file below to access
+            Enter your email and password to login.
           </CardDescription>
         </CardHeader>
         <CardContent>
