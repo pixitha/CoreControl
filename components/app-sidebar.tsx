@@ -18,8 +18,8 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Cookies from "js-cookie"
 import { useRouter } from "next/navigation"
+import packageJson from "@/package.json"
 
-// Typdefinitionen
 interface NavItem {
   title: string
   icon?: React.ComponentType<any>
@@ -83,7 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <Image src="/logo.png" width={48} height={48} alt="Logo"/>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold">CoreControl</span>
-                  <span className="">v0.0.1</span>
+                  <span className="">v{packageJson.version}</span>
                 </div>
               </a>
             </SidebarMenuButton>
