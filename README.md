@@ -32,10 +32,10 @@ Network Page:
 ![Network Page](https://i.ibb.co/XkKYrGQX/image.png)
 
 ## Roadmap
-- [ ] Edit Applications, Applications searchbar
+- [X] Edit Applications, Applications searchbar
 - [ ] Customizable Dashboard
 - [ ] Notifications
-- [ ] Uptime History
+- [X] Uptime History
 - [ ] Simple Server Monitoring
 - [ ] Improved Network Flowchart with custom elements (like Network switches)
 - [ ] Advanced Settings (Disable Uptime Tracking & more)
