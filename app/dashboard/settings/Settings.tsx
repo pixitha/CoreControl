@@ -21,6 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -55,22 +61,29 @@ export default function Settings() {
           <div className="pt-4">
             <Card className="w-full mb-4 relative">
               <CardHeader>
-                <span className="text-xl font-bold">Theme</span>
-                <Select 
-                  value={theme} 
-                  onValueChange={(value: string) => setTheme(value)}
-                >
-                  <SelectTrigger className="w-full [&_svg]:hidden">
-                    <SelectValue>
-                      {(theme ?? 'system').charAt(0).toUpperCase() + (theme ?? 'system').slice(1)}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger className="text-xl font-bold">Theme</AccordionTrigger>
+                    <AccordionContent className="text-sm font-normal">
+                      <div className="pb-1">Select a theme for the application. You can choose between light, dark, or system theme.</div>
+                      <Select 
+                        value={theme} 
+                        onValueChange={(value: string) => setTheme(value)}
+                      >
+                        <SelectTrigger className="w-full [&_svg]:hidden">
+                          <SelectValue>
+                            {(theme ?? 'system').charAt(0).toUpperCase() + (theme ?? 'system').slice(1)}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="light">Light</SelectItem>
+                          <SelectItem value="dark">Dark</SelectItem>
+                          <SelectItem value="system">System</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </CardHeader>
             </Card>
           </div>
