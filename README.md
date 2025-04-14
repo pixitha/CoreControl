@@ -87,6 +87,7 @@ The application is build with:
 - PostgreSQL with [Prisma ORM](https://www.prisma.io/)
 - Icons by [Lucide](https://lucide.dev/)
 - Flowcharts by [React Flow](https://reactflow.dev/)
+- Application icons by [selfh.st/icons](selfh.st/icons)
 - and a lot of love ❤️
 
 ## Star History
