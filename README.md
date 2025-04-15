@@ -23,10 +23,10 @@ Dashboard Page:
 ![Dashboard Page](https://i.ibb.co/m5xMXz73/image.png)
 
 Servers Page:
-![Servers Page](https://i.ibb.co/PGxF5Mvd/image.png)
+![Servers Page](https://i.ibb.co/QFrFRp1B/image.png)
 
 Applications Page:
-![Applications Page](https://i.ibb.co/MxP0f1PS/image.png)
+![Applications Page](https://i.ibb.co/1JK3pFYG/image.png)
 
 Uptime Page:
 ![Uptime Page](https://i.ibb.co/99LTnZ14/image.png)
