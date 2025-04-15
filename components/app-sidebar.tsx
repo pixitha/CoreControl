@@ -1,6 +1,6 @@
 import * as React from "react"
 import Image from "next/image"
-import { AppWindow, Settings, LayoutDashboardIcon, Briefcase, Server, Network } from "lucide-react"
+import { AppWindow, Settings, LayoutDashboardIcon, Briefcase, Server, Network, Activity } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -49,6 +49,11 @@ const data: { navMain: NavItem[] } = {
           title: "Applications",
           icon: AppWindow,
           url: "/dashboard/applications",
+        },
+        {
+          title: "Activity",
+          icon: Activity,
+          url: "/dashboard/activity",
         },
         {
           title: "Network",
