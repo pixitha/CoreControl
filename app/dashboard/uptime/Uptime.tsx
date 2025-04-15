@@ -125,7 +125,7 @@ export default function Uptime() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
@@ -146,9 +146,9 @@ export default function Uptime() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="pl-4 pr-4">
+        <div className="p-6">
           <div className="flex justify-between items-center">
-            <span className="text-2xl font-semibold">Uptime</span>
+            <span className="text-3xl font-bold">Uptime</span>
             <Select 
               value={String(timespan)} 
               onValueChange={(v) => {
