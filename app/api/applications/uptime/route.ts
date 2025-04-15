@@ -8,17 +8,17 @@ interface RequestBody {
 const getTimeRange = (timespan: number) => {
   const now = new Date();
   switch (timespan) {
-    case 1: // 30 Minuten
+    case 1:
       return { 
         start: new Date(now.getTime() - 30 * 60 * 1000),
         interval: 'minute' 
       };
-    case 2: // 7 Tage
+    case 2:
       return { 
         start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
         interval: '3hour' 
       };
-    case 3: // 30 Tage
+    case 3:
       return { 
         start: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
         interval: 'day' 
@@ -36,7 +36,7 @@ const generateIntervals = (timespan: number) => {
   now.setSeconds(0, 0);
   
   switch (timespan) {
-    case 1: // 30 Minuten
+    case 1:
       return Array.from({ length: 30 }, (_, i) => {
         const d = new Date(now);
         d.setMinutes(d.getMinutes() - i);
@@ -44,7 +44,7 @@ const generateIntervals = (timespan: number) => {
         return d;
       });
       
-    case 2: // 7 Tage (56 Intervalle à 3 Stunden)
+    case 2:
       return Array.from({ length: 56 }, (_, i) => {
         const d = new Date(now);
         d.setHours(d.getHours() - (i * 3));
@@ -52,7 +52,7 @@ const generateIntervals = (timespan: number) => {
         return d;
       });
 
-    case 3: // 30 Tage
+    case 3:
       return Array.from({ length: 30 }, (_, i) => {
         const d = new Date(now);
         d.setDate(d.getDate() - i);

@@ -68,7 +68,7 @@ export default function Uptime() {
           setData(response.data);
         } catch (error) {
           console.error("Error:", error);
-          setData([]); // Setze leeres Array bei Fehlern
+          setData([]);
         }
       };
 
