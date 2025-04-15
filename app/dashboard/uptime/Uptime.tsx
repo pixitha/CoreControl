@@ -53,7 +53,16 @@ export default function Uptime() {
           </div>
         </header>
         <div className="pl-4 pr-4">
-
+            <span className="text-2xl font-semibold">Uptime</span>
+            <div className="pt-4">
+                <Card className="w-full relative">
+                    <CardHeader>
+                        <div className="flex flex-col gap-4">
+                            <span className="text-lg font-semibold">Application Name - Uptime</span>
+                        </div>
+                    </CardHeader>
+                </Card>
+            </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
