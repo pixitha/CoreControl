@@ -17,10 +17,10 @@ The only dashboard you'll ever need to manage your entire server infrastructure.
 
 ## Screenshots
 Login Page:
-![Login Page](https://i.ibb.co/QvvJvHxY/image.png)
+![Login Page](https://i.ibb.co/tp1shBTh/image.png)
 
 Dashboard Page:
-![Dashboard Page](https://i.ibb.co/G3FW5mVX/image.png)
+![Dashboard Page](https://i.ibb.co/ymCSQrXZ/image.png)
 
 Servers Page:
 ![Servers Page](https://i.ibb.co/v6Z79wJY/image.png)
