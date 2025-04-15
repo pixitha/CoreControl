@@ -519,7 +519,7 @@ export default function Dashboard() {
                             <div className="flex items-center gap-2 text-foreground/80">
                               <FileDigit className="h-4 w-4 text-muted-foreground" />
                               <span>
-                                <b>IP:</b> {server.ip || "Nicht angegeben"}
+                                <b>IP:</b> {server.ip || "Not set"}
                               </span>
                             </div>
 
