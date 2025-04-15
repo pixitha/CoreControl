@@ -63,41 +63,62 @@ interface UptimeData {
   }[];
 }
 
+interface PaginationData {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+}
+
 export default function Uptime() {
   const [data, setData] = useState<UptimeData[]>([]);
   const [timespan, setTimespan] = useState<1 | 2 | 3>(1);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [pagination, setPagination] = useState<PaginationData>({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const maxPage = Math.ceil(data.length / itemsPerPage);
-  const paginatedData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const getData = async (selectedTimespan: number) => {
+  const getData = async (selectedTimespan: number, page: number) => {
+    setIsLoading(true);
     try {
-      const response = await axios.post<UptimeData[]>("/api/applications/uptime", { 
-        timespan: selectedTimespan 
+      const response = await axios.post<{
+        data: UptimeData[];
+        pagination: PaginationData;
+      }>("/api/applications/uptime", { 
+        timespan: selectedTimespan,
+        page
       });
-      setData(response.data);
-      setCurrentPage(1);
+      
+      setData(response.data.data);
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error("Error:", error);
       setData([]);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
+    const newPage = Math.max(1, pagination.currentPage - 1);
+    setPagination(prev => ({...prev, currentPage: newPage}));
+    getData(timespan, newPage);
   };
 
   const handleNext = () => {
-    setCurrentPage((prev) => Math.min(maxPage, prev + 1));
+    const newPage = Math.min(pagination.totalPages, pagination.currentPage + 1);
+    setPagination(prev => ({...prev, currentPage: newPage}));
+    getData(timespan, newPage);
   };
 
   useEffect(() => {
-    getData(timespan);
+    getData(timespan, 1);
   }, [timespan]);
 
   return (
@@ -130,7 +151,11 @@ export default function Uptime() {
             <span className="text-2xl font-semibold">Uptime</span>
             <Select 
               value={String(timespan)} 
-              onValueChange={(v) => setTimespan(Number(v) as 1 | 2 | 3)}
+              onValueChange={(v) => {
+                setTimespan(Number(v) as 1 | 2 | 3);
+                setPagination(prev => ({...prev, currentPage: 1}));
+              }}
+              disabled={isLoading}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select timespan" />
@@ -142,115 +167,131 @@ export default function Uptime() {
               </SelectContent>
             </Select>
           </div>
-          <div className="pt-4 space-y-4">
-            {paginatedData.map((app) => {
-              const reversedSummary = [...app.uptimeSummary].reverse();
-              const startTime = reversedSummary[0]?.timestamp;
-              const endTime = reversedSummary[reversedSummary.length - 1]?.timestamp;
 
-              return (
-                <Card key={app.appId}>
-                  <CardHeader>
-                    <div className="flex flex-col gap-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-semibold">{app.appName}</span>
-                      </div>
-                      
-                      <div className="flex flex-col gap-2">
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                          <span>{startTime ? timeFormats[timespan](startTime) : ""}</span>
-                          <span>{endTime ? timeFormats[timespan](endTime) : ""}</span>
+          <div className="pt-4 space-y-4">
+            {isLoading ? (
+              <div className="text-center py-8">Loading...</div>
+            ) : (
+              data.map((app) => {
+                const reversedSummary = [...app.uptimeSummary].reverse();
+                const startTime = reversedSummary[0]?.timestamp;
+                const endTime = reversedSummary[reversedSummary.length - 1]?.timestamp;
+
+                return (
+                  <Card key={app.appId}>
+                    <CardHeader>
+                      <div className="flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-semibold">{app.appName}</span>
                         </div>
                         
-                        <Tooltip.Provider>
-                          <div 
-                            className="grid gap-0.5 w-full overflow-x-auto pb-2"
-                            style={{ 
-                              gridTemplateColumns: `repeat(${gridColumns[timespan]}, minmax(0, 1fr))`,
-                              minWidth: `${gridColumns[timespan] * 24}px`
-                            }}
-                          >
-                            {reversedSummary.map((entry) => (
-                              <Tooltip.Root key={entry.timestamp}>
-                                <Tooltip.Trigger asChild>
-                                  <div
-                                    className={`h-8 w-full rounded-sm border transition-colors ${
-                                      entry.missing
-                                        ? "bg-gray-300 border-gray-400"
-                                        : entry.online
-                                        ? "bg-green-500 border-green-600"
-                                        : "bg-red-500 border-red-600"
-                                    }`}
-                                  />
-                                </Tooltip.Trigger>
-                                <Tooltip.Portal>
-                                  <Tooltip.Content
-                                    className="rounded bg-gray-900 px-2 py-1 text-white text-xs shadow-lg"
-                                    side="top"
-                                  >
-                                    <div className="flex flex-col gap-1">
-                                      <p className="font-medium">
-                                        {timespan === 2 ? (
-                                          timeFormats[2](entry.timestamp)
-                                        ) : (
-                                          new Date(entry.timestamp).toLocaleString([], {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: timespan === 3 ? undefined : '2-digit',
-                                            hour12: false
-                                          })
-                                        )}
-                                      </p>
-                                      <p>
-                                        {entry.missing
-                                          ? "No data"
-                                          : entry.online
-                                          ? "Online"
-                                          : "Offline"}
-                                      </p>
-                                    </div>
-                                    <Tooltip.Arrow className="fill-gray-900" />
-                                  </Tooltip.Content>
-                                </Tooltip.Portal>
-                              </Tooltip.Root>
-                            ))}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>{startTime ? timeFormats[timespan](startTime) : ""}</span>
+                            <span>{endTime ? timeFormats[timespan](endTime) : ""}</span>
                           </div>
-                        </Tooltip.Provider>
+                          
+                          <Tooltip.Provider>
+                            <div 
+                              className="grid gap-0.5 w-full overflow-x-auto pb-2"
+                              style={{ 
+                                gridTemplateColumns: `repeat(${gridColumns[timespan]}, minmax(0, 1fr))`,
+                                minWidth: `${gridColumns[timespan] * 24}px`
+                              }}
+                            >
+                              {reversedSummary.map((entry) => (
+                                <Tooltip.Root key={entry.timestamp}>
+                                  <Tooltip.Trigger asChild>
+                                    <div
+                                      className={`h-8 w-full rounded-sm border transition-colors ${
+                                        entry.missing
+                                          ? "bg-gray-300 border-gray-400"
+                                          : entry.online
+                                          ? "bg-green-500 border-green-600"
+                                          : "bg-red-500 border-red-600"
+                                      }`}
+                                    />
+                                  </Tooltip.Trigger>
+                                  <Tooltip.Portal>
+                                    <Tooltip.Content
+                                      className="rounded bg-gray-900 px-2 py-1 text-white text-xs shadow-lg"
+                                      side="top"
+                                    >
+                                      <div className="flex flex-col gap-1">
+                                        <p className="font-medium">
+                                          {timespan === 2 ? (
+                                            timeFormats[2](entry.timestamp)
+                                          ) : (
+                                            new Date(entry.timestamp).toLocaleString([], {
+                                              year: 'numeric',
+                                              month: 'short',
+                                              day: 'numeric',
+                                              hour: '2-digit',
+                                              minute: timespan === 3 ? undefined : '2-digit',
+                                              hour12: false
+                                            })
+                                          )}
+                                        </p>
+                                        <p>
+                                          {entry.missing
+                                            ? "No data"
+                                            : entry.online
+                                            ? "Online"
+                                            : "Offline"}
+                                        </p>
+                                      </div>
+                                      <Tooltip.Arrow className="fill-gray-900" />
+                                    </Tooltip.Content>
+                                  </Tooltip.Portal>
+                                </Tooltip.Root>
+                              ))}
+                            </div>
+                          </Tooltip.Provider>
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                </Card>
-              );
-            })}
+                    </CardHeader>
+                  </Card>
+                );
+              })
+            )}
           </div>
-          
-          {data.length > 0 && (
+
+          {pagination.totalItems > 0 && !isLoading && (
             <div className="pt-4 pb-4">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
                       onClick={handlePrevious}
-                      aria-disabled={currentPage === 1}
-                      className={currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}
+                      aria-disabled={pagination.currentPage === 1 || isLoading}
+                      className={
+                        pagination.currentPage === 1 || isLoading 
+                          ? "opacity-50 cursor-not-allowed" 
+                          : "hover:cursor-pointer"
+                      }
                     />
                   </PaginationItem>
                   <PaginationItem>
                     <span className="px-4">
-                      Page {currentPage} of {maxPage}
+                      Page {pagination.currentPage} of {pagination.totalPages}
                     </span>
                   </PaginationItem>
                   <PaginationItem>
                     <PaginationNext
                       onClick={handleNext}
-                      aria-disabled={currentPage === maxPage}
-                      className={currentPage === maxPage ? "opacity-50 cursor-not-allowed" : ""}
+                      aria-disabled={pagination.currentPage === pagination.totalPages || isLoading}
+                      className={
+                        pagination.currentPage === pagination.totalPages || isLoading 
+                          ? "opacity-50 cursor-not-allowed" 
+                          : "hover:cursor-pointer"
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
+              <div className="text-center text-sm text-muted-foreground mt-2">
+                Showing {data.length} of {pagination.totalItems} applications
+              </div>
             </div>
           )}
         </div>

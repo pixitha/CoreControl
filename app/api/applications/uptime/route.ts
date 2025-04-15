@@ -2,8 +2,10 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface RequestBody {
-  timespan?: number;
-}
+    timespan?: number;
+    page?: number;
+  }
+  
 
 const getTimeRange = (timespan: number) => {
   const now = new Date();
@@ -84,62 +86,77 @@ const getIntervalKey = (date: Date, timespan: number) => {
 };
 
 export async function POST(request: NextRequest) {
-  try {
-    const { timespan = 1 }: RequestBody = await request.json();
-    const { start } = getTimeRange(timespan);
-    
-    const applications = await prisma.application.findMany();
-    const uptimeHistory = await prisma.uptime_history.findMany({
-      where: {
-        applicationId: { in: applications.map(app => app.id) },
-        createdAt: { gte: start }
-      },
-      orderBy: { createdAt: "desc" }
-    });
-
-    const intervals = generateIntervals(timespan);
-
-    const result = applications.map(app => {
-      const appChecks = uptimeHistory.filter(check => check.applicationId === app.id);
-      const checksMap = new Map<string, { failed: number; total: number }>();
-
-      for (const check of appChecks) {
-        const intervalKey = getIntervalKey(check.createdAt, timespan);
-        const current = checksMap.get(intervalKey) || { failed: 0, total: 0 };
-        current.total++;
-        if (!check.online) current.failed++;
-        checksMap.set(intervalKey, current);
-      }
-
-      const uptimeSummary = intervals.map(interval => {
-        const intervalKey = getIntervalKey(interval, timespan);
-        const stats = checksMap.get(intervalKey);
-        
-        if (!stats) {
-          return {
-            timestamp: interval.toISOString(),
-            missing: true,
-            online: null
-          };
+    try {
+      const { timespan = 1, page = 1 }: RequestBody = await request.json();
+      const itemsPerPage = 5;
+      const skip = (page - 1) * itemsPerPage;
+  
+      // Get paginated and sorted applications
+      const [applications, totalCount] = await Promise.all([
+        prisma.application.findMany({
+          skip,
+          take: itemsPerPage,
+          orderBy: { name: 'asc' }
+        }),
+        prisma.application.count()
+      ]);
+  
+      const applicationIds = applications.map(app => app.id);
+      
+      // Get time range and intervals
+      const { start } = getTimeRange(timespan);
+      const intervals = generateIntervals(timespan);
+  
+      // Get uptime history for the filtered applications
+      const uptimeHistory = await prisma.uptime_history.findMany({
+        where: {
+          applicationId: { in: applicationIds },
+          createdAt: { gte: start }
+        },
+        orderBy: { createdAt: "desc" }
+      });
+  
+      // Process data for each application
+      const result = applications.map(app => {
+        const appChecks = uptimeHistory.filter(check => check.applicationId === app.id);
+        const checksMap = new Map<string, { failed: number; total: number }>();
+  
+        for (const check of appChecks) {
+          const intervalKey = getIntervalKey(check.createdAt, timespan);
+          const current = checksMap.get(intervalKey) || { failed: 0, total: 0 };
+          current.total++;
+          if (!check.online) current.failed++;
+          checksMap.set(intervalKey, current);
         }
-
+  
+        const uptimeSummary = intervals.map(interval => {
+          const intervalKey = getIntervalKey(interval, timespan);
+          const stats = checksMap.get(intervalKey);
+          
+          return {
+            timestamp: intervalKey,
+            missing: !stats,
+            online: stats ? stats.failed < 3 : null
+          };
+        });
+  
         return {
-          timestamp: intervalKey,
-          missing: false,
-          online: stats.failed < 3
+          appName: app.name,
+          appId: app.id,
+          uptimeSummary
         };
       });
-
-      return {
-        appName: app.name,
-        appId: app.id,
-        uptimeSummary
-      };
-    });
-
-    return NextResponse.json(result);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  
+      return NextResponse.json({
+        data: result,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / itemsPerPage),
+          totalItems: totalCount
+        }
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
   }
-}
