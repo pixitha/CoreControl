@@ -23,7 +23,6 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-
 export default function Home() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -56,6 +55,9 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center gap-6 ">
+      <div className="flex flex-col items-center md:pb-4">
+        <h1 className="text-2xl md:text-4xl lg:text-8xl font-bold">CoreControl</h1>
+      </div>
       <Card className="w-1/3">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
