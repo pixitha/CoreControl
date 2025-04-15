@@ -80,6 +80,10 @@ volumes:
   postgres_data:
 ```
 
+**Default Login**
+__E-Mail:__ admin@example.com
+__Password:__ admin
+
 ## Tech Stack & Credits
 
 The application is build with:
