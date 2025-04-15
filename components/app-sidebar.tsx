@@ -51,9 +51,9 @@ const data: { navMain: NavItem[] } = {
           url: "/dashboard/applications",
         },
         {
-          title: "Activity",
+          title: "Uptime",
           icon: Activity,
-          url: "/dashboard/activity",
+          url: "/dashboard/uptime",
         },
         {
           title: "Network",
