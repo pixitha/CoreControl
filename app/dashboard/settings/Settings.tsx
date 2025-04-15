@@ -12,7 +12,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useTheme } from "next-themes";
 import {
   Select,
@@ -33,7 +33,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Check } from "lucide-react";
+import { AlertCircle, Check, Palette, User } from "lucide-react";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -157,136 +157,141 @@ export default function Settings() {
           </div>
         </header>
         <div className="pl-4 pr-4">
-          <span className="text-2xl font-semibold">Settings</span>
-          <div className="pt-4">
-            <Card className="w-full mb-4 relative">
-              <CardHeader>
-                <Accordion type="single" collapsible>
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger className="text-xl font-bold">User</AccordionTrigger>
-                    <AccordionContent className="text-sm font-normal">
-                      <div className="pb-4">Manage your user settings here. You can change your email, password, and other account settings.</div>
-                      <div className="flex flex-col md:flex-row gap-2 mb-2">
-                        <div className="w-full">
-                          <div className="pb-1 font-semibold text-lg">Change Email</div>
-                          { emailErrorVisible && 
-                            <div className="pb-2 pt-2">
-                              <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>Error</AlertTitle>
-                                <AlertDescription>
-                                  {emailError}
-                                </AlertDescription>
-                              </Alert>
-                            </div>
-                          }
-                          { emailSuccess &&
-                            <div className="pb-2 pt-2">
-                              <Alert>
-                                <Check className="h-4 w-4" />
-                                <AlertTitle>Success</AlertTitle>
-                                <AlertDescription>
-                                  Email changed successfully.
-                                </AlertDescription>
-                              </Alert>
-                            </div>
-                          }
-                          <Input 
-                            type="email" 
-                            placeholder="Enter new email" 
-                            value={email} 
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="mb-2"
-                          />
-                          <Button
-                            onClick={changeEmail}
-                            className="w-full"
-                          >
-                            Change Email
-                          </Button>
-                        </div>
-                        <div className="w-full">
-                          <div className="pb-1 font-semibold text-lg">Change Password</div>
-                          { passwordErrorVisible &&
-                            <div className="pb-2 pt-2">
-                              <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>Error</AlertTitle>
-                                <AlertDescription>
-                                  {passwordError}
-                                </AlertDescription>
-                              </Alert>
-                            </div>
-                          }
-                          { passwordSuccess &&
-                            <div className="pb-2 pt-2">
-                              <Alert>
-                                <Check className="h-4 w-4" />
-                                <AlertTitle>Success</AlertTitle>
-                                <AlertDescription>
-                                  Password changed successfully.
-                                </AlertDescription>
-                              </Alert>
-                            </div>
-                          }
-                          <Input 
-                            type="password" 
-                            placeholder="Enter old password" 
-                            value={oldPassword} 
-                            onChange={(e) => setOldPassword(e.target.value)}
-                            className="mb-2"
-                          />
-                          <Input 
-                            type="password" 
-                            placeholder="Enter new password" 
-                            value={password} 
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="mb-2"
-                          />
-                          <Input
-                            type="password" 
-                            placeholder="Confirm new password" 
-                            value={confirmPassword} 
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="mb-2"
-                          />
-                          <Button
-                            onClick={changePassword}
-                            className="w-full"
-                          >
-                            Change Password
-                          </Button>
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2">
-                    <AccordionTrigger className="text-xl font-bold">Theme</AccordionTrigger>
-                    <AccordionContent className="text-sm font-normal">
-                      <div className="pb-1">Select a theme for the application. You can choose between light, dark, or system theme.</div>
-                      <Select 
-                        value={theme} 
-                        onValueChange={(value: string) => setTheme(value)}
-                      >
-                        <SelectTrigger className="w-full [&_svg]:hidden">
-                          <SelectValue>
-                            {(theme ?? 'system').charAt(0).toUpperCase() + (theme ?? 'system').slice(1)}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="light">Light</SelectItem>
-                          <SelectItem value="dark">Dark</SelectItem>
-                          <SelectItem value="system">System</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+          <div className="pb-4">
+            <span className="text-2xl font-semibold">Settings</span>
+          </div>
+          <div className="grid gap-6">
+            <Card className="overflow-hidden border-2 border-muted/20 shadow-sm">
+              <CardHeader className="bg-muted/10 px-6 py-4 border-b">
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">User Settings</h2>
+                </div>
               </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-sm text-muted-foreground mb-6">
+                  Manage your user settings here. You can change your email, password, and other account settings.
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="border-b pb-2">
+                      <h3 className="font-semibold text-lg">Change Email</h3>
+                    </div>
+
+                    {emailErrorVisible && (
+                      <Alert variant="destructive" className="animate-in fade-in-50">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{emailError}</AlertDescription>
+                      </Alert>
+                    )}
+
+                    {emailSuccess && (
+                      <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300 animate-in fade-in-50">
+                        <Check className="h-4 w-4" />
+                        <AlertTitle>Success</AlertTitle>
+                        <AlertDescription>Email changed successfully.</AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className="space-y-3">
+                      <Input
+                        type="email"
+                        placeholder="Enter new email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="h-11"
+                      />
+                      <Button onClick={changeEmail} className="w-full h-11">
+                        Change Email
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="border-b pb-2">
+                      <h3 className="font-semibold text-lg">Change Password</h3>
+                    </div>
+
+                    {passwordErrorVisible && (
+                      <Alert variant="destructive" className="animate-in fade-in-50">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{passwordError}</AlertDescription>
+                      </Alert>
+                    )}
+
+                    {passwordSuccess && (
+                      <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300 animate-in fade-in-50">
+                        <Check className="h-4 w-4" />
+                        <AlertTitle>Success</AlertTitle>
+                        <AlertDescription>Password changed successfully.</AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className="space-y-3">
+                      <Input
+                        type="password"
+                        placeholder="Enter old password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className="h-11"
+                      />
+                      <Input
+                        type="password"
+                        placeholder="Enter new password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-11"
+                      />
+                      <Input
+                        type="password"
+                        placeholder="Confirm new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="h-11"
+                      />
+                      <Button onClick={changePassword} className="w-full h-11">
+                        Change Password
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden border-2 border-muted/20 shadow-sm">
+              <CardHeader className="bg-muted/10 px-6 py-4 border-b">
+                <div className="flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Theme Settings</h2>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-sm text-muted-foreground mb-6">
+                  Select a theme for the application. You can choose between light, dark, or system theme.
+                </div>
+
+                <div className="max-w-md">
+                  <Select value={theme} onValueChange={(value: string) => setTheme(value)}>
+                    <SelectTrigger className="w-full h-11">
+                      <SelectValue>
+                        {(theme ?? "system").charAt(0).toUpperCase() + (theme ?? "system").slice(1)}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
             </Card>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }
