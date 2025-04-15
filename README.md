@@ -29,7 +29,7 @@ Applications Page:
 ![Applications Page](https://i.ibb.co/MxP0f1PS/image.png)
 
 Uptime Page:
-![Uptime Page](https://i.ibb.co/27ySnycJ/image.png)
+![Uptime Page](https://i.ibb.co/99LTnZ14/image.png)
 
 Network Page:
 ![Network Page](https://i.ibb.co/1Y6ypKHk/image.png)
