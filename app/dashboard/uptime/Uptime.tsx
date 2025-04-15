@@ -24,6 +24,7 @@ import {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
+  PaginationLink,
 } from "@/components/ui/pagination";
 
 const timeFormats = {
@@ -271,9 +272,7 @@ export default function Uptime() {
                     />
                   </PaginationItem>
                   <PaginationItem>
-                    <span className="px-4">
-                      Page {pagination.currentPage} of {pagination.totalPages}
-                    </span>
+                    <PaginationLink isActive>{pagination.currentPage}</PaginationLink>
                   </PaginationItem>
                   <PaginationItem>
                     <PaginationNext
