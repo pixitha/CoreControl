@@ -47,10 +47,10 @@ const timeFormats = {
     })
 };
 
-const gridColumns = {
-  1: 30,
-  2: 56,
-  3: 30
+const minBoxWidths = {
+  1: 24,
+  2: 24,
+  3: 24
 };
 
 interface UptimeData {
@@ -193,10 +193,9 @@ export default function Uptime() {
                           
                           <Tooltip.Provider>
                             <div 
-                              className="grid gap-0.5 w-full overflow-x-auto pb-2"
+                              className="grid gap-0.5 w-full pb-2"
                               style={{ 
-                                gridTemplateColumns: `repeat(${gridColumns[timespan]}, minmax(0, 1fr))`,
-                                minWidth: `${gridColumns[timespan] * 24}px`
+                                gridTemplateColumns: `repeat(auto-fit, minmax(${minBoxWidths[timespan]}px, 1fr))`
                               }}
                             >
                               {reversedSummary.map((entry) => (
