@@ -81,7 +81,7 @@ export default function Uptime() {
         timespan: selectedTimespan 
       });
       setData(response.data);
-      setCurrentPage(1); // Reset page when timespan changes
+      setCurrentPage(1);
     } catch (error) {
       console.error("Error:", error);
       setData([]);
