@@ -56,9 +56,9 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen items-center justify-center gap-6 ">
       <div className="flex flex-col items-center md:pb-4">
-        <h1 className="text-2xl md:text-4xl lg:text-8xl font-bold">CoreControl</h1>
+        <h1 className="text-4xl md:text-5xl lg:text-8xl font-bold">CoreControl</h1>
       </div>
-      <Card className="w-1/3">
+      <Card className="w-5/6 md:w-2/3 lg:w-1/3">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
