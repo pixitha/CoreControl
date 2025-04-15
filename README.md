@@ -23,13 +23,19 @@ Dashboard Page:
 ![Dashboard Page](https://i.ibb.co/ymCSQrXZ/image.png)
 
 Servers Page:
-![Servers Page](https://i.ibb.co/v6Z79wJY/image.png)
+![Servers Page](https://i.ibb.co/dsvHXrPw/image.png)
 
 Applications Page:
-![Applications Page](https://i.ibb.co/zC1f6s9/image.png)
+![Applications Page](https://i.ibb.co/HT8M6pJ0/image.png)
+
+Uptime Page:
+![Uptime Page](https://i.ibb.co/q3JQKn3z/image.png)
 
 Network Page:
-![Network Page](https://i.ibb.co/XkKYrGQX/image.png)
+![Network Page](https://i.ibb.co/Y4SCqsZD/image.png)
+
+Settings Page:
+![Settings Page](https://i.ibb.co/23bv8CR0/image.png)
 
 ## Roadmap
 - [X] Edit Applications, Applications searchbar
