@@ -34,17 +34,46 @@ func main() {
 	}
 	defer db.Close()
 
-	ticker := time.NewTicker(5 * time.Second)
+	go func() {
+		deletionTicker := time.NewTicker(1 * time.Hour)
+		defer deletionTicker.Stop()
+
+		for range deletionTicker.C {
+			if err := deleteOldEntries(db); err != nil {
+				fmt.Printf("Error deleting old entries: %v\n", err)
+			}
+		}
+	}()
+
+	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
 	client := &http.Client{
 		Timeout: 4 * time.Second,
 	}
 
-	for range ticker.C {
+	for now := range ticker.C {
+		if now.Second()%10 != 0 {
+			continue
+		}
+
 		apps := getApplications(db)
 		checkAndUpdateStatus(db, client, apps)
 	}
+}
+
+func deleteOldEntries(db *sql.DB) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	res, err := db.ExecContext(ctx,
+		`DELETE FROM uptime_history WHERE "createdAt" < now() - interval '30 days'`)
+	if err != nil {
+		return err
+	}
+	affected, _ := res.RowsAffected()
+	fmt.Printf("Deleted %d old entries from uptime_history\n", affected)
+	return nil
 }
 
 func getApplications(db *sql.DB) []Application {
@@ -90,12 +119,21 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		}
 
 		_, err = db.ExecContext(ctx,
-			"UPDATE application SET online = $1 WHERE id = $2",
+			`UPDATE application SET online = $1 WHERE id = $2`,
 			isOnline,
 			app.ID,
 		)
 		if err != nil {
 			fmt.Printf("Update failed for app %d: %v\n", app.ID, err)
+		}
+
+		_, err = db.ExecContext(ctx,
+			`INSERT INTO uptime_history ("applicationId", online, "createdAt") VALUES ($1, $2, now())`,
+			app.ID,
+			isOnline,
+		)
+		if err != nil {
+			fmt.Printf("Insert into uptime_history failed for app %d: %v\n", app.ID, err)
 		}
 	}
 }
