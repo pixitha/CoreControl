@@ -1,110 +1,148 @@
-"use client";
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import Cookies from "js-cookie"
+import { useRouter } from "next/navigation"
+import axios from "axios"
+import { AlertCircle, KeyRound, Mail, User } from "lucide-react"
+import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AlertCircle } from "lucide-react"
- 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert"
-
-import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
-import axios from "axios";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function Home() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const router = useRouter();
-  const [error, setError] = useState('');
-  const [errorVisible, setErrorVisible] = useState(false);
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(false)
+  const router = useRouter()
+  const [error, setError] = useState("")
+  const [errorVisible, setErrorVisible] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    const token = Cookies.get('token');
+    const token = Cookies.get("token")
     if (token) {
-      router.push('/dashboard');
+      router.push("/dashboard")
     }
-  }, [router]);
+  }, [router])
 
   interface LoginResponse {
-    token: string;
+    token: string
   }
 
   const login = async () => {
-    try {
-      const response = await axios.post('/api/auth/login', { username, password });
-      const { token } = response.data as LoginResponse;
-      Cookies.set('token', token);
-      router.push('/dashboard');
-    } catch (error: any) {
-      setError(error.response.data.error);
+    if (!username || !password) {
+      setError("Please enter both email and password")
       setErrorVisible(true)
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      const response = await axios.post("/api/auth/login", { username, password })
+      const { token } = response.data as LoginResponse
+
+      const cookieOptions = rememberMe ? { expires: 7 } : {}
+      Cookies.set("token", token, cookieOptions)
+
+      router.push("/dashboard")
+    } catch (error: any) {
+      setError(error.response?.data?.error || "Login failed. Please try again.")
+      setErrorVisible(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      login()
     }
   }
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center gap-6 ">
-      <div className="flex flex-col items-center md:pb-4">
-        <h1 className="text-4xl md:text-5xl lg:text-8xl font-bold">CoreControl</h1>
-      </div>
-      <Card className="w-5/6 md:w-2/3 lg:w-1/3">
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email and password to login.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-        {errorVisible && (
-          <>
-            <div className="pb-4">
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>
-                  {error}
-                </AlertDescription>
-              </Alert>
-            </div>
-          </>
-        )}
-
-          <div>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="mail@example.com"
-                  required
-                  onChange={(e) => setUsername(e.target.value)} 
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <Input id="password" type="password" required placeholder="* * * * * * *" onChange={(e) => setPassword(e.target.value)}/>
-              </div>
-              <Button className="w-full" onClick={login}>
-                Login
-              </Button>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center space-y-2">
+          <div className="flex justify-center">
+            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <KeyRound className="h-8 w-8 text-primary" />
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">CoreControl</h1>
+          <p className="text-muted-foreground">Sign in to access your dashboard</p>
+        </div>
+
+        <Card className="border-muted/40 shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-semibold">Login</CardTitle>
+            <CardDescription>Enter your credentials to continue</CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {errorVisible && (
+              <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-5">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Authentication Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="mail@example.com"
+                    className="pl-10"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Password
+                  </Label>
+                </div>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="pl-10"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+
+          <CardFooter className="flex flex-col space-y-4">
+            <Button className="w-full" onClick={login} disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign in"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   )
 }
