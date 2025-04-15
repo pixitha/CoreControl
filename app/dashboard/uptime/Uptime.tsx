@@ -46,20 +46,31 @@ const gridColumns = {
   3: 30
 };
 
+interface UptimeData {
+    appName: string;
+    appId: number;
+    uptimeSummary: {
+      timestamp: string;
+      missing: boolean;
+      online: boolean | null;
+    }[];
+  }
+  
 export default function Uptime() {
-  const [data, setData] = useState<any[]>([]);
-  const [timespan, setTimespan] = useState<1 | 2 | 3>(1);
+    const [data, setData] = useState<UptimeData[]>([]);
+    const [timespan, setTimespan] = useState<1 | 2 | 3>(1);
 
-  const getData = async (selectedTimespan: number) => {
-    try {
-      const response = await axios.post("/api/applications/uptime", { 
-        timespan: selectedTimespan 
-      });
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+    const getData = async (selectedTimespan: number) => {
+        try {
+          const response = await axios.post<UptimeData[]>("/api/applications/uptime", { 
+            timespan: selectedTimespan 
+          });
+          setData(response.data);
+        } catch (error) {
+          console.error("Error:", error);
+          setData([]); // Setze leeres Array bei Fehlern
+        }
+      };
 
   useEffect(() => {
     getData(timespan);
