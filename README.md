@@ -33,9 +33,8 @@ Network Page:
 
 ## Roadmap
 - [X] Edit Applications, Applications searchbar
-- [ ] Customizable Dashboard
-- [ ] Notifications
 - [X] Uptime History
+- [ ] Notifications
 - [ ] Simple Server Monitoring
 - [ ] Improved Network Flowchart with custom elements (like Network switches)
 - [ ] Advanced Settings (Disable Uptime Tracking & more)
