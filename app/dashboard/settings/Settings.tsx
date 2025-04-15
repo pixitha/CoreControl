@@ -168,7 +168,7 @@ export default function Settings() {
                   <h2 className="text-xl font-semibold">User Settings</h2>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="pb-6">
                 <div className="text-sm text-muted-foreground mb-6">
                   Manage your user settings here. You can change your email, password, and other account settings.
                 </div>
@@ -268,7 +268,7 @@ export default function Settings() {
                   <h2 className="text-xl font-semibold">Theme Settings</h2>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="pb-6">
                 <div className="text-sm text-muted-foreground mb-6">
                   Select a theme for the application. You can choose between light, dark, or system theme.
                 </div>
