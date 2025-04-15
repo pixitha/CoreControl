@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
           return {
             timestamp: intervalKey,
             missing: !stats,
-            online: stats ? stats.failed < 3 : null
+            online: stats ? (stats.failed / stats.total) <= 0.5 : null
           };
         });
   
