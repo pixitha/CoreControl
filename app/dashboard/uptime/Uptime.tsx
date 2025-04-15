@@ -18,6 +18,13 @@ import axios from "axios";
 import { Card, CardHeader } from "@/components/ui/card";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/components/ui/pagination";
 
 const timeFormats = {
   1: (timestamp: string) => 
@@ -47,30 +54,47 @@ const gridColumns = {
 };
 
 interface UptimeData {
-    appName: string;
-    appId: number;
-    uptimeSummary: {
-      timestamp: string;
-      missing: boolean;
-      online: boolean | null;
-    }[];
-  }
-  
-export default function Uptime() {
-    const [data, setData] = useState<UptimeData[]>([]);
-    const [timespan, setTimespan] = useState<1 | 2 | 3>(1);
+  appName: string;
+  appId: number;
+  uptimeSummary: {
+    timestamp: string;
+    missing: boolean;
+    online: boolean | null;
+  }[];
+}
 
-    const getData = async (selectedTimespan: number) => {
-        try {
-          const response = await axios.post<UptimeData[]>("/api/applications/uptime", { 
-            timespan: selectedTimespan 
-          });
-          setData(response.data);
-        } catch (error) {
-          console.error("Error:", error);
-          setData([]);
-        }
-      };
+export default function Uptime() {
+  const [data, setData] = useState<UptimeData[]>([]);
+  const [timespan, setTimespan] = useState<1 | 2 | 3>(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const maxPage = Math.ceil(data.length / itemsPerPage);
+  const paginatedData = data.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const getData = async (selectedTimespan: number) => {
+    try {
+      const response = await axios.post<UptimeData[]>("/api/applications/uptime", { 
+        timespan: selectedTimespan 
+      });
+      setData(response.data);
+      setCurrentPage(1); // Reset page when timespan changes
+    } catch (error) {
+      console.error("Error:", error);
+      setData([]);
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(maxPage, prev + 1));
+  };
 
   useEffect(() => {
     getData(timespan);
@@ -118,8 +142,8 @@ export default function Uptime() {
               </SelectContent>
             </Select>
           </div>
-          <div className="pt-4 space-y-4 pb-4">
-            {data.map((app) => {
+          <div className="pt-4 space-y-4">
+            {paginatedData.map((app) => {
               const reversedSummary = [...app.uptimeSummary].reverse();
               const startTime = reversedSummary[0]?.timestamp;
               const endTime = reversedSummary[reversedSummary.length - 1]?.timestamp;
@@ -201,6 +225,34 @@ export default function Uptime() {
               );
             })}
           </div>
+          
+          {data.length > 0 && (
+            <div className="pt-4 pb-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={handlePrevious}
+                      aria-disabled={currentPage === 1}
+                      className={currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}
+                    />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <span className="px-4">
+                      Page {currentPage} of {maxPage}
+                    </span>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={handleNext}
+                      aria-disabled={currentPage === maxPage}
+                      className={currentPage === maxPage ? "opacity-50 cursor-not-allowed" : ""}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>
