@@ -287,9 +287,6 @@ export default function Uptime() {
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
-              <div className="text-center text-sm text-muted-foreground mt-2">
-                Showing {data.length} of {pagination.totalItems} applications
-              </div>
             </div>
           )}
         </div>
