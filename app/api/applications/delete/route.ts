@@ -14,6 +14,10 @@ export async function POST(request: NextRequest) {
       where: { id: id }
     });
 
+    await prisma.uptime_history.deleteMany({
+      where: { applicationId: id }
+    });
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

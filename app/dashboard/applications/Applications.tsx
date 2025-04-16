@@ -67,6 +67,12 @@ import {
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface Application {
   id: number;
@@ -254,7 +260,7 @@ export default function Dashboard() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
@@ -275,9 +281,9 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="pl-4 pr-4">
+        <div className="p-6">
           <div className="flex justify-between items-center">
-            <span className="text-2xl font-semibold">Your Applications</span>
+            <span className="text-3xl font-bold">Your Applications</span>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -358,9 +364,18 @@ export default function Dashboard() {
                                 placeholder="https://example.com/icon.png"
                                 onChange={(e) => setIcon(e.target.value)}
                               />
-                              <Button variant="outline" size="icon" onClick={generateIconURL}>
-                                <Zap />
-                              </Button>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <Button variant="outline" size="icon" onClick={generateIconURL}>
+                                      <Zap />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Generate Icon URL
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </div>
                           <div className="grid w-full items-center gap-1.5">
@@ -457,7 +472,9 @@ export default function Dashboard() {
                           </CardTitle>
                           <CardDescription className="text-md">
                             {app.description}
-                            <br />
+                            {app.description && (
+                              <br className="hidden md:block" />
+                            )}
                             Server: {app.server || "No server"}
                           </CardDescription>
                         </div>
@@ -664,14 +681,14 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-          <div className="pt-4">
+          <div className="pt-4 pb-4">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
-                    href="#"
                     onClick={handlePrevious}
                     isActive={currentPage > 1}
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
                   />
                 </PaginationItem>
                 <PaginationItem>
@@ -679,9 +696,9 @@ export default function Dashboard() {
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationNext
-                    href="#"
                     onClick={handleNext}
                     isActive={currentPage < maxPage}
+                    style={{ cursor: currentPage === maxPage ? 'not-allowed' : 'pointer' }}
                   />
                 </PaginationItem>
               </PaginationContent>

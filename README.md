@@ -17,25 +17,30 @@ The only dashboard you'll ever need to manage your entire server infrastructure.
 
 ## Screenshots
 Login Page:
-![Login Page](https://i.ibb.co/QvvJvHxY/image.png)
+![Login Page](https://i.ibb.co/DfS7BJdX/image.png)
 
 Dashboard Page:
-![Dashboard Page](https://i.ibb.co/G3FW5mVX/image.png)
+![Dashboard Page](https://i.ibb.co/m5xMXz73/image.png)
 
 Servers Page:
-![Servers Page](https://i.ibb.co/v6Z79wJY/image.png)
+![Servers Page](https://i.ibb.co/QFrFRp1B/image.png)
 
 Applications Page:
-![Applications Page](https://i.ibb.co/zC1f6s9/image.png)
+![Applications Page](https://i.ibb.co/1JK3pFYG/image.png)
+
+Uptime Page:
+![Uptime Page](https://i.ibb.co/99LTnZ14/image.png)
 
 Network Page:
-![Network Page](https://i.ibb.co/XkKYrGQX/image.png)
+![Network Page](https://i.ibb.co/1Y6ypKHk/image.png)
+
+Settings Page:
+![Settings Page](https://i.ibb.co/mrdjqy7f/image.png)
 
 ## Roadmap
-- [ ] Edit Applications, Applications searchbar
-- [ ] Customizable Dashboard
+- [X] Edit Applications, Applications searchbar
+- [X] Uptime History
 - [ ] Notifications
-- [ ] Uptime History
 - [ ] Simple Server Monitoring
 - [ ] Improved Network Flowchart with custom elements (like Network switches)
 - [ ] Advanced Settings (Disable Uptime Tracking & more)
@@ -50,10 +55,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      LOGIN_EMAIL: "mail@example.com"
-      LOGIN_PASSWORD: "SecretPassword"
-      JWT_SECRET: RANDOM_SECRET
-      ACCOUNT_SECRET: RANDOM_SECRET
+      JWT_SECRET: RANDOM_SECRET # Replace with a secure random string
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres"
     depends_on:
       - db
@@ -78,6 +80,10 @@ volumes:
   postgres_data:
 ```
 
+#### Default Login
+__E-Mail:__ admin@example.com\
+__Password:__ admin
+
 ## Tech Stack & Credits
 
 The application is build with:
@@ -87,6 +93,7 @@ The application is build with:
 - PostgreSQL with [Prisma ORM](https://www.prisma.io/)
 - Icons by [Lucide](https://lucide.dev/)
 - Flowcharts by [React Flow](https://reactflow.dev/)
+- Application icons by [selfh.st/icons](selfh.st/icons)
 - and a lot of love ❤️
 
 ## Star History

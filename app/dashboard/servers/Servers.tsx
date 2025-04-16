@@ -107,6 +107,7 @@ export default function Dashboard() {
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [maxPage, setMaxPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(4);
   const [servers, setServers] = useState<Server[]>([]);
   const [isGridLayout, setIsGridLayout] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -126,7 +127,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     const savedLayout = Cookies.get("layoutPreference-servers");
-    setIsGridLayout(savedLayout === "grid");
+    const layout_bool = savedLayout === "grid";
+    setIsGridLayout(layout_bool);
+    setItemsPerPage(layout_bool ? 6 : 4);
   }, []);
 
   const toggleLayout = () => {
@@ -137,6 +140,7 @@ export default function Dashboard() {
       path: "/",
       sameSite: "strict",
     });
+    setItemsPerPage(newLayout ? 6 : 4);
   };
 
   const add = async () => {
@@ -164,6 +168,7 @@ export default function Dashboard() {
         "/api/servers/get",
         {
           page: currentPage,
+          ITEMS_PER_PAGE: itemsPerPage,
         }
       );
       setServers(response.data.servers);
@@ -176,7 +181,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     getServers();
-  }, [currentPage]);
+  }, [currentPage, itemsPerPage]);
 
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(1, prev - 1));
@@ -260,8 +265,8 @@ export default function Dashboard() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
@@ -281,9 +286,9 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="pl-4 pr-4">
+        <div className="p-6">
           <div className="flex justify-between items-center">
-            <span className="text-2xl font-semibold">Your Servers</span>
+            <span className="text-3xl font-bold">Your Servers</span>
             <div className="flex gap-2">
               <TooltipProvider>
                 <Tooltip>
@@ -514,7 +519,7 @@ export default function Dashboard() {
                             <div className="flex items-center gap-2 text-foreground/80">
                               <FileDigit className="h-4 w-4 text-muted-foreground" />
                               <span>
-                                <b>IP:</b> {server.ip || "Nicht angegeben"}
+                                <b>IP:</b> {server.ip || "Not set"}
                               </span>
                             </div>
 
@@ -750,14 +755,14 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-          <div className="pt-4">
+          <div className="pt-4 pb-4">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
-                    href="#"
                     onClick={handlePrevious}
                     isActive={currentPage > 1}
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
                   />
                 </PaginationItem>
 
@@ -767,9 +772,9 @@ export default function Dashboard() {
 
                 <PaginationItem>
                   <PaginationNext
-                    href="#"
                     onClick={handleNext}
                     isActive={currentPage < maxPage}
+                    style={{ cursor: currentPage === maxPage ? 'not-allowed' : 'pointer' }}
                   />
                 </PaginationItem>
               </PaginationContent>

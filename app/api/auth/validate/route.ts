@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-
+import { prisma } from "@/lib/prisma";
 
 interface ValidateRequest {
     token: string;
@@ -16,6 +16,14 @@ export async function POST(request: NextRequest) {
             throw new Error('JWT_SECRET is not defined');
         }
 
+        // Get the account id
+        const user = await prisma.user.findFirst({
+            where: {},
+        });
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
         // Verify JWT
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload & { id: string };
 
@@ -23,7 +31,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
         }
 
-        if(decoded.account_secret !== process.env.ACCOUNT_SECRET) {
+        if(decoded.account_secret !== user.id) {
             return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
         }
 
