@@ -1,3 +1,4 @@
 # Table of contents
 
-* [Page](README.md)
+* [CoreControl](README.md)
+* [Installation](installation.md)
