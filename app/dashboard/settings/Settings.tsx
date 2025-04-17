@@ -33,7 +33,19 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Check, Palette, User } from "lucide-react";
+import { AlertCircle, Check, Palette, User, Bell } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -287,6 +299,48 @@ export default function Settings() {
                     </SelectContent>
                   </Select>
                 </div>
+              </CardContent>
+            </Card>
+
+
+            <Card className="overflow-hidden border-2 border-muted/20 shadow-sm">
+              <CardHeader className="bg-muted/10 px-6 py-4 border-b">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Notifications</h2>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-6">
+                <div className="text-sm text-muted-foreground mb-6">
+                  Set up Notifications to get notified when an application goes offline or online.
+                </div>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button className="w-full">
+                      Add Notification
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogTitle>Add Notification</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <Select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Notification Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="smtp">SMTP</SelectItem>
+                          <SelectItem value="telegram">Telegram</SelectItem>
+                          <SelectItem value="discord">Discord</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </AlertDialogDescription>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardContent>
             </Card>
           </div>
