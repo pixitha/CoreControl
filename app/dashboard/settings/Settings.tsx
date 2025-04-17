@@ -395,7 +395,7 @@ export default function Settings() {
                               <Input type="number" id="smtpPort" placeholder="e.g. 456" onChange={(e) => setSmtpPort(Number(e.target.value))} />
                             </div>
                             <div className="flex gap-2">
-                              <Checkbox id="smtpSecure" className="w-4 h-4" onCheckedChange={(checked) => setSmtpSecure(checked)} />
+                              <Checkbox id="smtpSecure" className="w-4 h-4" onCheckedChange={(checked: any) => setSmtpSecure(checked)} />
                               <Label htmlFor="smtpSecure">Secure Connection</Label>
                             </div>
                             <div className="grid w-full items-center gap-1.5">
