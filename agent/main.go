@@ -102,45 +102,70 @@ func getApplications(db *sql.DB) []Application {
 }
 
 func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
-	for _, app := range apps {
-		// Context for HTTP request
+	fmt.Printf("Start checking %d applications at %v\n", len(apps), time.Now())
+
+	for i, app := range apps {
+		logPrefix := fmt.Sprintf("[App %d/%d URL: %s]", i+1, len(apps), app.PublicURL)
+		fmt.Printf("%s Starting check\n", logPrefix)
+
+		// HTTP Check
+		startHTTP := time.Now()
 		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
 		defer httpCancel()
 
 		req, err := http.NewRequestWithContext(httpCtx, "HEAD", app.PublicURL, nil)
 		if err != nil {
-			fmt.Printf("Error creating request: %v\n", err)
+			fmt.Printf("%s Request creation failed: %v\n", logPrefix, err)
 			continue
 		}
 
 		resp, err := client.Do(req)
-		isOnline := false
-		if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			isOnline = true
+		httpDuration := time.Since(startHTTP)
+
+		// Log HTTP details
+		if err != nil {
+			fmt.Printf("%s HTTP error after %v: %v\n", logPrefix, httpDuration, err)
+		} else {
+			fmt.Printf("%s HTTP %d after %v (ContentLength: %d)\n",
+				logPrefix, resp.StatusCode, httpDuration, resp.ContentLength)
+			resp.Body.Close() // Important to prevent leaks
 		}
 
-		// Create a new context for database operations with a separate timeout
+		isOnline := err == nil && resp != nil && resp.StatusCode >= 200 && resp.StatusCode < 300 || resp.StatusCode == 405
+
+		// Database Update
 		dbCtx, dbCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer dbCancel()
 
-		// Update application status
-		_, err = db.ExecContext(dbCtx,
+		startUpdate := time.Now()
+		updateRes, err := db.ExecContext(dbCtx,
 			`UPDATE application SET online = $1 WHERE id = $2`,
 			isOnline,
 			app.ID,
 		)
+		updateDuration := time.Since(startUpdate)
+
 		if err != nil {
-			fmt.Printf("Update failed for app %d: %v\n", app.ID, err)
+			fmt.Printf("%s UPDATE failed after %v: %v\n", logPrefix, updateDuration, err)
+		} else {
+			affected, _ := updateRes.RowsAffected()
+			fmt.Printf("%s UPDATE OK (%d rows) after %v\n", logPrefix, affected, updateDuration)
 		}
 
-		// Insert into uptime_history
-		_, err = db.ExecContext(dbCtx,
+		// History Insert
+		startInsert := time.Now()
+		insertRes, err := db.ExecContext(dbCtx,
 			`INSERT INTO uptime_history ("applicationId", online, "createdAt") VALUES ($1, $2, now())`,
 			app.ID,
 			isOnline,
 		)
+		insertDuration := time.Since(startInsert)
+
 		if err != nil {
-			fmt.Printf("Insert into uptime_history failed for app %d: %v\n", app.ID, err)
+			fmt.Printf("%s INSERT failed after %v: %v\n", logPrefix, insertDuration, err)
+		} else {
+			inserted, _ := insertRes.RowsAffected()
+			fmt.Printf("%s INSERT OK (%d rows) after %v\n", logPrefix, inserted, insertDuration)
 		}
 	}
 }
