@@ -107,7 +107,7 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
 		defer httpCancel()
 
-		req, err := http.NewRequestWithContext(httpCtx, "HEAD", app.PublicURL, nil)
+		req, err := http.NewRequestWithContext(httpCtx, "GET", app.PublicURL, nil)
 		if err != nil {
 			fmt.Printf("Error creating request: %v\n", err)
 			continue
