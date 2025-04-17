@@ -103,10 +103,11 @@ func getApplications(db *sql.DB) []Application {
 
 func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 	for _, app := range apps {
-		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
-		defer cancel()
+		// Context for HTTP request
+		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
+		defer httpCancel()
 
-		req, err := http.NewRequestWithContext(ctx, "HEAD", app.PublicURL, nil)
+		req, err := http.NewRequestWithContext(httpCtx, "HEAD", app.PublicURL, nil)
 		if err != nil {
 			fmt.Printf("Error creating request: %v\n", err)
 			continue
@@ -118,7 +119,12 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			isOnline = true
 		}
 
-		_, err = db.ExecContext(ctx,
+		// Create a new context for database operations with a separate timeout
+		dbCtx, dbCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer dbCancel()
+
+		// Update application status
+		_, err = db.ExecContext(dbCtx,
 			`UPDATE application SET online = $1 WHERE id = $2`,
 			isOnline,
 			app.ID,
@@ -127,7 +133,8 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			fmt.Printf("Update failed for app %d: %v\n", app.ID, err)
 		}
 
-		_, err = db.ExecContext(ctx,
+		// Insert into uptime_history
+		_, err = db.ExecContext(dbCtx,
 			`INSERT INTO uptime_history ("applicationId", online, "createdAt") VALUES ($1, $2, now())`,
 			app.ID,
 			isOnline,
