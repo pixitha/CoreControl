@@ -404,36 +404,82 @@ export default function Settings() {
                         </SelectContent>
 
                         {notificationType === "smtp" && (
-                          <div className="mt-4 space-y-2">
-                            <div className="grid w-full items-center gap-1.5">
+                          <div className="mt-4 space-y-4">
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
                               <Label htmlFor="smtpHost">SMTP Host</Label>
-                              <Input type="text" id="smtpHost" placeholder="e.g. smtp.example.com" onChange={(e) => setSmtpHost(e.target.value)} />
+                              <Input
+                                type="text"
+                                id="smtpHost"
+                                placeholder="smtp.example.com"
+                                onChange={(e) => setSmtpHost(e.target.value)}
+                              />
                             </div>
-                            <div className="grid w-full items-center gap-1.5">
+                            <div className="space-y-1.5">
                               <Label htmlFor="smtpPort">SMTP Port</Label>
-                              <Input type="number" id="smtpPort" placeholder="e.g. 456" onChange={(e) => setSmtpPort(Number(e.target.value))} />
-                            </div>
-                            <div className="flex gap-2">
-                              <Checkbox id="smtpSecure" className="w-4 h-4" onCheckedChange={(checked: any) => setSmtpSecure(checked)} />
-                              <Label htmlFor="smtpSecure">Secure Connection</Label>
-                            </div>
-                            <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="smtpUser">SMTP Username</Label>
-                              <Input type="text" id="smtpUser" placeholder="e.g. email_admin" onChange={(e) => setSmtpUsername(e.target.value)} />
-                            </div>
-                            <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="smtpPass">SMTP Password</Label>
-                              <Input type="password" id="smtpPass" placeholder="* * * * * * * *" onChange={(e) => setSmtpPassword(e.target.value)} />
-                            </div>
-                            <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="smtpFrom">SMTP From</Label>
-                              <Input type="email" id="smtpFrom" placeholder="e.g. admin@example.com" onChange={(e) => setSmtpFrom(e.target.value)} />
-                            </div>
-                            <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="smtpTo">SMTP To</Label>
-                              <Input type="email" id="smtpTo" placeholder="e.g. private@example.com" onChange={(e) => setSmtpTo(e.target.value)} />
+                              <Input
+                                type="number"
+                                id="smtpPort"
+                                placeholder="587"
+                                onChange={(e) => setSmtpPort(Number(e.target.value))}
+                              />
                             </div>
                           </div>
+                        
+                          <div className="flex items-center space-x-2 pt-2 pb-4">
+                            <Checkbox
+                              id="smtpSecure"
+                              onCheckedChange={(checked: any) => setSmtpSecure(checked)}
+                            />
+                            <Label htmlFor="smtpSecure" className="text-sm font-medium leading-none">
+                              Secure Connection (TLS/SSL)
+                            </Label>
+                          </div>
+                        
+                          <div className="grid gap-4">
+                            <div className="space-y-1.5">
+                              <Label htmlFor="smtpUser">SMTP Username</Label>
+                              <Input
+                                type="text"
+                                id="smtpUser"
+                                placeholder="user@example.com"
+                                onChange={(e) => setSmtpUsername(e.target.value)}
+                              />
+                            </div>
+                            
+                            <div className="space-y-1.5">
+                              <Label htmlFor="smtpPass">SMTP Password</Label>
+                              <Input
+                                type="password"
+                                id="smtpPass"
+                                placeholder="••••••••"
+                                onChange={(e) => setSmtpPassword(e.target.value)}
+                              />
+                            </div>
+                        
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <Label htmlFor="smtpFrom">From Address</Label>
+                                <Input
+                                  type="email"
+                                  id="smtpFrom"
+                                  placeholder="noreply@example.com"
+                                  onChange={(e) => setSmtpFrom(e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-1.5">
+                                <Label htmlFor="smtpTo">To Address</Label>
+                                <Input
+                                  type="email"
+                                  id="smtpTo"
+                                  placeholder="admin@example.com"
+                                  onChange={(e) => setSmtpTo(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                         )}
 
                         {notificationType === "telegram" && (
