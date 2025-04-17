@@ -179,6 +179,7 @@ export default function Settings() {
         telegramChatId: telegramChatId,
         discordWebhook: discordWebhook
       });
+      getNotifications();
     }
     catch (error: any) {
       alert(error.response.data.error);
