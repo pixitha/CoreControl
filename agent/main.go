@@ -131,7 +131,7 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			resp.Body.Close() // Important to prevent leaks
 		}
 
-		isOnline := err == nil && resp != nil && resp.StatusCode >= 200 && resp.StatusCode < 300
+		isOnline := err == nil && resp != nil && resp.StatusCode >= 200 && resp.StatusCode < 300 || resp.StatusCode == 405
 
 		// Database Update
 		dbCtx, dbCancel := context.WithTimeout(context.Background(), 5*time.Second)
