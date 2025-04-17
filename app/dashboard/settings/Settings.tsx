@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
 interface NotificationsResponse {
   notifications: any[]; 
@@ -514,6 +515,33 @@ export default function Settings() {
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction onClick={addNotification}>
                         Add
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>    
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <div className="pt-4 pb-2">
+                      <Button className="w-full" variant="secondary">
+                        Customize Notification Text
+                      </Button>
+                    </div>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogTitle>Customize Notification Text</AlertDialogTitle>
+                    <AlertDialogDescription>
+                          <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <Label htmlFor="text">Notification Text</Label>
+                                <Textarea id="text" placeholder="Type here..."/>
+                              </div>
+                          </div>
+                    </AlertDialogDescription>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={addNotification}>
+                        Save
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
