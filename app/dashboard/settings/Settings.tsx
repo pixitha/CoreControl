@@ -53,6 +53,9 @@ import { Textarea } from "@/components/ui/textarea";
 interface NotificationsResponse {
   notifications: any[]; 
 }
+interface NotificationResponse {
+  notification_text?: string;
+}
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -83,6 +86,8 @@ export default function Settings() {
   const [discordWebhook, setDiscordWebhook] = useState<string>("")
 
   const [notifications, setNotifications] = useState<any[]>([])
+
+  const [notificationText, setNotificationText] = useState<string>("")
 
   const changeEmail = async () => {
     setEmailErrorVisible(false);
@@ -216,6 +221,35 @@ export default function Settings() {
     getNotifications()
   }, [])
 
+
+  const getNotificationText = async () => {
+    try {
+      const response = await axios.post<NotificationResponse>('/api/settings/get_notification_text', {});
+      if (response.status === 200) {
+        if (response.data.notification_text) {
+          setNotificationText(response.data.notification_text);
+        } else {
+          setNotificationText("The application !name (!url) is now !status.");
+        }
+      }
+    } catch (error: any) {
+      alert(error.response.data.error);
+    }
+  };
+
+  const editNotificationText = async () => {
+    try {
+      const response = await axios.post('/api/settings/notification_text', {
+        text: notificationText
+      });
+    } catch (error: any) {
+      alert(error.response.data.error);
+    }
+  }
+
+  useEffect(() => {
+    getNotificationText()
+  }, [])
 
   return (
     <SidebarProvider>
@@ -531,16 +565,24 @@ export default function Settings() {
                   <AlertDialogContent>
                     <AlertDialogTitle>Customize Notification Text</AlertDialogTitle>
                     <AlertDialogDescription>
-                          <div className="space-y-4">
-                              <div className="space-y-1.5">
-                                <Label htmlFor="text">Notification Text</Label>
-                                <Textarea id="text" placeholder="Type here..."/>
-                              </div>
+                      <div className="space-y-4">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="text">Notification Text</Label>
+                            <Textarea id="text" placeholder="Type here..." value={notificationText} onChange={(e) => setNotificationText(e.target.value)} rows={4} />
                           </div>
+                      </div>
+                      <div className="pt-4 text-sm text-muted-foreground">
+                        You can use the following placeholders in the text:
+                        <ul className="list-disc list-inside space-y-1 pt-2">
+                          <li><strong>!name</strong> - Application name</li>
+                          <li><strong>!url</strong> - Application URL</li>
+                          <li><strong>!status</strong> - Application status (online/offline)</li>
+                        </ul>
+                      </div>
                     </AlertDialogDescription>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={addNotification}>
+                      <AlertDialogAction onClick={editNotificationText}>
                         Save
                       </AlertDialogAction>
                     </AlertDialogFooter>
