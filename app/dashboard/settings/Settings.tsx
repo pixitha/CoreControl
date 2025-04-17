@@ -66,6 +66,16 @@ export default function Settings() {
   const [emailSuccess, setEmailSuccess] = useState<boolean>(false)
 
   const [notificationType, setNotificationType] = useState<string>("")
+  const [smtpHost, setSmtpHost] = useState<string>("")
+  const [smtpPort, setSmtpPort] = useState<number>(0)
+  const [smtpSecure, setSmtpSecure] = useState<boolean>(false)
+  const [smtpUsername, setSmtpUsername] = useState<string>("")
+  const [smtpPassword, setSmtpPassword] = useState<string>("")
+  const [smtpFrom, setSmtpFrom] = useState<string>("")
+  const [smtpTo, setSmtpTo] = useState<string>("")
+  const [telegramToken, setTelegramToken] = useState<string>("")
+  const [telegramChatId, setTelegramChatId] = useState<string>("")
+  const [discordWebhook, setDiscordWebhook] = useState<string>("")
 
   const changeEmail = async () => {
     setEmailErrorVisible(false);
@@ -147,6 +157,42 @@ export default function Settings() {
       }, 3000);
     }
   }
+
+  const addNotification = async () => {
+    try {
+      const response = await axios.post('/api/notifications/add', {
+        type: notificationType,
+        smtpHost: smtpHost,
+        smtpPort: smtpPort,
+        smtpSecure: smtpSecure,
+        smtpUsername: smtpUsername,
+        smtpPassword: smtpPassword,
+        smtpFrom: smtpFrom,
+        smtpTo: smtpTo,
+        telegramToken: telegramToken,
+        telegramChatId: telegramChatId,
+        discordWebhook: discordWebhook
+      });
+    }
+    catch (error: any) {
+      alert(error.response.data.error);
+    }
+  }
+
+  const deleteNotification = async (id: number) => {
+    try {
+      const response = await axios.post('/api/notifications/delete', {
+        id: id
+      });
+      if (response.status === 200) {
+        alert("Notification deleted successfully");
+      }
+    } catch (error: any) {
+      alert(error.response.data.error);
+    }
+  }
+
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -342,31 +388,31 @@ export default function Settings() {
                           <div className="mt-4 space-y-2">
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="smtpHost">SMTP Host</Label>
-                              <Input type="text" id="smtpHost" placeholder="e.g. smtp.example.com" />
+                              <Input type="text" id="smtpHost" placeholder="e.g. smtp.example.com" onChange={(e) => setSmtpHost(e.target.value)} />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="smtpPort">SMTP Port</Label>
-                              <Input type="number" id="smtpPort" placeholder="e.g. 456" />
+                              <Input type="number" id="smtpPort" placeholder="e.g. 456" onChange={(e) => setSmtpPort(Number(e.target.value))} />
                             </div>
                             <div className="flex gap-2">
-                              <Checkbox id="smtpSecure" className="w-4 h-4" />
+                              <Checkbox id="smtpSecure" className="w-4 h-4" onCheckedChange={(checked) => setSmtpSecure(checked)} />
                               <Label htmlFor="smtpSecure">Secure Connection</Label>
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="smtpUser">SMTP Username</Label>
-                              <Input type="text" id="smtpUser" placeholder="e.g. email_admin" />
+                              <Input type="text" id="smtpUser" placeholder="e.g. email_admin" onChange={(e) => setSmtpUsername(e.target.value)} />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="smtpPass">SMTP Password</Label>
-                              <Input type="password" id="smtpPass" placeholder="* * * * * * * *" />
+                              <Input type="password" id="smtpPass" placeholder="* * * * * * * *" onChange={(e) => setSmtpPassword(e.target.value)} />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="smtpFrom">SMTP From</Label>
-                              <Input type="email" id="smtpFrom" placeholder="e.g. admin@example.com" />
+                              <Input type="email" id="smtpFrom" placeholder="e.g. admin@example.com" onChange={(e) => setSmtpFrom(e.target.value)} />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="smtpTo">SMTP To</Label>
-                              <Input type="email" id="smtpTo" placeholder="e.g. private@example.com" />
+                              <Input type="email" id="smtpTo" placeholder="e.g. private@example.com" onChange={(e) => setSmtpTo(e.target.value)} />
                             </div>
                           </div>
                         )}
@@ -375,11 +421,11 @@ export default function Settings() {
                           <div className="mt-4 space-y-2">
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="telegramToken">Bot Token</Label>
-                              <Input type="text" id="telegramToken" placeholder="" />
+                              <Input type="text" id="telegramToken" placeholder="" onChange={(e) => setTelegramToken(e.target.value)} />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="telegramChatId">Chat ID</Label>
-                              <Input type="text" id="telegramChatId" placeholder="" />
+                              <Input type="text" id="telegramChatId" placeholder="" onChange={(e) => setTelegramChatId(e.target.value)} />
                             </div>
                           </div>
                         )}
@@ -388,7 +434,7 @@ export default function Settings() {
                           <div className="mt-4">
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="discordWebhook">Webhook URL</Label>
-                              <Input type="text" id="discordWebhook" placeholder="" />
+                              <Input type="text" id="discordWebhook" placeholder="" onChange={(e) => setDiscordWebhook(e.target.value)} />
                             </div>
                           </div>
                         )}
@@ -397,10 +443,12 @@ export default function Settings() {
                     </AlertDialogDescription>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction>Add</AlertDialogAction>
+                      <AlertDialogAction onClick={addNotification}>
+                        Add
+                      </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
-                </AlertDialog>
+                </AlertDialog>    
               </CardContent>
             </Card>
           </div>
