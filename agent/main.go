@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -36,7 +37,10 @@ type Notification struct {
 	DiscordWebhook sql.NullString
 }
 
-var notifications []Notification
+var (
+	notifications []Notification
+	notifMutex    sync.RWMutex
+)
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -54,12 +58,34 @@ func main() {
 	}
 	defer db.Close()
 
-	// Load notification configs
-	notifications, err = loadNotifications(db)
+	// initial load
+	notifs, err := loadNotifications(db)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to load notifications: %v", err))
 	}
+	notifMutex.Lock()
+	notifications = notifMutexCopy(notifs)
+	notifMutex.Unlock()
 
+	// reload notification configs every minute
+	go func() {
+		reloadTicker := time.NewTicker(time.Minute)
+		defer reloadTicker.Stop()
+
+		for range reloadTicker.C {
+			newNotifs, err := loadNotifications(db)
+			if err != nil {
+				fmt.Printf("Failed to reload notifications: %v\n", err)
+				continue
+			}
+			notifMutex.Lock()
+			notifications = notifMutexCopy(newNotifs)
+			notifMutex.Unlock()
+			fmt.Println("Reloaded notification configurations")
+		}
+	}()
+
+	// clean up old entries hourly
 	go func() {
 		deletionTicker := time.NewTicker(time.Hour)
 		defer deletionTicker.Stop()
@@ -86,6 +112,13 @@ func main() {
 		apps := getApplications(db)
 		checkAndUpdateStatus(db, client, apps)
 	}
+}
+
+// helper to safely copy slice
+func notifMutexCopy(src []Notification) []Notification {
+	copyDst := make([]Notification, len(src))
+	copy(copyDst, src)
+	return copyDst
 }
 
 func loadNotifications(db *sql.DB) ([]Notification, error) {
@@ -166,7 +199,7 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		}
 
 		resp, err := client.Do(req)
-		isOnline := err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 || resp.StatusCode == 405
+		isOnline := (err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300) || resp.StatusCode == 405
 
 		// Notify on status change
 		if isOnline != app.Online {
@@ -203,7 +236,11 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 }
 
 func sendNotifications(message string) {
-	for _, n := range notifications {
+	notifMutex.RLock()
+	notifs := notifMutexCopy(notifications)
+	notifMutex.RUnlock()
+
+	for _, n := range notifs {
 		switch n.Type {
 		case "email":
 			if n.SMTPHost.Valid && n.SMTPTo.Valid {
