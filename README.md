@@ -40,7 +40,7 @@ Settings Page:
 ## Roadmap
 - [X] Edit Applications, Applications searchbar
 - [X] Uptime History
-- [ ] Notifications
+- [X] Notifications
 - [ ] Simple Server Monitoring
 - [ ] Improved Network Flowchart with custom elements (like Network switches)
 - [ ] Advanced Settings (Disable Uptime Tracking & more)
