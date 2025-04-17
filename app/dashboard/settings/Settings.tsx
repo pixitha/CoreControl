@@ -28,7 +28,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Input } from "@/components/ui/input"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
@@ -76,6 +76,8 @@ export default function Settings() {
   const [telegramToken, setTelegramToken] = useState<string>("")
   const [telegramChatId, setTelegramChatId] = useState<string>("")
   const [discordWebhook, setDiscordWebhook] = useState<string>("")
+
+  const [notifications, setNotifications] = useState<any[]>([])
 
   const changeEmail = async () => {
     setEmailErrorVisible(false);
@@ -185,12 +187,29 @@ export default function Settings() {
         id: id
       });
       if (response.status === 200) {
-        alert("Notification deleted successfully");
+        getNotifications()
       }
     } catch (error: any) {
       alert(error.response.data.error);
     }
   }
+
+  const getNotifications = async () => {
+    try {
+      const response = await axios.post('/api/notifications/get', {});
+      if (response.status === 200 && response.data) {
+        console.log(response.data.notifications)
+        setNotifications(response.data.notifications);
+      }
+    }
+    catch (error: any) {
+      alert(error.response.data.error);
+    }
+  }
+
+  useEffect(() => {
+    getNotifications()
+  }, [])
 
 
   return (
@@ -449,6 +468,32 @@ export default function Settings() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>    
+
+                <div className="mt-6 space-y-4">
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <div 
+                        key={notification.id}
+                        className="flex items-center justify-between p-4 bg-muted/10 rounded-lg border"
+                      >
+                        <div className="space-y-1">
+                          <h3 className="font-medium capitalize">{notification.type}</h3>
+                        </div>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => deleteNotification(notification.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-muted-foreground py-6">
+                      No notifications configured
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
