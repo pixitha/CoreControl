@@ -46,6 +46,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -62,6 +64,8 @@ export default function Settings() {
 
   const [passwordSuccess, setPasswordSuccess] = useState<boolean>(false)
   const [emailSuccess, setEmailSuccess] = useState<boolean>(false)
+
+  const [notificationType, setNotificationType] = useState<string>("")
 
   const changeEmail = async () => {
     setEmailErrorVisible(false);
@@ -324,7 +328,7 @@ export default function Settings() {
                   <AlertDialogContent>
                     <AlertDialogTitle>Add Notification</AlertDialogTitle>
                     <AlertDialogDescription>
-                      <Select>
+                      <Select value={notificationType} onValueChange={(value: string) => setNotificationType(value)}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Notification Type" />
                         </SelectTrigger>
@@ -333,11 +337,67 @@ export default function Settings() {
                           <SelectItem value="telegram">Telegram</SelectItem>
                           <SelectItem value="discord">Discord</SelectItem>
                         </SelectContent>
+
+                        {notificationType === "smtp" && (
+                          <div className="mt-4 space-y-2">
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="smtpHost">SMTP Host</Label>
+                              <Input type="text" id="smtpHost" placeholder="e.g. smtp.example.com" />
+                            </div>
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="smtpPort">SMTP Port</Label>
+                              <Input type="number" id="smtpPort" placeholder="e.g. 456" />
+                            </div>
+                            <div className="flex gap-2">
+                              <Checkbox id="smtpSecure" className="w-4 h-4" />
+                              <Label htmlFor="smtpSecure">Secure Connection</Label>
+                            </div>
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="smtpUser">SMTP Username</Label>
+                              <Input type="text" id="smtpUser" placeholder="e.g. email_admin" />
+                            </div>
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="smtpPass">SMTP Password</Label>
+                              <Input type="password" id="smtpPass" placeholder="* * * * * * * *" />
+                            </div>
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="smtpFrom">SMTP From</Label>
+                              <Input type="email" id="smtpFrom" placeholder="e.g. admin@example.com" />
+                            </div>
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="smtpTo">SMTP To</Label>
+                              <Input type="email" id="smtpTo" placeholder="e.g. private@example.com" />
+                            </div>
+                          </div>
+                        )}
+
+                        {notificationType === "telegram" && (
+                          <div className="mt-4 space-y-2">
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="telegramToken">Bot Token</Label>
+                              <Input type="text" id="telegramToken" placeholder="" />
+                            </div>
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="telegramChatId">Chat ID</Label>
+                              <Input type="text" id="telegramChatId" placeholder="" />
+                            </div>
+                          </div>
+                        )}
+
+                        {notificationType === "discord" && (
+                          <div className="mt-4">
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="discordWebhook">Webhook URL</Label>
+                              <Input type="text" id="discordWebhook" placeholder="" />
+                            </div>
+                          </div>
+                        )}
+
                       </Select>
                     </AlertDialogDescription>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction>Continue</AlertDialogAction>
+                      <AlertDialogAction>Add</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
