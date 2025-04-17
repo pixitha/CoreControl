@@ -49,6 +49,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
+interface NotificationsResponse {
+  notifications: any[]; 
+}
+
 export default function Settings() {
   const { theme, setTheme } = useTheme();
 
@@ -196,9 +200,8 @@ export default function Settings() {
 
   const getNotifications = async () => {
     try {
-      const response = await axios.post('/api/notifications/get', {});
+      const response = await axios.post<NotificationsResponse>('/api/notifications/get', {});
       if (response.status === 200 && response.data) {
-        console.log(response.data.notifications)
         setNotifications(response.data.notifications);
       }
     }
