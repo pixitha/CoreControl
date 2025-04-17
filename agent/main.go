@@ -17,6 +17,7 @@ import (
 
 type Application struct {
 	ID        int
+	Name      string
 	PublicURL string
 	Online    bool
 }
@@ -166,7 +167,7 @@ func deleteOldEntries(db *sql.DB) error {
 
 func getApplications(db *sql.DB) []Application {
 	rows, err := db.Query(
-		`SELECT id, "publicURL", online FROM application WHERE "publicURL" IS NOT NULL`,
+		`SELECT id, name, "publicURL", online FROM application WHERE "publicURL" IS NOT NULL`,
 	)
 	if err != nil {
 		fmt.Printf("Error fetching applications: %v\n", err)
@@ -177,7 +178,7 @@ func getApplications(db *sql.DB) []Application {
 	var apps []Application
 	for rows.Next() {
 		var app Application
-		if err := rows.Scan(&app.ID, &app.PublicURL, &app.Online); err != nil {
+		if err := rows.Scan(&app.ID, &app.Name, &app.PublicURL, &app.Online); err != nil {
 			fmt.Printf("Error scanning row: %v\n", err)
 			continue
 		}
@@ -188,47 +189,53 @@ func getApplications(db *sql.DB) []Application {
 
 func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 	for _, app := range apps {
-		// HTTP request context
+		// — HTTP check with proper nil‑guard —
 		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
-		defer httpCancel()
-
 		req, err := http.NewRequestWithContext(httpCtx, "GET", app.PublicURL, nil)
 		if err != nil {
+			httpCancel()
 			fmt.Printf("Error creating request: %v\n", err)
 			continue
 		}
 
 		resp, err := client.Do(req)
-		isOnline := (err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300) || resp.StatusCode == 405
+		httpCancel()
 
-		// Notify on status change
+		var isOnline bool
+		if err == nil {
+			isOnline = resp.StatusCode >= 200 && resp.StatusCode < 300 ||
+				resp.StatusCode == 405
+			resp.Body.Close()
+		}
+
+		// — Notify on change —
 		if isOnline != app.Online {
 			status := "offline"
 			if isOnline {
 				status = "online"
 			}
-			message := fmt.Sprintf("Application %d (%s) is now %s", app.ID, app.PublicURL, status)
-			sendNotifications(message)
+			sendNotifications(
+				fmt.Sprintf("The application '%s' (%s) went %s!", app.Name, app.PublicURL, status),
+			)
 		}
 
-		// DB context
+		// — Update DB with its own context —
 		dbCtx, dbCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer dbCancel()
-
-		// Update application status
 		_, err = db.ExecContext(dbCtx,
 			`UPDATE application SET online = $1 WHERE id = $2`,
 			isOnline, app.ID,
 		)
+		dbCancel()
 		if err != nil {
 			fmt.Printf("Update failed for app %d: %v\n", app.ID, err)
 		}
 
-		// Insert into uptime_history
-		_, err = db.ExecContext(dbCtx,
-			`INSERT INTO uptime_history ("applicationId", online, "createdAt") VALUES ($1, $2, now())`,
+		dbCtx2, dbCancel2 := context.WithTimeout(context.Background(), 5*time.Second)
+		_, err = db.ExecContext(dbCtx2,
+			`INSERT INTO uptime_history("applicationId", online, "createdAt") VALUES ($1, $2, now())`,
 			app.ID, isOnline,
 		)
+		dbCancel2()
 		if err != nil {
 			fmt.Printf("Insert into uptime_history failed for app %d: %v\n", app.ID, err)
 		}
