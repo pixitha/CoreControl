@@ -188,13 +188,17 @@ func getApplications(db *sql.DB) []Application {
 }
 
 func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
+	var notificationTemplate string
+	err := db.QueryRow("SELECT notification_text FROM settings LIMIT 1").Scan(&notificationTemplate)
+	if err != nil {
+		notificationTemplate = "The application '!name' (!url) went !status!"
+	}
+
 	for _, app := range apps {
-		// — HTTP check with proper nil‑guard —
 		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
 		req, err := http.NewRequestWithContext(httpCtx, "GET", app.PublicURL, nil)
 		if err != nil {
 			httpCancel()
-			fmt.Printf("Error creating request: %v\n", err)
 			continue
 		}
 
@@ -208,18 +212,20 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			resp.Body.Close()
 		}
 
-		// — Notify on change —
 		if isOnline != app.Online {
 			status := "offline"
 			if isOnline {
 				status = "online"
 			}
-			sendNotifications(
-				fmt.Sprintf("The application '%s' (%s) went %s!", app.Name, app.PublicURL, status),
-			)
+
+			message := notificationTemplate
+			message = strings.ReplaceAll(message, "!name", app.Name)
+			message = strings.ReplaceAll(message, "!url", app.PublicURL)
+			message = strings.ReplaceAll(message, "!status", status)
+
+			sendNotifications(message)
 		}
 
-		// — Update DB with its own context —
 		dbCtx, dbCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		_, err = db.ExecContext(dbCtx,
 			`UPDATE application SET online = $1 WHERE id = $2`,
@@ -227,7 +233,7 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		)
 		dbCancel()
 		if err != nil {
-			fmt.Printf("Update failed for app %d: %v\n", app.ID, err)
+			fmt.Printf("Error updating application %d: %v\n", app.ID, err)
 		}
 
 		dbCtx2, dbCancel2 := context.WithTimeout(context.Background(), 5*time.Second)
@@ -237,7 +243,7 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		)
 		dbCancel2()
 		if err != nil {
-			fmt.Printf("Insert into uptime_history failed for app %d: %v\n", app.ID, err)
+			fmt.Printf("Error uptime_history %d: %v\n", app.ID, err)
 		}
 	}
 }
