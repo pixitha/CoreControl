@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/joho/godotenv"
+	"gopkg.in/gomail.v2"
 )
 
 type Application struct {
@@ -17,6 +19,24 @@ type Application struct {
 	PublicURL string
 	Online    bool
 }
+
+type Notification struct {
+	ID             int
+	Enabled        bool
+	Type           string
+	SMTPHost       sql.NullString
+	SMTPPort       sql.NullInt64
+	SMTPFrom       sql.NullString
+	SMTPUser       sql.NullString
+	SMTPPass       sql.NullString
+	SMTPSecure     sql.NullBool
+	SMTPTo         sql.NullString
+	TelegramChatID sql.NullString
+	TelegramToken  sql.NullString
+	DiscordWebhook sql.NullString
+}
+
+var notifications []Notification
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -34,8 +54,14 @@ func main() {
 	}
 	defer db.Close()
 
+	// Load notification configs
+	notifications, err = loadNotifications(db)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to load notifications: %v", err))
+	}
+
 	go func() {
-		deletionTicker := time.NewTicker(1 * time.Hour)
+		deletionTicker := time.NewTicker(time.Hour)
 		defer deletionTicker.Stop()
 
 		for range deletionTicker.C {
@@ -45,7 +71,7 @@ func main() {
 		}
 	}()
 
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
 	client := &http.Client{
@@ -62,12 +88,41 @@ func main() {
 	}
 }
 
+func loadNotifications(db *sql.DB) ([]Notification, error) {
+	rows, err := db.Query(
+		`SELECT id, enabled, type, "smtpHost", "smtpPort", "smtpFrom", "smtpUser", "smtpPass", "smtpSecure", "smtpTo",
+		       "telegramChatId", "telegramToken", "discordWebhook"
+		FROM notification
+		WHERE enabled = true`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var configs []Notification
+	for rows.Next() {
+		var n Notification
+		if err := rows.Scan(
+			&n.ID, &n.Enabled, &n.Type,
+			&n.SMTPHost, &n.SMTPPort, &n.SMTPFrom, &n.SMTPUser, &n.SMTPPass, &n.SMTPSecure, &n.SMTPTo,
+			&n.TelegramChatID, &n.TelegramToken, &n.DiscordWebhook,
+		); err != nil {
+			fmt.Printf("Error scanning notification: %v\n", err)
+			continue
+		}
+		configs = append(configs, n)
+	}
+	return configs, nil
+}
+
 func deleteOldEntries(db *sql.DB) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	res, err := db.ExecContext(ctx,
-		`DELETE FROM uptime_history WHERE "createdAt" < now() - interval '30 days'`)
+		`DELETE FROM uptime_history WHERE "createdAt" < now() - interval '30 days'`,
+	)
 	if err != nil {
 		return err
 	}
@@ -77,11 +132,9 @@ func deleteOldEntries(db *sql.DB) error {
 }
 
 func getApplications(db *sql.DB) []Application {
-	rows, err := db.Query(`
-        SELECT id, "publicURL", online 
-        FROM application 
-        WHERE "publicURL" IS NOT NULL
-    `)
+	rows, err := db.Query(
+		`SELECT id, "publicURL", online FROM application WHERE "publicURL" IS NOT NULL`,
+	)
 	if err != nil {
 		fmt.Printf("Error fetching applications: %v\n", err)
 		return nil
@@ -91,8 +144,7 @@ func getApplications(db *sql.DB) []Application {
 	var apps []Application
 	for rows.Next() {
 		var app Application
-		err := rows.Scan(&app.ID, &app.PublicURL, &app.Online)
-		if err != nil {
+		if err := rows.Scan(&app.ID, &app.PublicURL, &app.Online); err != nil {
 			fmt.Printf("Error scanning row: %v\n", err)
 			continue
 		}
@@ -103,7 +155,7 @@ func getApplications(db *sql.DB) []Application {
 
 func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 	for _, app := range apps {
-		// Context for HTTP request
+		// HTTP request context
 		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
 		defer httpCancel()
 
@@ -114,20 +166,26 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		}
 
 		resp, err := client.Do(req)
-		isOnline := false
-		if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			isOnline = true
+		isOnline := err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 || resp.StatusCode == 405
+
+		// Notify on status change
+		if isOnline != app.Online {
+			status := "offline"
+			if isOnline {
+				status = "online"
+			}
+			message := fmt.Sprintf("Application %d (%s) is now %s", app.ID, app.PublicURL, status)
+			sendNotifications(message)
 		}
 
-		// Create a new context for database operations with a separate timeout
+		// DB context
 		dbCtx, dbCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer dbCancel()
 
 		// Update application status
 		_, err = db.ExecContext(dbCtx,
 			`UPDATE application SET online = $1 WHERE id = $2`,
-			isOnline,
-			app.ID,
+			isOnline, app.ID,
 		)
 		if err != nil {
 			fmt.Printf("Update failed for app %d: %v\n", app.ID, err)
@@ -136,11 +194,83 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		// Insert into uptime_history
 		_, err = db.ExecContext(dbCtx,
 			`INSERT INTO uptime_history ("applicationId", online, "createdAt") VALUES ($1, $2, now())`,
-			app.ID,
-			isOnline,
+			app.ID, isOnline,
 		)
 		if err != nil {
 			fmt.Printf("Insert into uptime_history failed for app %d: %v\n", app.ID, err)
 		}
 	}
+}
+
+func sendNotifications(message string) {
+	for _, n := range notifications {
+		switch n.Type {
+		case "email":
+			if n.SMTPHost.Valid && n.SMTPTo.Valid {
+				sendEmail(n, message)
+			}
+		case "telegram":
+			if n.TelegramToken.Valid && n.TelegramChatID.Valid {
+				sendTelegram(n, message)
+			}
+		case "discord":
+			if n.DiscordWebhook.Valid {
+				sendDiscord(n, message)
+			}
+		}
+	}
+}
+
+func sendEmail(n Notification, body string) {
+	// Initialize SMTP dialer with host, port, user, pass
+	d := gomail.NewDialer(
+		n.SMTPHost.String,
+		int(n.SMTPPort.Int64),
+		n.SMTPUser.String,
+		n.SMTPPass.String,
+	)
+	if n.SMTPSecure.Valid && n.SMTPSecure.Bool {
+		d.SSL = true
+	}
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", n.SMTPFrom.String)
+	m.SetHeader("To", n.SMTPTo.String)
+	m.SetHeader("Subject", "Uptime Notification")
+	m.SetBody("text/plain", body)
+
+	if err := d.DialAndSend(m); err != nil {
+		fmt.Printf("Email send failed: %v\n", err)
+	}
+}
+
+func sendTelegram(n Notification, message string) {
+	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s",
+		n.TelegramToken.String,
+		n.TelegramChatID.String,
+		message,
+	)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("Telegram send failed: %v\n", err)
+		return
+	}
+	resp.Body.Close()
+}
+
+func sendDiscord(n Notification, message string) {
+	payload := fmt.Sprintf(`{"content": "%s"}`, message)
+	req, err := http.NewRequest("POST", n.DiscordWebhook.String, strings.NewReader(payload))
+	if err != nil {
+		fmt.Printf("Discord request creation failed: %v\n", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Discord send failed: %v\n", err)
+		return
+	}
+	resp.Body.Close()
 }
