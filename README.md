@@ -68,6 +68,9 @@ services:
     image: haedlessdev/corecontrol-agent:latest
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres"
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:17
@@ -78,6 +81,11 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
 
 volumes:
   postgres_data:
