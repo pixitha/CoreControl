@@ -841,9 +841,15 @@ export default function Dashboard() {
                                                 onCheckedChange={(checked) =>
                                                   setEditHost(checked === true)
                                                 }
+                                                disabled={server.hostedVMs.length > 0}
                                               />
                                               <Label htmlFor="editHostCheckbox">
                                                 Mark as host server
+                                                {server.hostedVMs.length > 0 && (
+                                                  <span className="text-muted-foreground text-sm ml-2">
+                                                    (Cannot be disabled while hosting VMs)
+                                                  </span>
+                                                )}
                                               </Label>
                                             </div>
                                             {!editHost && (
@@ -1185,11 +1191,17 @@ export default function Dashboard() {
                                                                                 true
                                                                             )
                                                                           }
+                                                                          disabled={server.hostedVMs.length > 0}
                                                                         />
                                                                         <Label htmlFor="editHostCheckbox">
                                                                           Mark as
                                                                           host
                                                                           server
+                                                                          {server.hostedVMs.length > 0 && (
+                                                                            <span className="text-muted-foreground text-sm ml-2">
+                                                                              (Cannot be disabled while hosting VMs)
+                                                                            </span>
+                                                                          )}
                                                                         </Label>
                                                                       </div>
                                                                       {!editHost && (
