@@ -34,6 +34,8 @@ model uptime_history {
 
 model server {
   id            Int       @id @default(autoincrement())
+  host          Boolean   @default(false)
+  hostServer    Int?
   name          String
   os            String?
   ip            String?
@@ -47,10 +49,27 @@ model server {
 model settings {
   id            Int       @id @default(autoincrement())
   uptime_checks          Boolean       @default(true)
+  notification_text       String?
 }
 
 model user {
   id            String    @id @default(uuid())
   email         String    @unique
   password      String
+}
+
+model notification {
+  id            Int       @id @default(autoincrement())
+  enabled       Boolean   @default(true)
+  type          String
+  smtpHost     String?
+  smtpPort     Int?
+  smtpFrom     String?
+  smtpUser     String?
+  smtpPass     String?
+  smtpSecure   Boolean?
+  smtpTo       String?
+  telegramChatId String?
+  telegramToken String?
+  discordWebhook String?
 }

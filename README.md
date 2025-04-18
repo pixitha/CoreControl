@@ -20,27 +20,30 @@ Login Page:
 ![Login Page](https://i.ibb.co/DfS7BJdX/image.png)
 
 Dashboard Page:
-![Dashboard Page](https://i.ibb.co/m5xMXz73/image.png)
+![Dashboard Page](https://i.ibb.co/wFMb7StT/image.png)
 
 Servers Page:
-![Servers Page](https://i.ibb.co/QFrFRp1B/image.png)
+![Servers Page](https://i.ibb.co/HLMD9HPZ/image.png)
+
+VM Display:
+![VM Display](https://i.ibb.co/My45mv8k/image.png)
 
 Applications Page:
-![Applications Page](https://i.ibb.co/1JK3pFYG/image.png)
+![Applications Page](https://i.ibb.co/qMwrKwn3/image.png)
 
 Uptime Page:
-![Uptime Page](https://i.ibb.co/99LTnZ14/image.png)
+![Uptime Page](https://i.ibb.co/jvGcL9Y6/image.png)
 
 Network Page:
-![Network Page](https://i.ibb.co/1Y6ypKHk/image.png)
+![Network Page](https://i.ibb.co/qYcL2Fws/image.png)
 
 Settings Page:
-![Settings Page](https://i.ibb.co/mrdjqy7f/image.png)
+![Settings Page](https://i.ibb.co/rRQB9Hcz/image.png)
 
 ## Roadmap
 - [X] Edit Applications, Applications searchbar
 - [X] Uptime History
-- [ ] Notifications
+- [X] Notifications
 - [ ] Simple Server Monitoring
 - [ ] Improved Network Flowchart with custom elements (like Network switches)
 - [ ] Advanced Settings (Disable Uptime Tracking & more)

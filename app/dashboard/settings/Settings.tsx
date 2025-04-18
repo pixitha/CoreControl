@@ -21,19 +21,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { Input } from "@/components/ui/input"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Check, Palette, User } from "lucide-react";
+import { AlertCircle, Check, Palette, User, Bell } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+
+interface NotificationsResponse {
+  notifications: any[]; 
+}
+interface NotificationResponse {
+  notification_text?: string;
+}
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -50,6 +65,22 @@ export default function Settings() {
 
   const [passwordSuccess, setPasswordSuccess] = useState<boolean>(false)
   const [emailSuccess, setEmailSuccess] = useState<boolean>(false)
+
+  const [notificationType, setNotificationType] = useState<string>("")
+  const [smtpHost, setSmtpHost] = useState<string>("")
+  const [smtpPort, setSmtpPort] = useState<number>(0)
+  const [smtpSecure, setSmtpSecure] = useState<boolean>(false)
+  const [smtpUsername, setSmtpUsername] = useState<string>("")
+  const [smtpPassword, setSmtpPassword] = useState<string>("")
+  const [smtpFrom, setSmtpFrom] = useState<string>("")
+  const [smtpTo, setSmtpTo] = useState<string>("")
+  const [telegramToken, setTelegramToken] = useState<string>("")
+  const [telegramChatId, setTelegramChatId] = useState<string>("")
+  const [discordWebhook, setDiscordWebhook] = useState<string>("")
+
+  const [notifications, setNotifications] = useState<any[]>([])
+
+  const [notificationText, setNotificationText] = useState<string>("")
 
   const changeEmail = async () => {
     setEmailErrorVisible(false);
@@ -131,6 +162,88 @@ export default function Settings() {
       }, 3000);
     }
   }
+
+  const addNotification = async () => {
+    try {
+      const response = await axios.post('/api/notifications/add', {
+        type: notificationType,
+        smtpHost: smtpHost,
+        smtpPort: smtpPort,
+        smtpSecure: smtpSecure,
+        smtpUsername: smtpUsername,
+        smtpPassword: smtpPassword,
+        smtpFrom: smtpFrom,
+        smtpTo: smtpTo,
+        telegramToken: telegramToken,
+        telegramChatId: telegramChatId,
+        discordWebhook: discordWebhook
+      });
+      getNotifications();
+    }
+    catch (error: any) {
+      alert(error.response.data.error);
+    }
+  }
+
+  const deleteNotification = async (id: number) => {
+    try {
+      const response = await axios.post('/api/notifications/delete', {
+        id: id
+      });
+      if (response.status === 200) {
+        getNotifications()
+      }
+    } catch (error: any) {
+      alert(error.response.data.error);
+    }
+  }
+
+  const getNotifications = async () => {
+    try {
+      const response = await axios.post<NotificationsResponse>('/api/notifications/get', {});
+      if (response.status === 200 && response.data) {
+        setNotifications(response.data.notifications);
+      }
+    }
+    catch (error: any) {
+      alert(error.response.data.error);
+    }
+  }
+
+  useEffect(() => {
+    getNotifications()
+  }, [])
+
+
+  const getNotificationText = async () => {
+    try {
+      const response = await axios.post<NotificationResponse>('/api/settings/get_notification_text', {});
+      if (response.status === 200) {
+        if (response.data.notification_text) {
+          setNotificationText(response.data.notification_text);
+        } else {
+          setNotificationText("The application !name (!url) is now !status.");
+        }
+      }
+    } catch (error: any) {
+      alert(error.response.data.error);
+    }
+  };
+
+  const editNotificationText = async () => {
+    try {
+      const response = await axios.post('/api/settings/notification_text', {
+        text: notificationText
+      });
+    } catch (error: any) {
+      alert(error.response.data.error);
+    }
+  }
+
+  useEffect(() => {
+    getNotificationText()
+  }, [])
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -286,6 +399,213 @@ export default function Settings() {
                       <SelectItem value="system">System</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+
+            <Card className="overflow-hidden border-2 border-muted/20 shadow-sm">
+              <CardHeader className="bg-muted/10 px-6 py-4 border-b">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Notifications</h2>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-6">
+                <div className="text-sm text-muted-foreground mb-6">
+                  Set up Notifications to get notified when an application goes offline or online.
+                </div>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button className="w-full">
+                      Add Notification
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogTitle>Add Notification</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <Select value={notificationType} onValueChange={(value: string) => setNotificationType(value)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Notification Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="smtp">SMTP</SelectItem>
+                          <SelectItem value="telegram">Telegram</SelectItem>
+                          <SelectItem value="discord">Discord</SelectItem>
+                        </SelectContent>
+
+                        {notificationType === "smtp" && (
+                          <div className="mt-4 space-y-4">
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <Label htmlFor="smtpHost">SMTP Host</Label>
+                              <Input
+                                type="text"
+                                id="smtpHost"
+                                placeholder="smtp.example.com"
+                                onChange={(e) => setSmtpHost(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label htmlFor="smtpPort">SMTP Port</Label>
+                              <Input
+                                type="number"
+                                id="smtpPort"
+                                placeholder="587"
+                                onChange={(e) => setSmtpPort(Number(e.target.value))}
+                              />
+                            </div>
+                          </div>
+                        
+                          <div className="flex items-center space-x-2 pt-2 pb-4">
+                            <Checkbox
+                              id="smtpSecure"
+                              onCheckedChange={(checked: any) => setSmtpSecure(checked)}
+                            />
+                            <Label htmlFor="smtpSecure" className="text-sm font-medium leading-none">
+                              Secure Connection (TLS/SSL)
+                            </Label>
+                          </div>
+                        
+                          <div className="grid gap-4">
+                            <div className="space-y-1.5">
+                              <Label htmlFor="smtpUser">SMTP Username</Label>
+                              <Input
+                                type="text"
+                                id="smtpUser"
+                                placeholder="user@example.com"
+                                onChange={(e) => setSmtpUsername(e.target.value)}
+                              />
+                            </div>
+                            
+                            <div className="space-y-1.5">
+                              <Label htmlFor="smtpPass">SMTP Password</Label>
+                              <Input
+                                type="password"
+                                id="smtpPass"
+                                placeholder="••••••••"
+                                onChange={(e) => setSmtpPassword(e.target.value)}
+                              />
+                            </div>
+                        
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <Label htmlFor="smtpFrom">From Address</Label>
+                                <Input
+                                  type="email"
+                                  id="smtpFrom"
+                                  placeholder="noreply@example.com"
+                                  onChange={(e) => setSmtpFrom(e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-1.5">
+                                <Label htmlFor="smtpTo">To Address</Label>
+                                <Input
+                                  type="email"
+                                  id="smtpTo"
+                                  placeholder="admin@example.com"
+                                  onChange={(e) => setSmtpTo(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        )}
+
+                        {notificationType === "telegram" && (
+                          <div className="mt-4 space-y-2">
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="telegramToken">Bot Token</Label>
+                              <Input type="text" id="telegramToken" placeholder="" onChange={(e) => setTelegramToken(e.target.value)} />
+                            </div>
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="telegramChatId">Chat ID</Label>
+                              <Input type="text" id="telegramChatId" placeholder="" onChange={(e) => setTelegramChatId(e.target.value)} />
+                            </div>
+                          </div>
+                        )}
+
+                        {notificationType === "discord" && (
+                          <div className="mt-4">
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label htmlFor="discordWebhook">Webhook URL</Label>
+                              <Input type="text" id="discordWebhook" placeholder="" onChange={(e) => setDiscordWebhook(e.target.value)} />
+                            </div>
+                          </div>
+                        )}
+
+                      </Select>
+                    </AlertDialogDescription>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={addNotification}>
+                        Add
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>    
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <div className="pt-4 pb-2">
+                      <Button className="w-full" variant="secondary">
+                        Customize Notification Text
+                      </Button>
+                    </div>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogTitle>Customize Notification Text</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <div className="space-y-4">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="text">Notification Text</Label>
+                            <Textarea id="text" placeholder="Type here..." value={notificationText} onChange={(e) => setNotificationText(e.target.value)} rows={4} />
+                          </div>
+                      </div>
+                      <div className="pt-4 text-sm text-muted-foreground">
+                        You can use the following placeholders in the text:
+                        <ul className="list-disc list-inside space-y-1 pt-2">
+                          <li><strong>!name</strong> - Application name</li>
+                          <li><strong>!url</strong> - Application URL</li>
+                          <li><strong>!status</strong> - Application status (online/offline)</li>
+                        </ul>
+                      </div>
+                    </AlertDialogDescription>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={editNotificationText}>
+                        Save
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>    
+
+                <div className="mt-6 space-y-4">
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <div 
+                        key={notification.id}
+                        className="flex items-center justify-between p-4 bg-muted/10 rounded-lg border"
+                      >
+                        <div className="space-y-1">
+                          <h3 className="font-medium capitalize">{notification.type}</h3>
+                        </div>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => deleteNotification(notification.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-muted-foreground py-6">
+                      No notifications configured
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
