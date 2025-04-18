@@ -861,16 +861,16 @@ export default function Dashboard() {
                                                     <SelectValue placeholder="Select a host server" />
                                                   </SelectTrigger>
                                                   <SelectContent>
-                                                    {hostServers.map(
-                                                      (server) => (
+                                                    {hostServers
+                                                      .filter(server => server.id !== editId)
+                                                      .map((server) => (
                                                         <SelectItem
                                                           key={server.id}
                                                           value={server.id.toString()}
                                                         >
                                                           {server.name}
                                                         </SelectItem>
-                                                      )
-                                                    )}
+                                                      ))}
                                                   </SelectContent>
                                                 </Select>
                                               </div>
@@ -1214,22 +1214,16 @@ export default function Dashboard() {
                                                                               <SelectValue placeholder="Select a host server" />
                                                                             </SelectTrigger>
                                                                             <SelectContent>
-                                                                              {hostServers.map(
-                                                                                (
-                                                                                  server
-                                                                                ) => (
+                                                                              {hostServers
+                                                                                .filter(server => server.id !== editId)
+                                                                                .map((server) => (
                                                                                   <SelectItem
-                                                                                    key={
-                                                                                      server.id
-                                                                                    }
+                                                                                    key={server.id}
                                                                                     value={server.id.toString()}
                                                                                   >
-                                                                                    {
-                                                                                      server.name
-                                                                                    }
+                                                                                    {server.name}
                                                                                   </SelectItem>
-                                                                                )
-                                                                              )}
+                                                                                ))}
                                                                             </SelectContent>
                                                                           </Select>
                                                                         </div>
