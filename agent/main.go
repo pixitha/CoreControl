@@ -190,27 +190,43 @@ func getApplications(db *sql.DB) []Application {
 func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 	var notificationTemplate string
 	err := db.QueryRow("SELECT notification_text FROM settings LIMIT 1").Scan(&notificationTemplate)
-	if err != nil {
+	if err != nil || notificationTemplate == "" {
 		notificationTemplate = "The application '!name' (!url) went !status!"
 	}
 
 	for _, app := range apps {
+		logPrefix := fmt.Sprintf("[App %s (%s)]", app.Name, app.PublicURL)
+		fmt.Printf("%s Checking...\n", logPrefix)
+
 		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
-		req, err := http.NewRequestWithContext(httpCtx, "GET", app.PublicURL, nil)
+		req, err := http.NewRequestWithContext(httpCtx, "HEAD", app.PublicURL, nil)
 		if err != nil {
+			fmt.Printf("%s Request creation failed: %v\n", logPrefix, err)
 			httpCancel()
 			continue
 		}
 
 		resp, err := client.Do(req)
-		httpCancel()
+
+		if err != nil || (resp != nil && (resp.StatusCode == http.StatusMethodNotAllowed || resp.StatusCode == http.StatusNotImplemented)) {
+			if resp != nil && resp.Body != nil {
+				resp.Body.Close()
+			}
+			fmt.Printf("%s HEAD failed, trying GET...\n", logPrefix)
+
+			req.Method = "GET"
+			resp, err = client.Do(req)
+		}
 
 		var isOnline bool
-		if err == nil {
-			isOnline = resp.StatusCode >= 200 && resp.StatusCode < 300 ||
-				resp.StatusCode == 405
+		if err == nil && resp != nil {
+			isOnline = (resp.StatusCode >= 200 && resp.StatusCode < 300) || resp.StatusCode == 405
 			resp.Body.Close()
+		} else {
+			fmt.Printf("%s HTTP error: %v\n", logPrefix, err)
 		}
+
+		httpCancel()
 
 		if isOnline != app.Online {
 			status := "offline"
@@ -231,20 +247,20 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			`UPDATE application SET online = $1 WHERE id = $2`,
 			isOnline, app.ID,
 		)
-		dbCancel()
 		if err != nil {
-			fmt.Printf("Error updating application %d: %v\n", app.ID, err)
+			fmt.Printf("%s DB update failed: %v\n", logPrefix, err)
 		}
+		dbCancel()
 
 		dbCtx2, dbCancel2 := context.WithTimeout(context.Background(), 5*time.Second)
 		_, err = db.ExecContext(dbCtx2,
 			`INSERT INTO uptime_history("applicationId", online, "createdAt") VALUES ($1, $2, now())`,
 			app.ID, isOnline,
 		)
-		dbCancel2()
 		if err != nil {
-			fmt.Printf("Error uptime_history %d: %v\n", app.ID, err)
+			fmt.Printf("%s Insert into history failed: %v\n", logPrefix, err)
 		}
+		dbCancel2()
 	}
 }
 
