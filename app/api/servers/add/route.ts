@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface AddRequest {
+    host: boolean;
+    hostServer: number;
     name: string;
     os: string;
     ip: string;
@@ -16,10 +18,12 @@ interface AddRequest {
 export async function POST(request: NextRequest) {
     try {
         const body: AddRequest = await request.json();
-        const { name, os, ip, url, cpu, gpu, ram, disk } = body;  
+        const { host, hostServer, name, os, ip, url, cpu, gpu, ram, disk } = body;  
         
         const server = await prisma.server.create({
             data: {
+                host,
+                hostServer,
                 name,
                 os,
                 ip,

@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface EditRequest {
+    host: boolean;
+    hostServer: number;
     id: number;
     name: string;
     os: string;
@@ -16,7 +18,7 @@ interface EditRequest {
 export async function PUT(request: NextRequest) {
     try {
         const body: EditRequest = await request.json();
-        const { id, name, os, ip, url, cpu, gpu, ram, disk } = body;
+        const { host, hostServer, id, name, os, ip, url, cpu, gpu, ram, disk } = body;
 
         const existingServer = await prisma.server.findUnique({ where: { id } });
         if (!existingServer) {
