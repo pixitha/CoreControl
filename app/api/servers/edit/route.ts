@@ -28,6 +28,8 @@ export async function PUT(request: NextRequest) {
         const updatedServer = await prisma.server.update({
             where: { id },
             data: { 
+                host,
+                hostServer,
                 name, 
                 os, 
                 ip, 

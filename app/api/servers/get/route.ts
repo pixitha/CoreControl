@@ -6,24 +6,39 @@ interface GetRequest {
     ITEMS_PER_PAGE?: number;
 }
 
-
 export async function POST(request: NextRequest) {
     try {
         const body: GetRequest = await request.json();
         const page = Math.max(1, body.page || 1);
         const ITEMS_PER_PAGE = body.ITEMS_PER_PAGE || 4;
-        
-        const servers = await prisma.server.findMany({
+
+        // Host-Server mit Paginierung holen
+        const hosts = await prisma.server.findMany({
+            where: { hostServer: null },
             skip: (page - 1) * ITEMS_PER_PAGE,
             take: ITEMS_PER_PAGE,
             orderBy: { name: 'asc' }
         });
 
-        const totalCount = await prisma.server.count();
-        const maxPage = Math.ceil(totalCount / ITEMS_PER_PAGE);
+        // VMs für alle Hosts sammeln
+        const hostsWithVms = await Promise.all(
+            hosts.map(async (host) => ({
+                ...host,
+                hostedVMs: await prisma.server.findMany({
+                    where: { hostServer: host.id },
+                    orderBy: { name: 'asc' }
+                })
+            }))
+        );
+
+        const totalHosts = await prisma.server.count({
+            where: { hostServer: null }
+        });
+
+        const maxPage = Math.ceil(totalHosts / ITEMS_PER_PAGE);
 
         return NextResponse.json({ 
-            servers,
+            servers: hostsWithVms,
             maxPage
         });
     } catch (error: any) {
