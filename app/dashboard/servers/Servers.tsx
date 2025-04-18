@@ -908,7 +908,7 @@ export default function Dashboard() {
                                       <AlertDialogDescription>
                                         {server.host && (
                                           <div className="mt-4">
-                                            <ScrollArea className="h-[500px] w-fzull rounded-md border p-4">
+                                            <ScrollArea className="h-[500px] w-full pr-3">
                                               <div className="space-y-2 mt-2">
                                                 {server.hostedVMs?.map(
                                                   (hostedVM) => (
