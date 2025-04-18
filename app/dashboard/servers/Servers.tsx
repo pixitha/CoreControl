@@ -917,7 +917,7 @@ export default function Dashboard() {
                                                       className="flex flex-col gap-2 border border-muted py-2 px-4 rounded-md"
                                                     >
                                                       <div className="flex items-center justify-between">
-                                                        <div className="text-base font-md text-muted-foreground">
+                                                        <div className="text-base font-extrabold">
                                                           {hostedVM.name}
                                                         </div>
                                                         <div className="flex items-center gap-2 text-foreground/80">
