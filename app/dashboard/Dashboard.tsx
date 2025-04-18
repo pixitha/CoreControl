@@ -85,7 +85,7 @@ export default function Dashboard() {
             <CardContent className="pt-2 pb-4">
               <div className="grid grid-cols-2 gap-4">
                 {/* Physical Servers */}
-                <div className="flex items-center space-x-4 bg-background p-4 rounded-lg">
+                <div className="flex items-center space-x-4 border border-gray-background p-4 rounded-lg">
                   <div className="bg-rose-100 p-2 rounded-full">
                     <Server className="h-6 w-6 text-rose-600" />
                   </div>
@@ -96,7 +96,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Virtual Machines */}
-                <div className="flex items-center space-x-4 bg-background p-4 rounded-lg">
+                <div className="flex items-center space-x-4 border border-gray-background p-4 rounded-lg">
                   <div className="bg-violet-100 p-2 rounded-full">
                     <Network className="h-6 w-6 text-violet-600" />
                   </div>
