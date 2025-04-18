@@ -108,34 +108,46 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		logPrefix := fmt.Sprintf("[App %d/%d URL: %s]", i+1, len(apps), app.PublicURL)
 		fmt.Printf("%s Starting check\n", logPrefix)
 
-		// HTTP Check
 		startHTTP := time.Now()
 		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
-		defer httpCancel()
 
 		req, err := http.NewRequestWithContext(httpCtx, "HEAD", app.PublicURL, nil)
 		if err != nil {
 			fmt.Printf("%s Request creation failed: %v\n", logPrefix, err)
+			httpCancel()
 			continue
 		}
 
 		resp, err := client.Do(req)
 		httpDuration := time.Since(startHTTP)
 
-		// Log HTTP details
+		if err != nil || resp == nil || (resp.StatusCode == http.StatusMethodNotAllowed || resp.StatusCode == http.StatusNotImplemented) {
+			if resp != nil && resp.Body != nil {
+				resp.Body.Close()
+			}
+			fmt.Printf("%s HEAD failed, trying GET fallback...\n", logPrefix)
+
+			req.Method = "GET"
+			resp, err = client.Do(req)
+			httpDuration = time.Since(startHTTP)
+		}
+
+		isOnline := false
+		if err == nil && resp != nil {
+			isOnline = (resp.StatusCode >= 200 && resp.StatusCode < 300) || resp.StatusCode == 405
+		}
+
 		if err != nil {
 			fmt.Printf("%s HTTP error after %v: %v\n", logPrefix, httpDuration, err)
 		} else {
 			fmt.Printf("%s HTTP %d after %v (ContentLength: %d)\n",
 				logPrefix, resp.StatusCode, httpDuration, resp.ContentLength)
-			resp.Body.Close() // Important to prevent leaks
+			resp.Body.Close()
 		}
 
-		isOnline := err == nil && resp != nil && resp.StatusCode >= 200 && resp.StatusCode < 300 || resp.StatusCode == 405
+		httpCancel()
 
-		// Database Update
 		dbCtx, dbCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer dbCancel()
 
 		startUpdate := time.Now()
 		updateRes, err := db.ExecContext(dbCtx,
@@ -144,7 +156,6 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			app.ID,
 		)
 		updateDuration := time.Since(startUpdate)
-
 		if err != nil {
 			fmt.Printf("%s UPDATE failed after %v: %v\n", logPrefix, updateDuration, err)
 		} else {
@@ -152,7 +163,6 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			fmt.Printf("%s UPDATE OK (%d rows) after %v\n", logPrefix, affected, updateDuration)
 		}
 
-		// History Insert
 		startInsert := time.Now()
 		insertRes, err := db.ExecContext(dbCtx,
 			`INSERT INTO uptime_history ("applicationId", online, "createdAt") VALUES ($1, $2, now())`,
@@ -160,12 +170,13 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			isOnline,
 		)
 		insertDuration := time.Since(startInsert)
-
 		if err != nil {
 			fmt.Printf("%s INSERT failed after %v: %v\n", logPrefix, insertDuration, err)
 		} else {
 			inserted, _ := insertRes.RowsAffected()
 			fmt.Printf("%s INSERT OK (%d rows) after %v\n", logPrefix, inserted, insertDuration)
 		}
+
+		dbCancel()
 	}
 }
