@@ -585,7 +585,7 @@ export default function Dashboard() {
               }
             >
               {servers
-                .filter((server) => server.hostServer === null)
+                .filter((server) => server.hostServer === 0)
                 .map((server) => (
                   <Card
                     key={server.id}

@@ -12,15 +12,13 @@ export async function POST(request: NextRequest) {
         const page = Math.max(1, body.page || 1);
         const ITEMS_PER_PAGE = body.ITEMS_PER_PAGE || 4;
 
-        // Host-Server mit Paginierung holen
         const hosts = await prisma.server.findMany({
-            where: { hostServer: null },
+            where: { hostServer: 0 },
             skip: (page - 1) * ITEMS_PER_PAGE,
             take: ITEMS_PER_PAGE,
             orderBy: { name: 'asc' }
         });
 
-        // VMs für alle Hosts sammeln
         const hostsWithVms = await Promise.all(
             hosts.map(async (host) => ({
                 ...host,
