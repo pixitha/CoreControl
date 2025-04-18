@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto/x509"
 	"database/sql"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -122,6 +126,11 @@ func notifMutexCopy(src []Notification) []Notification {
 	return copyDst
 }
 
+func isIPAddress(host string) bool {
+	ip := net.ParseIP(host)
+	return ip != nil
+}
+
 func loadNotifications(db *sql.DB) ([]Notification, error) {
 	rows, err := db.Query(
 		`SELECT id, enabled, type, "smtpHost", "smtpPort", "smtpFrom", "smtpUser", "smtpPass", "smtpSecure", "smtpTo",
@@ -198,6 +207,14 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		logPrefix := fmt.Sprintf("[App %s (%s)]", app.Name, app.PublicURL)
 		fmt.Printf("%s Checking...\n", logPrefix)
 
+		parsedURL, parseErr := url.Parse(app.PublicURL)
+		if parseErr != nil {
+			fmt.Printf("%s Invalid URL: %v\n", logPrefix, parseErr)
+			continue
+		}
+
+		hostIsIP := isIPAddress(parsedURL.Hostname())
+
 		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
 		req, err := http.NewRequestWithContext(httpCtx, "HEAD", app.PublicURL, nil)
 		if err != nil {
@@ -223,7 +240,22 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			isOnline = (resp.StatusCode >= 200 && resp.StatusCode < 300) || resp.StatusCode == 405
 			resp.Body.Close()
 		} else {
-			fmt.Printf("%s HTTP error: %v\n", logPrefix, err)
+			if err != nil {
+				fmt.Printf("%s HTTP error: %v\n", logPrefix, err)
+
+				// Sonderbehandlung für IP-Adressen + TLS-Zertifikatfehler
+				if hostIsIP {
+					var urlErr *url.Error
+					if errors.As(err, &urlErr) {
+						var certErr x509.HostnameError
+						var unknownAuthErr x509.UnknownAuthorityError
+						if errors.As(urlErr.Err, &certErr) || errors.As(urlErr.Err, &unknownAuthErr) {
+							fmt.Printf("%s Ignoring TLS error for IP, marking as online.\n", logPrefix)
+							isOnline = true
+						}
+					}
+				}
+			}
 		}
 
 		httpCancel()
@@ -263,7 +295,6 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		dbCancel2()
 	}
 }
-
 func sendNotifications(message string) {
 	notifMutex.RLock()
 	notifs := notifMutexCopy(notifications)
