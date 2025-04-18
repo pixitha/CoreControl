@@ -35,7 +35,7 @@ model uptime_history {
 model server {
   id            Int       @id @default(autoincrement())
   host          Boolean   @default(false)
-  hostServer    String?
+  hostServer    Int?
   name          String
   os            String?
   ip            String?
