@@ -76,7 +76,7 @@ export default function Dashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-2xl font-semibold">Server Infrastructure</CardTitle>
+                  <CardTitle className="text-2xl font-semibold">Servers</CardTitle>
                   <CardDescription className="mt-1">Physical and virtual servers overview</CardDescription>
                 </div>
                 <Server className="h-8 w-8 text-rose-500 p-1.5 rounded-lg" />
