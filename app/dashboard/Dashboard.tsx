@@ -19,20 +19,23 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 
 interface StatsResponse {
-  serverCount: number
+  serverCountNoVMs: number
+  serverCountOnlyVMs: number
   applicationCount: number
   onlineApplicationsCount: number
 }
 
 export default function Dashboard() {
-  const [serverCount, setServerCount] = useState<number>(0)
+  const [serverCountNoVMs, setServerCountNoVMs] = useState<number>(0)
+  const [serverCountOnlyVMs, setServerCountOnlyVMs] = useState<number>(0)
   const [applicationCount, setApplicationCount] = useState<number>(0)
   const [onlineApplicationsCount, setOnlineApplicationsCount] = useState<number>(0)
 
   const getStats = async () => {
     try {
       const response = await axios.post<StatsResponse>("/api/dashboard/get", {})
-      setServerCount(response.data.serverCount)
+      setServerCountNoVMs(response.data.serverCountNoVMs)
+      setServerCountOnlyVMs(response.data.serverCountOnlyVMs)
       setApplicationCount(response.data.applicationCount)
       setOnlineApplicationsCount(response.data.onlineApplicationsCount)
     } catch (error: any) {
@@ -78,8 +81,16 @@ export default function Dashboard() {
                 <CardDescription>Manage your server infrastructure</CardDescription>
               </CardHeader>
               <CardContent className="pt-2 pb-4">
-                <div className="text-4xl font-bold">{serverCount}</div>
-                <p className="text-sm text-muted-foreground mt-2">Active servers</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <div className="text-4xl font-bold">{serverCountNoVMs}</div>
+                    <p className="text-sm text-muted-foreground mt-2">Physical servers</p>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="text-4xl font-bold">{serverCountOnlyVMs}</div>
+                    <p className="text-sm text-muted-foreground mt-2">VMs</p>
+                  </div>
+                </div>
               </CardContent>
               <CardFooter className="border-t bg-muted/20 p-4">
                 <Button variant="ghost" size="default" className="w-full hover:bg-background font-medium" asChild>
@@ -152,7 +163,7 @@ export default function Dashboard() {
                 <CardDescription>Manage network configuration</CardDescription>
               </CardHeader>
               <CardContent className="pt-2 pb-4">
-                <div className="text-4xl font-bold">{serverCount + applicationCount}</div>
+                <div className="text-4xl font-bold">{serverCountNoVMs + serverCountOnlyVMs + applicationCount}</div>
                 <p className="text-sm text-muted-foreground mt-2">Active connections</p>
               </CardContent>
               <CardFooter className="border-t bg-muted/20 p-4">
