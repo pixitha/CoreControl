@@ -25,11 +25,18 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: "Server not found" }, { status: 404 });
         }
 
+        let newHostServer = hostServer;
+        if (hostServer === null) {
+            newHostServer = 0;
+        } else {
+            newHostServer = hostServer;
+        }
+
         const updatedServer = await prisma.server.update({
             where: { id },
             data: { 
                 host,
-                hostServer,
+                hostServer: newHostServer,
                 name, 
                 os, 
                 ip, 
