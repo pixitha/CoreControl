@@ -3,7 +3,19 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
     try {
-        const serverCount = await prisma.server.count();
+        const serverCountNoVMs = await prisma.server.count({
+            where: {
+                hostServer: 0
+            }
+        });
+
+        const serverCountOnlyVMs = await prisma.server.count({
+            where: {
+                hostServer: {
+                    not: 0
+                }
+            }
+        });
 
         const applicationCount = await prisma.application.count();
 
@@ -12,7 +24,8 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json({
-            serverCount,
+            serverCountNoVMs,
+            serverCountOnlyVMs,
             applicationCount,
             onlineApplicationsCount
         });
