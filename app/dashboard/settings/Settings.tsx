@@ -417,7 +417,6 @@ export default function Settings() {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button className="w-full h-11 flex items-center gap-2">
-                        <Bell className="h-4 w-4" />
                         Add Notification Channel
                       </Button>
                     </AlertDialogTrigger>
