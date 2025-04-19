@@ -94,7 +94,8 @@ interface Server {
   gpu?: string;
   ram?: string;
   disk?: string;
-  hostedVMs: Server[];
+  hostedVMs?: Server[];
+  isVM?: boolean;
 }
 
 interface GetServersResponse {
@@ -278,6 +279,7 @@ export default function Dashboard() {
         { searchterm: searchTerm }
       );
       setServers(response.data.results);
+      setMaxPage(1);
       setIsSearching(false);
     } catch (error: any) {
       console.error("Search error:", error.response?.data);
@@ -313,6 +315,13 @@ export default function Dashboard() {
       fetchHostServers();
     }
   }, [isAddDialogOpen, editId]);
+
+  // Add this function to get the host server name for a VM
+  const getHostServerName = (hostServerId: number | null) => {
+    if (!hostServerId) return "";
+    const hostServer = servers.find(server => server.id === hostServerId);
+    return hostServer ? hostServer.name : "";
+  };
 
   return (
     <SidebarProvider>
@@ -585,7 +594,7 @@ export default function Dashboard() {
               }
             >
               {servers
-                .filter((server) => server.hostServer === 0)
+                .filter((server) => searchTerm ? true : server.hostServer === 0)
                 .map((server) => (
                   <Card
                     key={server.id}
@@ -599,8 +608,11 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
                           <div className="ml-4">
-                            <CardTitle className="text-2xl font-bold">
+                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
                               {server.name}
+                              {server.isVM && (
+                                <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">VM</span>
+                              )}
                             </CardTitle>
                             <CardDescription
                               className={`text-sm mt-1 grid gap-y-1 ${
@@ -621,6 +633,15 @@ export default function Dashboard() {
                                   <b>IP:</b> {server.ip || "Not set"}
                                 </span>
                               </div>
+                              
+                              {server.isVM && server.hostServer && (
+                                <div className="flex items-center gap-2 text-foreground/80">
+                                  <Server className="h-4 w-4 text-muted-foreground" />
+                                  <span>
+                                    <b>Host:</b> {getHostServerName(server.hostServer)}
+                                  </span>
+                                </div>
+                              )}
 
                               <div className="col-span-full pt-2 pb-2">
                                 <Separator />
@@ -841,11 +862,11 @@ export default function Dashboard() {
                                                 onCheckedChange={(checked) =>
                                                   setEditHost(checked === true)
                                                 }
-                                                disabled={server.hostedVMs.length > 0}
+                                                disabled={server.hostedVMs && server.hostedVMs.length > 0}
                                               />
                                               <Label htmlFor="editHostCheckbox">
                                                 Mark as host server
-                                                {server.hostedVMs.length > 0 && (
+                                                {server.hostedVMs && server.hostedVMs.length > 0 && (
                                                   <span className="text-muted-foreground text-sm ml-2">
                                                     (Cannot be disabled while hosting VMs)
                                                   </span>
@@ -895,7 +916,7 @@ export default function Dashboard() {
                                 </AlertDialogContent>
                               </AlertDialog>
 
-                              {server.hostedVMs.length > 0 && (
+                              {server.hostedVMs && server.hostedVMs.length > 0 && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button
@@ -1191,13 +1212,13 @@ export default function Dashboard() {
                                                                                 true
                                                                             )
                                                                           }
-                                                                          disabled={server.hostedVMs.length > 0}
+                                                                          disabled={server.hostedVMs && server.hostedVMs.length > 0}
                                                                         />
                                                                         <Label htmlFor="editHostCheckbox">
                                                                           Mark as
                                                                           host
                                                                           server
-                                                                          {server.hostedVMs.length > 0 && (
+                                                                          {server.hostedVMs && server.hostedVMs.length > 0 && (
                                                                             <span className="text-muted-foreground text-sm ml-2">
                                                                               (Cannot be disabled while hosting VMs)
                                                                             </span>

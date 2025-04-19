@@ -20,13 +20,25 @@ export async function POST(request: NextRequest) {
         });
 
         const hostsWithVms = await Promise.all(
-            hosts.map(async (host) => ({
-                ...host,
-                hostedVMs: await prisma.server.findMany({
+            hosts.map(async (host) => {
+                const vms = await prisma.server.findMany({
                     where: { hostServer: host.id },
                     orderBy: { name: 'asc' }
-                })
-            }))
+                });
+                
+                // Add isVM flag to VMs
+                const vmsWithFlag = vms.map(vm => ({
+                    ...vm,
+                    isVM: true,
+                    hostedVMs: [] // Initialize empty hostedVMs array for VMs
+                }));
+                
+                return {
+                    ...host,
+                    isVM: false, // Mark as physical server/not a VM
+                    hostedVMs: vmsWithFlag
+                };
+            })
         );
 
         const totalHosts = await prisma.server.count({
