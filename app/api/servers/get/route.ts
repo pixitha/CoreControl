@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         );
 
         const totalHosts = await prisma.server.count({
-            where: { hostServer: null }
+            where: { OR: [{ hostServer: 0 }, { hostServer: null }] }
         });
 
         const maxPage = Math.ceil(totalHosts / ITEMS_PER_PAGE);
