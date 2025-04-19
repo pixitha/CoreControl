@@ -671,12 +671,24 @@ export default function Settings() {
                                 <MessageSquare className="h-5 w-5 text-primary" />
                               </div>
                             )}
+                            {notification.type === "gotify" && (
+                              <div className="bg-muted/20 p-2 rounded-full">
+                                <Bell className="h-5 w-5 text-primary" />
+                              </div>
+                            )}
+                            {notification.type === "ntfy" && (
+                              <div className="bg-muted/20 p-2 rounded-full">
+                                <Bell className="h-5 w-5 text-primary" />
+                              </div>
+                            )}
                             <div className="space-y-1">
                               <h3 className="font-medium capitalize">{notification.type}</h3>
                               <p className="text-xs text-muted-foreground">
                                 {notification.type === "smtp" && "Email notifications"}
                                 {notification.type === "telegram" && "Telegram bot alerts"}
                                 {notification.type === "discord" && "Discord webhook alerts"}
+                                {notification.type === "gotify" && "Gotify notifications"}
+                                {notification.type === "ntfy" && "Ntfy notifications"}
                               </p>
                             </div>
                           </div>
