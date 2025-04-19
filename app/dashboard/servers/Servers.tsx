@@ -965,7 +965,7 @@ export default function Dashboard() {
                                                             size={24}
                                                           />
                                                         )}
-                                                        <div className="text-base font-extrabold">{hostedVM.name}</div>
+                                                        <div className="text-base font-extrabold">{hostedVM.icon && "･ "}{hostedVM.name}</div>
                                                       </div>
                                                       <div className="flex items-center gap-2 text-foreground/80">
                                                         <Button
