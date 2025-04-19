@@ -69,6 +69,10 @@ export default function Settings() {
   const [telegramToken, setTelegramToken] = useState<string>("")
   const [telegramChatId, setTelegramChatId] = useState<string>("")
   const [discordWebhook, setDiscordWebhook] = useState<string>("")
+  const [gotifyUrl, setGotifyUrl] = useState<string>("")
+  const [gotifyToken, setGotifyToken] = useState<string>("")
+  const [ntfyUrl, setNtfyUrl] = useState<string>("")
+  const [ntfyToken, setNtfyToken] = useState<string>("")
 
   const [notifications, setNotifications] = useState<any[]>([])
 
@@ -168,6 +172,10 @@ export default function Settings() {
         telegramToken: telegramToken,
         telegramChatId: telegramChatId,
         discordWebhook: discordWebhook,
+        gotifyUrl: gotifyUrl,
+        gotifyToken: gotifyToken,
+        ntfyUrl: ntfyUrl,
+        ntfyToken: ntfyToken,
       })
       getNotifications()
     } catch (error: any) {
@@ -424,6 +432,8 @@ export default function Settings() {
                             <SelectItem value="smtp">SMTP</SelectItem>
                             <SelectItem value="telegram">Telegram</SelectItem>
                             <SelectItem value="discord">Discord</SelectItem>
+                            <SelectItem value="gotify">Gotify</SelectItem>
+                            <SelectItem value="ntfy">Ntfy</SelectItem>
                           </SelectContent>
 
                           {notificationType === "smtp" && (
@@ -536,6 +546,52 @@ export default function Settings() {
                                   onChange={(e) => setDiscordWebhook(e.target.value)}
                                 />
                               </div>
+                            </div>
+                          )}
+
+                          {notificationType === "gotify" && (
+                            <div className="mt-4">
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="gotifyUrl">Gotify URL</Label>
+                                <Input
+                                  type="text"
+                                  id="gotifyUrl"
+                                  placeholder=""
+                                  onChange={(e) => setGotifyUrl(e.target.value)}
+                                />
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="gotifyToken">Gotify Token</Label>
+                                  <Input
+                                    type="text"
+                                    id="gotifyToken"
+                                    placeholder=""
+                                    onChange={(e) => setGotifyToken(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {notificationType === "ntfy" && (
+                            <div className="mt-4">
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="ntfyUrl">Ntfy URL</Label>
+                                <Input
+                                  type="text"
+                                  id="ntfyUrl"
+                                  placeholder=""
+                                  onChange={(e) => setNtfyUrl(e.target.value)}
+                                />
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="ntfyToken">Ntfy Token</Label>
+                                  <Input
+                                    type="text"
+                                    id="ntfyToken"
+                                    placeholder=""
+                                    onChange={(e) => setNtfyToken(e.target.value)}
+                                  />
+                                </div>                                
+                              </div>  
                             </div>
                           )}
                         </Select>
