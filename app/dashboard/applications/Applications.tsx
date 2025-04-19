@@ -479,7 +479,7 @@ export default function Dashboard() {
                           </CardDescription>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end justify-start space-y-2 w-[270px]">
+                      <div className="flex flex-col items-end justify-start space-y-2 w-[190px]">
                         <div className="flex items-center gap-2 w-full">
                           <div className="flex flex-col space-y-2 flex-grow">
                             <Button
@@ -490,7 +490,7 @@ export default function Dashboard() {
                               }
                             >
                               <Link className="h-4 w-4" />
-                              Open Public URL
+                              Public URL
                             </Button>
                             {app.localURL && (
                               <Button
@@ -501,7 +501,7 @@ export default function Dashboard() {
                                 }
                               >
                                 <Home className="h-4 w-4" />
-                                Open Local URL
+                                Local URL
                               </Button>
                             )}
                           </div>
