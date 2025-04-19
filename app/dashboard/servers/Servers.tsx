@@ -33,16 +33,13 @@ import {
 } from "lucide-react";
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -79,7 +76,6 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Alert } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Server {
