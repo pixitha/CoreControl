@@ -90,7 +90,7 @@ export default function Dashboard() {
                     <Server className="h-6 w-6 text-rose-600" />
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-rose-600">{serverCountNoVMs}</div>
+                    <div className="text-3xl font-bold">{serverCountNoVMs}</div>
                     <p className="text-sm text-muted-foreground">Physical Servers</p>
                   </div>
                 </div>
@@ -101,7 +101,7 @@ export default function Dashboard() {
                     <Network className="h-6 w-6 text-violet-600" />
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-violet-600">{serverCountOnlyVMs}</div>
+                    <div className="text-3xl font-bold">{serverCountOnlyVMs}</div>
                     <p className="text-sm text-muted-foreground">Virtual Servers</p>
                   </div>
                 </div>
