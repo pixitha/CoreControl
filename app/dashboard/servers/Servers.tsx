@@ -616,7 +616,7 @@ export default function Dashboard() {
                             <CardTitle className="text-2xl font-bold flex items-center gap-2">
                               <div className="flex items-center gap-2">
                                 {server.icon && <DynamicIcon name={server.icon as any} color="white" size={24} />}
-                                {server.name}
+                                <span className=" font-bold">{server.icon && "･"} {server.name}</span>
                               </div>
                               {server.isVM && (
                                 <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">VM</span>
@@ -680,22 +680,19 @@ export default function Dashboard() {
                             </CardDescription>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end justify-start space-y-2 w-[405px]">
-                          <div className="flex items-center gap-2 w-full">
-                            <div className="flex flex-col space-y-2 flex-grow">
-                              {server.url && (
-                                <Button
-                                  variant="outline"
-                                  className="gap-2 w-full"
-                                  onClick={() => window.open(server.url, "_blank")}
-                                >
-                                  <Link className="h-4 w-4" />
-                                  Open Management URL
-                                </Button>
-                              )}
-                            </div>
-                            <div className="flex flex-col gap-2">
+                        <div className="flex flex-col items-end justify-start space-y-2 w-[120px]">
+                          <div className="flex items-center justify-end gap-2 w-full">
+                            <div className="flex flex-col items-end gap-2">
                               <div className="flex gap-2">
+                                {server.url && (
+                                  <Button
+                                    variant="outline"
+                                    className="gap-2"
+                                    onClick={() => window.open(server.url, "_blank")}
+                                  >
+                                    <Link className="h-4 w-4" />                                    
+                                  </Button>
+                                )}
                                 <Button
                                   variant="destructive"
                                   size="icon"
@@ -941,7 +938,7 @@ export default function Dashboard() {
                               {server.hostedVMs && server.hostedVMs.length > 0 && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                    <Button variant="outline" className="h-9 flex items-center gap-2 px-3">
+                                    <Button variant="outline" className="h-9 flex items-center gap-2 px-3 w-full">
                                       <Server className="h-4 w-4" />
                                       <span>VMs</span>
                                     </Button>
