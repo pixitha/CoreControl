@@ -37,6 +37,7 @@ model server {
   host          Boolean   @default(false)
   hostServer    Int?
   name          String
+  icon          String?
   os            String?
   ip            String?
   url           String?
