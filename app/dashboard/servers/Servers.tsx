@@ -1,42 +1,32 @@
-"use client";
+"use client"
 
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
 import {
   Plus,
   Link,
-  MonitorCog,
+  MonitorIcon as MonitorCog,
   FileDigit,
   Trash2,
   LayoutGrid,
   List,
   Pencil,
   Cpu,
-  Microchip,
+  MicroscopeIcon as Microchip,
   MemoryStick,
   HardDrive,
   Server,
-} from "lucide-react";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+} from "lucide-react"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Pagination,
   PaginationContent,
@@ -44,7 +34,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@/components/ui/pagination"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,108 +45,97 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import Cookies from "js-cookie";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { DynamicIcon } from 'lucide-react/dynamic';
+} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import Cookies from "js-cookie"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { DynamicIcon } from "lucide-react/dynamic"
 
 interface Server {
-  id: number;
-  name: string;
-  icon: string;
-  host: boolean;
-  hostServer: number | null;
-  os?: string;
-  ip?: string;
-  url?: string;
-  cpu?: string;
-  gpu?: string;
-  ram?: string;
-  disk?: string;
-  hostedVMs?: Server[];
-  isVM?: boolean;
+  id: number
+  name: string
+  icon: string
+  host: boolean
+  hostServer: number | null
+  os?: string
+  ip?: string
+  url?: string
+  cpu?: string
+  gpu?: string
+  ram?: string
+  disk?: string
+  hostedVMs?: Server[]
+  isVM?: boolean
 }
 
 interface GetServersResponse {
-  servers: Server[];
-  maxPage: number;
+  servers: Server[]
+  maxPage: number
 }
 
 export default function Dashboard() {
-  const [host, setHost] = useState<boolean>(false);
-  const [hostServer, setHostServer] = useState<number>(0);
-  const [name, setName] = useState<string>("");
-  const [icon, setIcon] = useState<string>("");
-  const [os, setOs] = useState<string>("");
-  const [ip, setIp] = useState<string>("");
-  const [url, setUrl] = useState<string>("");
-  const [cpu, setCpu] = useState<string>("");
-  const [gpu, setGpu] = useState<string>("");
-  const [ram, setRam] = useState<string>("");
-  const [disk, setDisk] = useState<string>("");
+  const [host, setHost] = useState<boolean>(false)
+  const [hostServer, setHostServer] = useState<number>(0)
+  const [name, setName] = useState<string>("")
+  const [icon, setIcon] = useState<string>("")
+  const [os, setOs] = useState<string>("")
+  const [ip, setIp] = useState<string>("")
+  const [url, setUrl] = useState<string>("")
+  const [cpu, setCpu] = useState<string>("")
+  const [gpu, setGpu] = useState<string>("")
+  const [ram, setRam] = useState<string>("")
+  const [disk, setDisk] = useState<string>("")
 
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [maxPage, setMaxPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(4);
-  const [servers, setServers] = useState<Server[]>([]);
-  const [isGridLayout, setIsGridLayout] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [maxPage, setMaxPage] = useState<number>(1)
+  const [itemsPerPage, setItemsPerPage] = useState<number>(4)
+  const [servers, setServers] = useState<Server[]>([])
+  const [isGridLayout, setIsGridLayout] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
 
-  const [editId, setEditId] = useState<number | null>(null);
-  const [editHost, setEditHost] = useState<boolean>(false);
-  const [editHostServer, setEditHostServer] = useState<number | null>(0);
-  const [editName, setEditName] = useState<string>("");
-  const [editIcon, setEditIcon] = useState<string>("");
-  const [editOs, setEditOs] = useState<string>("");
-  const [editIp, setEditIp] = useState<string>("");
-  const [editUrl, setEditUrl] = useState<string>("");
-  const [editCpu, setEditCpu] = useState<string>("");
-  const [editGpu, setEditGpu] = useState<string>("");
-  const [editRam, setEditRam] = useState<string>("");
-  const [editDisk, setEditDisk] = useState<string>("");
+  const [editId, setEditId] = useState<number | null>(null)
+  const [editHost, setEditHost] = useState<boolean>(false)
+  const [editHostServer, setEditHostServer] = useState<number | null>(0)
+  const [editName, setEditName] = useState<string>("")
+  const [editIcon, setEditIcon] = useState<string>("")
+  const [editOs, setEditOs] = useState<string>("")
+  const [editIp, setEditIp] = useState<string>("")
+  const [editUrl, setEditUrl] = useState<string>("")
+  const [editCpu, setEditCpu] = useState<string>("")
+  const [editGpu, setEditGpu] = useState<string>("")
+  const [editRam, setEditRam] = useState<string>("")
+  const [editDisk, setEditDisk] = useState<string>("")
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("")
+  const [isSearching, setIsSearching] = useState<boolean>(false)
 
-  const [hostServers, setHostServers] = useState<Server[]>([]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [hostServers, setHostServers] = useState<Server[]>([])
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   useEffect(() => {
-    const savedLayout = Cookies.get("layoutPreference-servers");
-    const layout_bool = savedLayout === "grid";
-    setIsGridLayout(layout_bool);
-    setItemsPerPage(layout_bool ? 6 : 4);
-  }, []);
+    const savedLayout = Cookies.get("layoutPreference-servers")
+    const layout_bool = savedLayout === "grid"
+    setIsGridLayout(layout_bool)
+    setItemsPerPage(layout_bool ? 6 : 4)
+  }, [])
 
   const toggleLayout = () => {
-    const newLayout = !isGridLayout;
-    setIsGridLayout(newLayout);
+    const newLayout = !isGridLayout
+    setIsGridLayout(newLayout)
     Cookies.set("layoutPreference-servers", newLayout ? "grid" : "standard", {
       expires: 365,
       path: "/",
       sameSite: "strict",
-    });
-    setItemsPerPage(newLayout ? 6 : 4);
-  };
+    })
+    setItemsPerPage(newLayout ? 6 : 4)
+  }
 
   const add = async () => {
     try {
@@ -172,85 +151,82 @@ export default function Dashboard() {
         gpu,
         ram,
         disk,
-      });
-      setIsAddDialogOpen(false);
-      setHost(false);
-      setHostServer(0);
-      setIcon("");
-      setName("");
-      setOs("");
-      setIp("");
-      setUrl("");
-      setCpu("");
-      setGpu("");
-      setRam("");
-      setDisk("");
-      getServers();
+      })
+      setIsAddDialogOpen(false)
+      setHost(false)
+      setHostServer(0)
+      setIcon("")
+      setName("")
+      setOs("")
+      setIp("")
+      setUrl("")
+      setCpu("")
+      setGpu("")
+      setRam("")
+      setDisk("")
+      getServers()
     } catch (error: any) {
-      console.log(error.response.data);
+      console.log(error.response.data)
     }
-  };
+  }
 
   const getServers = async () => {
     try {
-      setLoading(true);
-      const response = await axios.post<GetServersResponse>(
-        "/api/servers/get",
-        {
-          page: currentPage,
-          ITEMS_PER_PAGE: itemsPerPage,
-        }
-      );
+      setLoading(true)
+      const response = await axios.post<GetServersResponse>("/api/servers/get", {
+        page: currentPage,
+        ITEMS_PER_PAGE: itemsPerPage,
+      })
       for (const server of response.data.servers) {
-        console.log("Host Server:" + server.hostServer);
-        console.log("ID:" + server.id);
+        console.log("Host Server:" + server.hostServer)
+        console.log("ID:" + server.id)
       }
-      setServers(response.data.servers);
-      setMaxPage(response.data.maxPage);
-      setLoading(false);
+      setServers(response.data.servers)
+      setMaxPage(response.data.maxPage)
+      setLoading(false)
     } catch (error: any) {
-      console.log(error.response);
+      console.log(error.response)
     }
-  };
+  }
 
   useEffect(() => {
-    getServers();
-  }, [currentPage, itemsPerPage]);
+    getServers()
+  }, [currentPage, itemsPerPage])
 
   const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
-  };
+    setCurrentPage((prev) => Math.max(1, prev - 1))
+  }
 
   const handleNext = () => {
-    setCurrentPage((prev) => Math.min(maxPage, prev + 1));
-  };
+    setCurrentPage((prev) => Math.min(maxPage, prev + 1))
+  }
 
   const deleteApplication = async (id: number) => {
     try {
-      await axios.post("/api/servers/delete", { id });
-      getServers();
+      await axios.post("/api/servers/delete", { id })
+      getServers()
     } catch (error: any) {
-      console.log(error.response.data);
+      console.log(error.response.data)
     }
-  };
+  }
 
   const openEditDialog = (server: Server) => {
-    setEditId(server.id);
-    setEditHost(server.host);
-    setEditHostServer(server.hostServer || null);
-    setEditName(server.name);
-    setEditIcon(server.icon || "");
-    setEditOs(server.os || "");
-    setEditIp(server.ip || "");
-    setEditUrl(server.url || "");
-    setEditCpu(server.cpu || "");
-    setEditGpu(server.gpu || "");
-    setEditRam(server.ram || "");
-    setEditDisk(server.disk || "");
-  };
+    setEditId(server.id)
+    setEditHost(server.host)
+    setEditHostServer(server.hostServer || null)
+    setEditName(server.name)
+    setEditIcon(server.icon || "")
+    setEditOs(server.os || "")
+    setEditIp(server.ip || "")
+    setEditUrl(server.url || "")
+    setEditCpu(server.cpu || "")
+    setEditGpu(server.gpu || "")
+    setEditRam(server.ram || "")
+    setEditDisk(server.disk || "")
+  }
 
   const edit = async () => {
-    if (!editId) return;
+    if (!editId) return
 
     try {
       await axios.put("/api/servers/edit", {
@@ -266,76 +242,84 @@ export default function Dashboard() {
         gpu: editGpu,
         ram: editRam,
         disk: editDisk,
-      });
-      getServers();
-      setEditId(null);
+      })
+      getServers()
+      setEditId(null)
     } catch (error: any) {
-      console.log(error.response.data);
+      console.log(error.response.data)
     }
-  };
+  }
 
   const searchServers = async () => {
     try {
-      setIsSearching(true);
-      const response = await axios.post<{ results: Server[] }>(
-        "/api/servers/search",
-        { searchterm: searchTerm }
-      );
-      setServers(response.data.results);
-      setMaxPage(1);
-      setIsSearching(false);
+      setIsSearching(true)
+      const response = await axios.post<{ results: Server[] }>("/api/servers/search", { searchterm: searchTerm })
+      setServers(response.data.results)
+      setMaxPage(1)
+      setIsSearching(false)
     } catch (error: any) {
-      console.error("Search error:", error.response?.data);
-      setIsSearching(false);
+      console.error("Search error:", error.response?.data)
+      setIsSearching(false)
     }
-  };
+  }
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       if (searchTerm.trim() === "") {
-        getServers();
+        getServers()
       } else {
-        searchServers();
+        searchServers()
       }
-    }, 300);
+    }, 300)
 
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
+    return () => clearTimeout(delayDebounce)
+  }, [searchTerm])
 
   useEffect(() => {
     const fetchHostServers = async () => {
       try {
-        const response = await axios.get<{ servers: Server[] }>(
-          "/api/servers/hosts"
-        );
-        setHostServers(response.data.servers);
+        const response = await axios.get<{ servers: Server[] }>("/api/servers/hosts")
+        setHostServers(response.data.servers)
       } catch (error) {
-        console.error("Error fetching host servers:", error);
+        console.error("Error fetching host servers:", error)
       }
-    };
+    }
 
     if (isAddDialogOpen || editId !== null) {
-      fetchHostServers();
+      fetchHostServers()
     }
-  }, [isAddDialogOpen, editId]);
+  }, [isAddDialogOpen, editId])
 
   // Add this function to get the host server name for a VM
   const getHostServerName = (hostServerId: number | null) => {
-    if (!hostServerId) return "";
-    const hostServer = servers.find(server => server.id === hostServerId);
-    return hostServer ? hostServer.name : "";
-  };
+    if (!hostServerId) return ""
+    const hostServer = servers.find((server) => server.id === hostServerId)
+    return hostServer ? hostServer.name : ""
+  }
 
-  const icons = [
-    "server", "network", "database", "cloud",
-    "terminal", "code", "cpu", "hard-drive", "router",
-    "activity", "monitor", "bug", "settings", "shield",
-    "lock", "key", "wifi", "antenna", "power",
-    "folder", "file-code", "clipboard-list", "binary", "command",
-    "git-branch", "git-commit", "git-merge", "git-pull-request", "github",
-    "life-buoy", "alarm-check", "alert-triangle", "check-circle", "x-octagon"
-  ];
-  
+  const iconCategories = {
+    Infrastructure: ["server", "network", "database", "cloud", "hard-drive", "router", "wifi", "antenna"],
+    Computing: ["cpu", "microchip", "memory-stick", "terminal", "code", "binary", "command"],
+    Monitoring: ["activity", "monitor", "gauge", "bar-chart", "line-chart", "pie-chart"],
+    Security: ["shield", "lock", "key", "fingerprint", "scan-face"],
+    Status: ["check-circle", "x-octagon", "alert-triangle", "alarm-check", "life-buoy"],
+    Other: [
+      "settings",
+      "power",
+      "folder",
+      "file-code",
+      "clipboard-list",
+      "git-branch",
+      "git-commit",
+      "git-merge",
+      "git-pull-request",
+      "github",
+      "bug",
+    ],
+  }
+
+  // Flatten icons for search
+  const allIcons = Object.values(iconCategories).flat()
 
   return (
     <SidebarProvider>
@@ -369,23 +353,11 @@ export default function Dashboard() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={toggleLayout}
-                    >
-                      {isGridLayout ? (
-                        <List className="h-4 w-4" />
-                      ) : (
-                        <LayoutGrid className="h-4 w-4" />
-                      )}
+                    <Button variant="outline" size="icon" onClick={toggleLayout}>
+                      {isGridLayout ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {isGridLayout
-                      ? "Switch to list view"
-                      : "Switch to grid view"}
-                  </TooltipContent>
+                  <TooltipContent>{isGridLayout ? "Switch to list view" : "Switch to grid view"}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <AlertDialog onOpenChange={setIsAddDialogOpen}>
@@ -402,40 +374,71 @@ export default function Dashboard() {
                         <TabsList className="w-full">
                           <TabsTrigger value="general">General</TabsTrigger>
                           <TabsTrigger value="hardware">Hardware</TabsTrigger>
-                          <TabsTrigger value="virtualization">
-                            Virtualization
-                          </TabsTrigger>
+                          <TabsTrigger value="virtualization">Virtualization</TabsTrigger>
                         </TabsList>
                         <TabsContent value="general">
                           <div className="space-y-4 pt-4">
                             <div className="flex items-center gap-2">
                               <div className="grid w-[calc(100%-52px)] items-center gap-1.5">
                                 <Label htmlFor="icon">Icon</Label>
-                                <Select value={icon} onValueChange={(value) => setIcon(value)}>
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select an icon">
-                                      {icon && <div className="flex items-center gap-2">
-                                        <DynamicIcon name={icon as any} color="white" size={18} />
-                                        <span>{icon}</span>
-                                      </div>}
-                                    </SelectValue>
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {icons.map((icon) => (
-                                      <SelectItem key={icon} value={icon}>
-                                        <div className="flex items-center gap-2">
-                                          <DynamicIcon name={icon as any} color="white" size={18} />
-                                          <span>{icon}</span>
+                                <div className="space-y-2">
+                                  <Select value={icon} onValueChange={(value) => setIcon(value)}>
+                                    <SelectTrigger className="w-full">
+                                      <SelectValue placeholder="Select an icon">
+                                        {icon && (
+                                          <div className="flex items-center gap-2">
+                                            <DynamicIcon name={icon as any} color="white" size={18} />
+                                            <span>{icon}</span>
+                                          </div>
+                                        )}
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent className="max-h-[300px]">
+                                      <Input
+                                        placeholder="Search icons..."
+                                        className="mb-2"
+                                        onChange={(e) => {
+                                          const iconElements = document.querySelectorAll("[data-icon-item]")
+                                          const searchTerm = e.target.value.toLowerCase()
+
+                                          iconElements.forEach((el) => {
+                                            const iconName = el.getAttribute("data-icon-name")?.toLowerCase() || ""
+                                            if (iconName.includes(searchTerm)) {
+                                              ;(el as HTMLElement).style.display = "flex"
+                                            } else {
+                                              ;(el as HTMLElement).style.display = "none"
+                                            }
+                                          })
+                                        }}
+                                      />
+                                      {Object.entries(iconCategories).map(([category, categoryIcons]) => (
+                                        <div key={category} className="mb-2">
+                                          <div className="px-2 text-xs font-bold text-muted-foreground mb-1">
+                                            {category}
+                                          </div>
+                                          {categoryIcons.map((iconName) => (
+                                            <SelectItem
+                                              key={iconName}
+                                              value={iconName}
+                                              data-icon-item
+                                              data-icon-name={iconName}
+                                            >
+                                              <div className="flex items-center gap-2">
+                                                <DynamicIcon name={iconName as any} color="white" size={18} />
+                                                <span>{iconName}</span>
+                                              </div>
+                                            </SelectItem>
+                                          ))}
                                         </div>
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               </div>
                               <div className="grid w-[52px] items-center gap-1.5">
                                 <Label htmlFor="icon">Preview</Label>
                                 <div className="flex items-center justify-center">
-                                  {icon &&   <DynamicIcon name={icon as any} color="white" size={36} />}
+                                  {icon && <DynamicIcon name={icon as any} color="white" size={36} />}
                                 </div>
                               </div>
                             </div>
@@ -450,19 +453,14 @@ export default function Dashboard() {
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="description">
-                                Operating System{" "}
-                                <span className="text-stone-600">
-                                  (optional)
-                                </span>
+                                Operating System <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Select onValueChange={(value) => setOs(value)}>
                                 <SelectTrigger className="w-full">
                                   <SelectValue placeholder="Select OS" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Windows">
-                                    Windows
-                                  </SelectItem>
+                                  <SelectItem value="Windows">Windows</SelectItem>
                                   <SelectItem value="Linux">Linux</SelectItem>
                                   <SelectItem value="MacOS">MacOS</SelectItem>
                                 </SelectContent>
@@ -470,10 +468,7 @@ export default function Dashboard() {
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="icon">
-                                IP Adress{" "}
-                                <span className="text-stone-600">
-                                  (optional)
-                                </span>
+                                IP Adress <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
                                 id="icon"
@@ -487,15 +482,11 @@ export default function Dashboard() {
                                 <Tooltip>
                                   <TooltipTrigger>
                                     <Label htmlFor="publicURL">
-                                      Management URL{" "}
-                                      <span className="text-stone-600">
-                                        (optional)
-                                      </span>
+                                      Management URL <span className="text-stone-600">(optional)</span>
                                     </Label>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    Link to a web interface (e.g. Proxmox or
-                                    Portainer) with which the server can be
+                                    Link to a web interface (e.g. Proxmox or Portainer) with which the server can be
                                     managed
                                   </TooltipContent>
                                 </Tooltip>
@@ -513,10 +504,7 @@ export default function Dashboard() {
                           <div className="space-y-4 pt-4">
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="name">
-                                CPU{" "}
-                                <span className="text-stone-600">
-                                  (optional)
-                                </span>
+                                CPU <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
                                 id="name"
@@ -527,10 +515,7 @@ export default function Dashboard() {
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="name">
-                                GPU{" "}
-                                <span className="text-stone-600">
-                                  (optional)
-                                </span>
+                                GPU <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
                                 id="name"
@@ -541,10 +526,7 @@ export default function Dashboard() {
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="name">
-                                RAM{" "}
-                                <span className="text-stone-600">
-                                  (optional)
-                                </span>
+                                RAM <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
                                 id="name"
@@ -555,10 +537,7 @@ export default function Dashboard() {
                             </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="name">
-                                Disk{" "}
-                                <span className="text-stone-600">
-                                  (optional)
-                                </span>
+                                Disk <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
                                 id="name"
@@ -575,32 +554,23 @@ export default function Dashboard() {
                               <Checkbox
                                 id="hostCheckbox"
                                 checked={host}
-                                onCheckedChange={(checked) =>
-                                  setHost(checked === true)
-                                }
+                                onCheckedChange={(checked) => setHost(checked === true)}
                               />
-                              <Label htmlFor="hostCheckbox">
-                                Mark as host server
-                              </Label>
+                              <Label htmlFor="hostCheckbox">Mark as host server</Label>
                             </div>
                             {!host && (
                               <div className="grid w-full items-center gap-1.5">
                                 <Label>Host Server</Label>
                                 <Select
                                   value={hostServer?.toString()}
-                                  onValueChange={(value) =>
-                                    setHostServer(Number(value))
-                                  }
+                                  onValueChange={(value) => setHostServer(Number(value))}
                                 >
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a host server" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {hostServers.map((server) => (
-                                      <SelectItem
-                                        key={server.id}
-                                        value={server.id.toString()}
-                                      >
+                                      <SelectItem key={server.id} value={server.id.toString()}>
                                         {server.name}
                                       </SelectItem>
                                     ))}
@@ -631,23 +601,13 @@ export default function Dashboard() {
           </div>
           <br />
           {!loading ? (
-            <div
-              className={
-                isGridLayout
-                  ? "grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4"
-                  : "space-y-4"
-              }
-            >
+            <div className={isGridLayout ? "grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4" : "space-y-4"}>
               {servers
-                .filter((server) => searchTerm ? true : server.hostServer === 0)
+                .filter((server) => (searchTerm ? true : server.hostServer === 0))
                 .map((server) => (
                   <Card
                     key={server.id}
-                    className={
-                      isGridLayout
-                        ? "h-full flex flex-col justify-between"
-                        : "w-full mb-4"
-                    }
+                    className={isGridLayout ? "h-full flex flex-col justify-between" : "w-full mb-4"}
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between w-full">
@@ -664,9 +624,7 @@ export default function Dashboard() {
                             </CardTitle>
                             <CardDescription
                               className={`text-sm mt-1 grid gap-y-1 ${
-                                isGridLayout
-                                  ? "grid-cols-1"
-                                  : "grid-cols-2 gap-x-4"
+                                isGridLayout ? "grid-cols-1" : "grid-cols-2 gap-x-4"
                               }`}
                             >
                               <div className="flex items-center gap-2 text-foreground/80">
@@ -681,7 +639,7 @@ export default function Dashboard() {
                                   <b>IP:</b> {server.ip || "Not set"}
                                 </span>
                               </div>
-                              
+
                               {server.isVM && server.hostServer && (
                                 <div className="flex items-center gap-2 text-foreground/80">
                                   <Server className="h-4 w-4 text-muted-foreground" />
@@ -729,9 +687,7 @@ export default function Dashboard() {
                                 <Button
                                   variant="outline"
                                   className="gap-2 w-full"
-                                  onClick={() =>
-                                    window.open(server.url, "_blank")
-                                  }
+                                  onClick={() => window.open(server.url, "_blank")}
                                 >
                                   <Link className="h-4 w-4" />
                                   Open Management URL
@@ -739,355 +695,316 @@ export default function Dashboard() {
                               )}
                             </div>
                             <div className="flex flex-col gap-2">
-                              <Button
-                                variant="destructive"
-                                size="icon"
-                                className="h-9 w-9"
-                                onClick={() => deleteApplication(server.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    size="icon"
-                                    className="h-9 w-9"
-                                    onClick={() => openEditDialog(server)}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Edit Server
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      <Tabs
-                                        defaultValue="general"
-                                        className="w-full"
-                                      >
-                                        <TabsList className="w-full">
-                                          <TabsTrigger value="general">
-                                            General
-                                          </TabsTrigger>
-                                          <TabsTrigger value="hardware">
-                                            Hardware
-                                          </TabsTrigger>
-                                          <TabsTrigger value="virtualization">
-                                            Virtualization
-                                          </TabsTrigger>
-                                        </TabsList>
-                                        <TabsContent value="general">
-                                          <div className="space-y-4 pt-4">
-                                          <div className="flex items-center gap-2">
-                                            <div className="grid w-[calc(100%-52px)] items-center gap-1.5">
-                                              <Label htmlFor="icon">Icon</Label>
-                                              <Select value={editIcon} onValueChange={(value) => setEditIcon(value)}>
-                                                <SelectTrigger className="w-full">
-                                                  <SelectValue placeholder="Select an icon">
-                                                    {editIcon && <div className="flex items-center gap-2">
-                                                      <DynamicIcon name={editIcon as any} color="white" size={18} />
-                                                      <span>{editIcon}</span>
-                                                    </div>}
-                                                  </SelectValue>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  {icons.map((icon) => (
-                                                    <SelectItem key={icon} value={icon}>
-                                                      <div className="flex items-center gap-2">
-                                                        <DynamicIcon name={icon as any} color="white" size={18} />
-                                                        <span>{icon}</span>
-                                                      </div>
-                                                    </SelectItem>
-                                                  ))}
-                                                </SelectContent>
-                                              </Select>
-                                            </div>
-                                            <div className="grid w-[52px] items-center gap-1.5">
-                                              <Label htmlFor="icon">Preview</Label>
-                                              <div className="flex items-center justify-center">
-                                                {editIcon &&   <DynamicIcon name={editIcon as any} color="white" size={36} />}
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div className="grid w-full items-center gap-1.5">
-                                            <Label htmlFor="editName">
-                                              Name
-                                              </Label>
-                                              <Input
-                                                id="editName"
-                                                type="text"
-                                                placeholder="e.g. Server1"
-                                                value={editName}
-                                                onChange={(e) =>
-                                                  setEditName(e.target.value)
-                                                }
-                                              />
-                                            </div>
-                                            <div className="grid w-full items-center gap-1.5">
-                                              <Label htmlFor="editOs">
-                                                Operating System
-                                              </Label>
-                                              <Select
-                                                value={editOs}
-                                                onValueChange={setEditOs}
-                                              >
-                                                <SelectTrigger className="w-full">
-                                                  <SelectValue placeholder="Select OS" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  <SelectItem value="Windows">
-                                                    Windows
-                                                  </SelectItem>
-                                                  <SelectItem value="Linux">
-                                                    Linux
-                                                  </SelectItem>
-                                                  <SelectItem value="MacOS">
-                                                    MacOS
-                                                  </SelectItem>
-                                                </SelectContent>
-                                              </Select>
-                                            </div>
-                                            <div className="grid w-full items-center gap-1.5">
-                                              <Label htmlFor="editIp">
-                                                IP Adress
-                                              </Label>
-                                              <Input
-                                                id="editIp"
-                                                type="text"
-                                                placeholder="e.g. 192.168.100.2"
-                                                value={editIp}
-                                                onChange={(e) =>
-                                                  setEditIp(e.target.value)
-                                                }
-                                              />
-                                            </div>
-                                            <div className="grid w-full items-center gap-1.5">
-                                              <Label htmlFor="editUrl">
-                                                Management URL
-                                              </Label>
-                                              <Input
-                                                id="editUrl"
-                                                type="text"
-                                                placeholder="e.g. https://proxmox.server1.com"
-                                                value={editUrl}
-                                                onChange={(e) =>
-                                                  setEditUrl(e.target.value)
-                                                }
-                                              />
-                                            </div>
-                                          </div>
-                                        </TabsContent>
-
-                                        <TabsContent value="hardware">
-                                          <div className="space-y-4 pt-4">
-                                            <div className="grid w-full items-center gap-1.5">
-                                              <Label htmlFor="editCpu">
-                                                CPU
-                                              </Label>
-                                              <Input
-                                                id="editCpu"
-                                                value={editCpu}
-                                                onChange={(e) =>
-                                                  setEditCpu(e.target.value)
-                                                }
-                                              />
-                                            </div>
-                                            <div className="grid w-full items-center gap-1.5">
-                                              <Label htmlFor="editGpu">
-                                                GPU
-                                              </Label>
-                                              <Input
-                                                id="editGpu"
-                                                value={editGpu}
-                                                onChange={(e) =>
-                                                  setEditGpu(e.target.value)
-                                                }
-                                              />
-                                            </div>
-                                            <div className="grid w-full items-center gap-1.5">
-                                              <Label htmlFor="editRam">
-                                                RAM
-                                              </Label>
-                                              <Input
-                                                id="editRam"
-                                                value={editRam}
-                                                onChange={(e) =>
-                                                  setEditRam(e.target.value)
-                                                }
-                                              />
-                                            </div>
-                                            <div className="grid w-full items-center gap-1.5">
-                                              <Label htmlFor="editDisk">
-                                                Disk
-                                              </Label>
-                                              <Input
-                                                id="editDisk"
-                                                value={editDisk}
-                                                onChange={(e) =>
-                                                  setEditDisk(e.target.value)
-                                                }
-                                              />
-                                            </div>
-                                          </div>
-                                        </TabsContent>
-                                        <TabsContent value="virtualization">
-                                          <div className="space-y-4 pt-4">
-                                            <div className="flex items-center space-x-2">
-                                              <Checkbox
-                                                id="editHostCheckbox"
-                                                checked={editHost}
-                                                onCheckedChange={(checked) =>
-                                                  setEditHost(checked === true)
-                                                }
-                                                disabled={server.hostedVMs && server.hostedVMs.length > 0}
-                                              />
-                                              <Label htmlFor="editHostCheckbox">
-                                                Mark as host server
-                                                {server.hostedVMs && server.hostedVMs.length > 0 && (
-                                                  <span className="text-muted-foreground text-sm ml-2">
-                                                    (Cannot be disabled while hosting VMs)
-                                                  </span>
-                                                )}
-                                              </Label>
-                                            </div>
-                                            {!editHost && (
-                                              <div className="grid w-full items-center gap-1.5">
-                                                <Label>Host Server</Label>
-                                                <Select
-                                                  value={editHostServer?.toString()}
-                                                  onValueChange={(value) =>
-                                                    setEditHostServer(
-                                                      Number(value)
-                                                    )
-                                                  }
-                                                >
-                                                  <SelectTrigger>
-                                                    <SelectValue placeholder="Select a host server" />
-                                                  </SelectTrigger>
-                                                  <SelectContent>
-                                                    {hostServers
-                                                      .filter(server => server.id !== editId)
-                                                      .map((server) => (
-                                                        <SelectItem
-                                                          key={server.id}
-                                                          value={server.id.toString()}
-                                                        >
-                                                          {server.name}
-                                                        </SelectItem>
-                                                      ))}
-                                                  </SelectContent>
-                                                </Select>
-                                              </div>
-                                            )}
-                                          </div>
-                                        </TabsContent>
-                                      </Tabs>
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <Button onClick={edit}>Save</Button>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-
-                              {server.hostedVMs && server.hostedVMs.length > 0 && (
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="destructive"
+                                  size="icon"
+                                  className="h-9 w-9"
+                                  onClick={() => deleteApplication(server.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      size="icon"
-                                      className="h-9 w-9"
-                                    >
-                                      <Server className="h-4 w-4" />
+                                    <Button size="icon" className="h-9 w-9" onClick={() => openEditDialog(server)}>
+                                      <Pencil className="h-4 w-4" />
                                     </Button>
                                   </AlertDialogTrigger>
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
-                                      <AlertDialogTitle>
-                                        Hosted VMs
-                                      </AlertDialogTitle>
+                                      <AlertDialogTitle>Edit Server</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        <Tabs defaultValue="general" className="w-full">
+                                          <TabsList className="w-full">
+                                            <TabsTrigger value="general">General</TabsTrigger>
+                                            <TabsTrigger value="hardware">Hardware</TabsTrigger>
+                                            <TabsTrigger value="virtualization">Virtualization</TabsTrigger>
+                                          </TabsList>
+                                          <TabsContent value="general">
+                                            <div className="space-y-4 pt-4">
+                                              <div className="flex items-center gap-2">
+                                                <div className="grid w-[calc(100%-52px)] items-center gap-1.5">
+                                                  <Label htmlFor="icon">Icon</Label>
+                                                  <div className="space-y-2">
+                                                    <Select
+                                                      value={editIcon}
+                                                      onValueChange={(value) => setEditIcon(value)}
+                                                    >
+                                                      <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Select an icon">
+                                                          {editIcon && (
+                                                            <div className="flex items-center gap-2">
+                                                              <DynamicIcon
+                                                                name={editIcon as any}
+                                                                color="white"
+                                                                size={18}
+                                                              />
+                                                              <span>{editIcon}</span>
+                                                            </div>
+                                                          )}
+                                                        </SelectValue>
+                                                      </SelectTrigger>
+                                                      <SelectContent className="max-h-[300px]">
+                                                        <Input
+                                                          placeholder="Search icons..."
+                                                          className="mb-2"
+                                                          onChange={(e) => {
+                                                            const iconElements =
+                                                              document.querySelectorAll("[data-edit-icon-item]")
+                                                            const searchTerm = e.target.value.toLowerCase()
+
+                                                            iconElements.forEach((el) => {
+                                                              const iconName =
+                                                                el.getAttribute("data-icon-name")?.toLowerCase() || ""
+                                                              if (iconName.includes(searchTerm)) {
+                                                                ;(el as HTMLElement).style.display = "flex"
+                                                              } else {
+                                                                ;(el as HTMLElement).style.display = "none"
+                                                              }
+                                                            })
+                                                          }}
+                                                        />
+                                                        {Object.entries(iconCategories).map(
+                                                          ([category, categoryIcons]) => (
+                                                            <div key={category} className="mb-2">
+                                                              <div className="px-2 text-xs font-bold text-muted-foreground mb-1">
+                                                                {category}
+                                                              </div>
+                                                              {categoryIcons.map((iconName) => (
+                                                                <SelectItem
+                                                                  key={iconName}
+                                                                  value={iconName}
+                                                                  data-edit-icon-item
+                                                                  data-icon-name={iconName}
+                                                                >
+                                                                  <div className="flex items-center gap-2">
+                                                                    <DynamicIcon
+                                                                      name={iconName as any}
+                                                                      color="white"
+                                                                      size={18}
+                                                                    />
+                                                                    <span>{iconName}</span>
+                                                                  </div>
+                                                                </SelectItem>
+                                                              ))}
+                                                            </div>
+                                                          ),
+                                                        )}
+                                                      </SelectContent>
+                                                    </Select>
+                                                  </div>
+                                                </div>
+                                                <div className="grid w-[52px] items-center gap-1.5">
+                                                  <Label htmlFor="icon">Preview</Label>
+                                                  <div className="flex items-center justify-center">
+                                                    {editIcon && (
+                                                      <DynamicIcon name={editIcon as any} color="white" size={36} />
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="editName">Name</Label>
+                                                <Input
+                                                  id="editName"
+                                                  type="text"
+                                                  placeholder="e.g. Server1"
+                                                  value={editName}
+                                                  onChange={(e) => setEditName(e.target.value)}
+                                                />
+                                              </div>
+                                              <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="editOs">Operating System</Label>
+                                                <Select value={editOs} onValueChange={setEditOs}>
+                                                  <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select OS" />
+                                                  </SelectTrigger>
+                                                  <SelectContent>
+                                                    <SelectItem value="Windows">Windows</SelectItem>
+                                                    <SelectItem value="Linux">Linux</SelectItem>
+                                                    <SelectItem value="MacOS">MacOS</SelectItem>
+                                                  </SelectContent>
+                                                </Select>
+                                              </div>
+                                              <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="editIp">IP Adress</Label>
+                                                <Input
+                                                  id="editIp"
+                                                  type="text"
+                                                  placeholder="e.g. 192.168.100.2"
+                                                  value={editIp}
+                                                  onChange={(e) => setEditIp(e.target.value)}
+                                                />
+                                              </div>
+                                              <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="editUrl">Management URL</Label>
+                                                <Input
+                                                  id="editUrl"
+                                                  type="text"
+                                                  placeholder="e.g. https://proxmox.server1.com"
+                                                  value={editUrl}
+                                                  onChange={(e) => setEditUrl(e.target.value)}
+                                                />
+                                              </div>
+                                            </div>
+                                          </TabsContent>
+
+                                          <TabsContent value="hardware">
+                                            <div className="space-y-4 pt-4">
+                                              <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="editCpu">CPU</Label>
+                                                <Input
+                                                  id="editCpu"
+                                                  value={editCpu}
+                                                  onChange={(e) => setEditCpu(e.target.value)}
+                                                />
+                                              </div>
+                                              <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="editGpu">GPU</Label>
+                                                <Input
+                                                  id="editGpu"
+                                                  value={editGpu}
+                                                  onChange={(e) => setEditGpu(e.target.value)}
+                                                />
+                                              </div>
+                                              <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="editRam">RAM</Label>
+                                                <Input
+                                                  id="editRam"
+                                                  value={editRam}
+                                                  onChange={(e) => setEditRam(e.target.value)}
+                                                />
+                                              </div>
+                                              <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="editDisk">Disk</Label>
+                                                <Input
+                                                  id="editDisk"
+                                                  value={editDisk}
+                                                  onChange={(e) => setEditDisk(e.target.value)}
+                                                />
+                                              </div>
+                                            </div>
+                                          </TabsContent>
+                                          <TabsContent value="virtualization">
+                                            <div className="space-y-4 pt-4">
+                                              <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                  id="editHostCheckbox"
+                                                  checked={editHost}
+                                                  onCheckedChange={(checked) => setEditHost(checked === true)}
+                                                  disabled={server.hostedVMs && server.hostedVMs.length > 0}
+                                                />
+                                                <Label htmlFor="editHostCheckbox">
+                                                  Mark as host server
+                                                  {server.hostedVMs && server.hostedVMs.length > 0 && (
+                                                    <span className="text-muted-foreground text-sm ml-2">
+                                                      (Cannot be disabled while hosting VMs)
+                                                    </span>
+                                                  )}
+                                                </Label>
+                                              </div>
+                                              {!editHost && (
+                                                <div className="grid w-full items-center gap-1.5">
+                                                  <Label>Host Server</Label>
+                                                  <Select
+                                                    value={editHostServer?.toString()}
+                                                    onValueChange={(value) => setEditHostServer(Number(value))}
+                                                  >
+                                                    <SelectTrigger>
+                                                      <SelectValue placeholder="Select a host server" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                      {hostServers
+                                                        .filter((server) => server.id !== editId)
+                                                        .map((server) => (
+                                                          <SelectItem key={server.id} value={server.id.toString()}>
+                                                            {server.name}
+                                                          </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                  </Select>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </TabsContent>
+                                        </Tabs>
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <Button onClick={edit}>Save</Button>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+
+                              {server.hostedVMs && server.hostedVMs.length > 0 && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="outline" className="h-9 flex items-center gap-2 px-3">
+                                      <Server className="h-4 w-4" />
+                                      <span>VMs</span>
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Hosted VMs</AlertDialogTitle>
                                       <AlertDialogDescription>
                                         {server.host && (
                                           <div className="mt-4">
                                             <ScrollArea className="h-[500px] w-full pr-3">
                                               <div className="space-y-2 mt-2">
-                                                {server.hostedVMs?.map(
-                                                  (hostedVM) => (
-                                                    <div
-                                                      key={hostedVM.id}
-                                                      className="flex flex-col gap-2 border border-muted py-2 px-4 rounded-md"
-                                                    >
-                                                      <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                          {hostedVM.icon && <DynamicIcon name={hostedVM.icon as any} color="white" size={24} />}
-                                                          <div className="text-base font-extrabold">  
-                                                            {hostedVM.name}
-                                                          </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 text-foreground/80">
-                                                          <Button
-                                                            variant="outline"
-                                                            className="gap-2"
-                                                            onClick={() =>
-                                                              window.open(
-                                                                hostedVM.url,
-                                                                "_blank"
-                                                              )
-                                                            }
-                                                          >
-                                                            <Link className="h-4 w-4" />
-                                                          </Button>
+                                                {server.hostedVMs?.map((hostedVM) => (
+                                                  <div
+                                                    key={hostedVM.id}
+                                                    className="flex flex-col gap-2 border border-muted py-2 px-4 rounded-md"
+                                                  >
+                                                    <div className="flex items-center justify-between">
+                                                      <div className="flex items-center gap-2">
+                                                        {hostedVM.icon && (
+                                                          <DynamicIcon
+                                                            name={hostedVM.icon as any}
+                                                            color="white"
+                                                            size={24}
+                                                          />
+                                                        )}
+                                                        <div className="text-base font-extrabold">{hostedVM.name}</div>
+                                                      </div>
+                                                      <div className="flex items-center gap-2 text-foreground/80">
+                                                        <Button
+                                                          variant="outline"
+                                                          className="gap-2"
+                                                          onClick={() => window.open(hostedVM.url, "_blank")}
+                                                        >
+                                                          <Link className="h-4 w-4" />
+                                                        </Button>
                                                         <Button
                                                           variant="destructive"
                                                           size="icon"
                                                           className="h-9 w-9"
-                                                          onClick={() =>
-                                                            deleteApplication(
-                                                              hostedVM.id
-                                                            )
-                                                          }
+                                                          onClick={() => deleteApplication(hostedVM.id)}
                                                         >
                                                           <Trash2 className="h-4 w-4" />
                                                         </Button>
 
                                                         <AlertDialog>
-                                                          <AlertDialogTrigger
-                                                            asChild
-                                                          >
+                                                          <AlertDialogTrigger asChild>
                                                             <Button
                                                               size="icon"
                                                               className="h-9 w-9"
-                                                              onClick={() =>
-                                                                openEditDialog(
-                                                                  hostedVM
-                                                                )
-                                                              }
+                                                              onClick={() => openEditDialog(hostedVM)}
                                                             >
                                                               <Pencil className="h-4 w-4" />
                                                             </Button>
                                                           </AlertDialogTrigger>
                                                           <AlertDialogContent>
                                                             <AlertDialogHeader>
-                                                              <AlertDialogTitle>
-                                                                Edit VM
-                                                              </AlertDialogTitle>
+                                                              <AlertDialogTitle>Edit VM</AlertDialogTitle>
                                                               <AlertDialogDescription>
-                                                                <Tabs
-                                                                  defaultValue="general"
-                                                                  className="w-full"
-                                                                >
+                                                                <Tabs defaultValue="general" className="w-full">
                                                                   <TabsList className="w-full">
-                                                                    <TabsTrigger value="general">
-                                                                      General
-                                                                    </TabsTrigger>
-                                                                    <TabsTrigger value="hardware">
-                                                                      Hardware
-                                                                    </TabsTrigger>
+                                                                    <TabsTrigger value="general">General</TabsTrigger>
+                                                                    <TabsTrigger value="hardware">Hardware</TabsTrigger>
                                                                     <TabsTrigger value="virtualization">
                                                                       Virtualization
                                                                     </TabsTrigger>
@@ -1097,68 +1014,121 @@ export default function Dashboard() {
                                                                       <div className="flex items-center gap-2">
                                                                         <div className="grid w-[calc(100%-52px)] items-center gap-1.5">
                                                                           <Label htmlFor="editIcon">Icon</Label>
-                                                                          <Select value={editIcon} onValueChange={(value) => setEditIcon(value)}>
-                                                                            <SelectTrigger className="w-full">
-                                                                              <SelectValue placeholder="Select an icon">
-                                                                                {editIcon && <div className="flex items-center gap-2">
-                                                                                  <DynamicIcon name={editIcon as any} color="white" size={18} />
-                                                                                  <span>{editIcon}</span>
-                                                                                </div>}
-                                                                              </SelectValue>
-                                                                            </SelectTrigger>
-                                                                            <SelectContent>
-                                                                              {icons.map((icon) => (
-                                                                                <SelectItem key={icon} value={icon}>
-                                                                                  <div className="flex items-center gap-2">
-                                                                                    <DynamicIcon name={icon as any} color="white" size={18} />
-                                                                                    <span>{icon}</span>
-                                                                                  </div>
-                                                                                </SelectItem>
-                                                                              ))}
-                                                                            </SelectContent>
-                                                                          </Select>
+                                                                          <div className="space-y-2">
+                                                                            <Select
+                                                                              value={editIcon}
+                                                                              onValueChange={(value) =>
+                                                                                setEditIcon(value)
+                                                                              }
+                                                                            >
+                                                                              <SelectTrigger className="w-full">
+                                                                                <SelectValue placeholder="Select an icon">
+                                                                                  {editIcon && (
+                                                                                    <div className="flex items-center gap-2">
+                                                                                      <DynamicIcon
+                                                                                        name={editIcon as any}
+                                                                                        color="white"
+                                                                                        size={18}
+                                                                                      />
+                                                                                      <span>{editIcon}</span>
+                                                                                    </div>
+                                                                                  )}
+                                                                                </SelectValue>
+                                                                              </SelectTrigger>
+                                                                              <SelectContent className="max-h-[300px]">
+                                                                                <Input
+                                                                                  placeholder="Search icons..."
+                                                                                  className="mb-2"
+                                                                                  onChange={(e) => {
+                                                                                    const iconElements =
+                                                                                      document.querySelectorAll(
+                                                                                        "[data-vm-edit-icon-item]",
+                                                                                      )
+                                                                                    const searchTerm =
+                                                                                      e.target.value.toLowerCase()
+
+                                                                                    iconElements.forEach((el) => {
+                                                                                      const iconName =
+                                                                                        el
+                                                                                          .getAttribute(
+                                                                                            "data-icon-name",
+                                                                                          )
+                                                                                          ?.toLowerCase() || ""
+                                                                                      if (
+                                                                                        iconName.includes(searchTerm)
+                                                                                      ) {
+                                                                                        ;(
+                                                                                          el as HTMLElement
+                                                                                        ).style.display = "flex"
+                                                                                      } else {
+                                                                                        ;(
+                                                                                          el as HTMLElement
+                                                                                        ).style.display = "none"
+                                                                                      }
+                                                                                    })
+                                                                                  }}
+                                                                                />
+                                                                                {Object.entries(iconCategories).map(
+                                                                                  ([category, categoryIcons]) => (
+                                                                                    <div
+                                                                                      key={category}
+                                                                                      className="mb-2"
+                                                                                    >
+                                                                                      <div className="px-2 text-xs font-bold text-muted-foreground mb-1">
+                                                                                        {category}
+                                                                                      </div>
+                                                                                      {categoryIcons.map((iconName) => (
+                                                                                        <SelectItem
+                                                                                          key={iconName}
+                                                                                          value={iconName}
+                                                                                          data-vm-edit-icon-item
+                                                                                          data-icon-name={iconName}
+                                                                                        >
+                                                                                          <div className="flex items-center gap-2">
+                                                                                            <DynamicIcon
+                                                                                              name={iconName as any}
+                                                                                              color="white"
+                                                                                              size={18}
+                                                                                            />
+                                                                                            <span>{iconName}</span>
+                                                                                          </div>
+                                                                                        </SelectItem>
+                                                                                      ))}
+                                                                                    </div>
+                                                                                  ),
+                                                                                )}
+                                                                              </SelectContent>
+                                                                            </Select>
+                                                                          </div>
                                                                         </div>
                                                                         <div className="grid w-[52px] items-center gap-1.5">
                                                                           <Label htmlFor="editIcon">Preview</Label>
                                                                           <div className="flex items-center justify-center">
-                                                                            {editIcon && <DynamicIcon name={editIcon as any} color="white" size={36} />}
+                                                                            {editIcon && (
+                                                                              <DynamicIcon
+                                                                                name={editIcon as any}
+                                                                                color="white"
+                                                                                size={36}
+                                                                              />
+                                                                            )}
                                                                           </div>
                                                                         </div>
                                                                       </div>
                                                                       <div className="grid w-full items-center gap-1.5">
-                                                                        <Label htmlFor="editName">
-                                                                          Name
-                                                                        </Label>
+                                                                        <Label htmlFor="editName">Name</Label>
                                                                         <Input
                                                                           id="editName"
                                                                           type="text"
                                                                           placeholder="e.g. Server1"
-                                                                          value={
-                                                                            editName
-                                                                          }
-                                                                          onChange={(
-                                                                            e
-                                                                          ) =>
-                                                                            setEditName(
-                                                                              e
-                                                                                .target
-                                                                                .value
-                                                                            )
-                                                                          }
+                                                                          value={editName}
+                                                                          onChange={(e) => setEditName(e.target.value)}
                                                                         />
                                                                       </div>
                                                                       <div className="grid w-full items-center gap-1.5">
-                                                                        <Label htmlFor="editOs">
-                                                                          Operating
-                                                                          System
-                                                                        </Label>
+                                                                        <Label htmlFor="editOs">Operating System</Label>
                                                                         <Select
-                                                                          value={
-                                                                            editOs
-                                                                          }
-                                                                          onValueChange={
-                                                                            setEditOs
-                                                                          }
+                                                                          value={editOs}
+                                                                          onValueChange={setEditOs}
                                                                         >
                                                                           <SelectTrigger className="w-full">
                                                                             <SelectValue placeholder="Select OS" />
@@ -1167,59 +1137,29 @@ export default function Dashboard() {
                                                                             <SelectItem value="Windows">
                                                                               Windows
                                                                             </SelectItem>
-                                                                            <SelectItem value="Linux">
-                                                                              Linux
-                                                                            </SelectItem>
-                                                                            <SelectItem value="MacOS">
-                                                                              MacOS
-                                                                            </SelectItem>
+                                                                            <SelectItem value="Linux">Linux</SelectItem>
+                                                                            <SelectItem value="MacOS">MacOS</SelectItem>
                                                                           </SelectContent>
                                                                         </Select>
                                                                       </div>
                                                                       <div className="grid w-full items-center gap-1.5">
-                                                                        <Label htmlFor="editIp">
-                                                                          IP
-                                                                          Adress
-                                                                        </Label>
+                                                                        <Label htmlFor="editIp">IP Adress</Label>
                                                                         <Input
                                                                           id="editIp"
                                                                           type="text"
                                                                           placeholder="e.g. 192.168.100.2"
-                                                                          value={
-                                                                            editIp
-                                                                          }
-                                                                          onChange={(
-                                                                            e
-                                                                          ) =>
-                                                                            setEditIp(
-                                                                              e
-                                                                                .target
-                                                                                .value
-                                                                            )
-                                                                          }
+                                                                          value={editIp}
+                                                                          onChange={(e) => setEditIp(e.target.value)}
                                                                         />
                                                                       </div>
                                                                       <div className="grid w-full items-center gap-1.5">
-                                                                        <Label htmlFor="editUrl">
-                                                                          Management
-                                                                          URL
-                                                                        </Label>
+                                                                        <Label htmlFor="editUrl">Management URL</Label>
                                                                         <Input
                                                                           id="editUrl"
                                                                           type="text"
                                                                           placeholder="e.g. https://proxmox.server1.com"
-                                                                          value={
-                                                                            editUrl
-                                                                          }
-                                                                          onChange={(
-                                                                            e
-                                                                          ) =>
-                                                                            setEditUrl(
-                                                                              e
-                                                                                .target
-                                                                                .value
-                                                                            )
-                                                                          }
+                                                                          value={editUrl}
+                                                                          onChange={(e) => setEditUrl(e.target.value)}
                                                                         />
                                                                       </div>
                                                                     </div>
@@ -1228,83 +1168,35 @@ export default function Dashboard() {
                                                                   <TabsContent value="hardware">
                                                                     <div className="space-y-4 pt-4">
                                                                       <div className="grid w-full items-center gap-1.5">
-                                                                        <Label htmlFor="editCpu">
-                                                                          CPU
-                                                                        </Label>
+                                                                        <Label htmlFor="editCpu">CPU</Label>
                                                                         <Input
                                                                           id="editCpu"
-                                                                          value={
-                                                                            editCpu
-                                                                          }
-                                                                          onChange={(
-                                                                            e
-                                                                          ) =>
-                                                                            setEditCpu(
-                                                                              e
-                                                                                .target
-                                                                                .value
-                                                                            )
-                                                                          }
+                                                                          value={editCpu}
+                                                                          onChange={(e) => setEditCpu(e.target.value)}
                                                                         />
                                                                       </div>
                                                                       <div className="grid w-full items-center gap-1.5">
-                                                                        <Label htmlFor="editGpu">
-                                                                          GPU
-                                                                        </Label>
+                                                                        <Label htmlFor="editGpu">GPU</Label>
                                                                         <Input
                                                                           id="editGpu"
-                                                                          value={
-                                                                            editGpu
-                                                                          }
-                                                                          onChange={(
-                                                                            e
-                                                                          ) =>
-                                                                            setEditGpu(
-                                                                              e
-                                                                                .target
-                                                                                .value
-                                                                            )
-                                                                          }
+                                                                          value={editGpu}
+                                                                          onChange={(e) => setEditGpu(e.target.value)}
                                                                         />
                                                                       </div>
                                                                       <div className="grid w-full items-center gap-1.5">
-                                                                        <Label htmlFor="editRam">
-                                                                          RAM
-                                                                        </Label>
+                                                                        <Label htmlFor="editRam">RAM</Label>
                                                                         <Input
                                                                           id="editRam"
-                                                                          value={
-                                                                            editRam
-                                                                          }
-                                                                          onChange={(
-                                                                            e
-                                                                          ) =>
-                                                                            setEditRam(
-                                                                              e
-                                                                                .target
-                                                                                .value
-                                                                            )
-                                                                          }
+                                                                          value={editRam}
+                                                                          onChange={(e) => setEditRam(e.target.value)}
                                                                         />
                                                                       </div>
                                                                       <div className="grid w-full items-center gap-1.5">
-                                                                        <Label htmlFor="editDisk">
-                                                                          Disk
-                                                                        </Label>
+                                                                        <Label htmlFor="editDisk">Disk</Label>
                                                                         <Input
                                                                           id="editDisk"
-                                                                          value={
-                                                                            editDisk
-                                                                          }
-                                                                          onChange={(
-                                                                            e
-                                                                          ) =>
-                                                                            setEditDisk(
-                                                                              e
-                                                                                .target
-                                                                                .value
-                                                                            )
-                                                                          }
+                                                                          value={editDisk}
+                                                                          onChange={(e) => setEditDisk(e.target.value)}
                                                                         />
                                                                       </div>
                                                                     </div>
@@ -1314,46 +1206,32 @@ export default function Dashboard() {
                                                                       <div className="flex items-center space-x-2">
                                                                         <Checkbox
                                                                           id="editHostCheckbox"
-                                                                          checked={
-                                                                            editHost
+                                                                          checked={editHost}
+                                                                          onCheckedChange={(checked) =>
+                                                                            setEditHost(checked === true)
                                                                           }
-                                                                          onCheckedChange={(
-                                                                            checked
-                                                                          ) =>
-                                                                            setEditHost(
-                                                                              checked ===
-                                                                                true
-                                                                            )
+                                                                          disabled={
+                                                                            server.hostedVMs &&
+                                                                            server.hostedVMs.length > 0
                                                                           }
-                                                                          disabled={server.hostedVMs && server.hostedVMs.length > 0}
                                                                         />
                                                                         <Label htmlFor="editHostCheckbox">
-                                                                          Mark as
-                                                                          host
-                                                                          server
-                                                                          {server.hostedVMs && server.hostedVMs.length > 0 && (
-                                                                            <span className="text-muted-foreground text-sm ml-2">
-                                                                              (Cannot be disabled while hosting VMs)
-                                                                            </span>
-                                                                          )}
+                                                                          Mark as host server
+                                                                          {server.hostedVMs &&
+                                                                            server.hostedVMs.length > 0 && (
+                                                                              <span className="text-muted-foreground text-sm ml-2">
+                                                                                (Cannot be disabled while hosting VMs)
+                                                                              </span>
+                                                                            )}
                                                                         </Label>
                                                                       </div>
                                                                       {!editHost && (
                                                                         <div className="grid w-full items-center gap-1.5">
-                                                                          <Label>
-                                                                            Host
-                                                                            Server
-                                                                          </Label>
+                                                                          <Label>Host Server</Label>
                                                                           <Select
                                                                             value={editHostServer?.toString()}
-                                                                            onValueChange={(
-                                                                              value
-                                                                            ) =>
-                                                                              setEditHostServer(
-                                                                                Number(
-                                                                                  value
-                                                                                )
-                                                                              )
+                                                                            onValueChange={(value) =>
+                                                                              setEditHostServer(Number(value))
                                                                             }
                                                                           >
                                                                             <SelectTrigger>
@@ -1361,7 +1239,9 @@ export default function Dashboard() {
                                                                             </SelectTrigger>
                                                                             <SelectContent>
                                                                               {hostServers
-                                                                                .filter(server => server.id !== editId)
+                                                                                .filter(
+                                                                                  (server) => server.id !== editId,
+                                                                                )
                                                                                 .map((server) => (
                                                                                   <SelectItem
                                                                                     key={server.id}
@@ -1380,73 +1260,59 @@ export default function Dashboard() {
                                                               </AlertDialogDescription>
                                                             </AlertDialogHeader>
                                                             <AlertDialogFooter>
-                                                              <AlertDialogCancel>
-                                                                Cancel
-                                                              </AlertDialogCancel>
-                                                              <Button
-                                                                onClick={edit}
-                                                              >
-                                                                Save
-                                                              </Button>
+                                                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                              <Button onClick={edit}>Save</Button>
                                                             </AlertDialogFooter>
                                                           </AlertDialogContent>
                                                         </AlertDialog>
                                                       </div>
                                                     </div>
 
-                                                      <div className="col-span-fullpb-2">
-                                                        <Separator />
-                                                      </div>
+                                                    <div className="col-span-fullpb-2">
+                                                      <Separator />
+                                                    </div>
 
-                                                      <div className="flex gap-5 pb-2">
-                                                        <div className="flex items-center gap-2 text-foreground/80">
-                                                          <MonitorCog className="h-4 w-4 text-muted-foreground" />
-                                                          <span>
-                                                            <b>OS:</b>{" "}
-                                                            {hostedVM.os || "-"}
-                                                          </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 text-foreground/80">
-                                                          <FileDigit className="h-4 w-4 text-muted-foreground" />
-                                                          <span>
-                                                            <b>IP:</b>{" "}
-                                                            {hostedVM.ip ||
-                                                              "Not set"}
-                                                          </span>
-                                                        </div>
-                                                      </div>
-
+                                                    <div className="flex gap-5 pb-2">
                                                       <div className="flex items-center gap-2 text-foreground/80">
-                                                        <Cpu className="h-4 w-4 text-muted-foreground" />
+                                                        <MonitorCog className="h-4 w-4 text-muted-foreground" />
                                                         <span>
-                                                          <b>CPU:</b>{" "}
-                                                          {hostedVM.cpu || "-"}
+                                                          <b>OS:</b> {hostedVM.os || "-"}
                                                         </span>
                                                       </div>
                                                       <div className="flex items-center gap-2 text-foreground/80">
-                                                        <Microchip className="h-4 w-4 text-muted-foreground" />
+                                                        <FileDigit className="h-4 w-4 text-muted-foreground" />
                                                         <span>
-                                                          <b>GPU:</b>{" "}
-                                                          {hostedVM.gpu || "-"}
-                                                        </span>
-                                                      </div>
-                                                      <div className="flex items-center gap-2 text-foreground/80">
-                                                        <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                                                        <span>
-                                                          <b>RAM:</b>{" "}
-                                                          {hostedVM.ram || "-"}
-                                                        </span>
-                                                      </div>
-                                                      <div className="flex items-center gap-2 text-foreground/80">
-                                                        <HardDrive className="h-4 w-4 text-muted-foreground" />
-                                                        <span>
-                                                          <b>Disk:</b>{" "}
-                                                          {hostedVM.disk || "-"}
+                                                          <b>IP:</b> {hostedVM.ip || "Not set"}
                                                         </span>
                                                       </div>
                                                     </div>
-                                                  )
-                                                )}
+
+                                                    <div className="flex items-center gap-2 text-foreground/80">
+                                                      <Cpu className="h-4 w-4 text-muted-foreground" />
+                                                      <span>
+                                                        <b>CPU:</b> {hostedVM.cpu || "-"}
+                                                      </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-foreground/80">
+                                                      <Microchip className="h-4 w-4 text-muted-foreground" />
+                                                      <span>
+                                                        <b>GPU:</b> {hostedVM.gpu || "-"}
+                                                      </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-foreground/80">
+                                                      <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                                                      <span>
+                                                        <b>RAM:</b> {hostedVM.ram || "-"}
+                                                      </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-foreground/80">
+                                                      <HardDrive className="h-4 w-4 text-muted-foreground" />
+                                                      <span>
+                                                        <b>Disk:</b> {hostedVM.disk || "-"}
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                ))}
                                               </div>
                                             </ScrollArea>
                                           </div>
@@ -1454,9 +1320,7 @@ export default function Dashboard() {
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                      <AlertDialogCancel>
-                                        Close
-                                      </AlertDialogCancel>
+                                      <AlertDialogCancel>Close</AlertDialogCancel>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
@@ -1478,12 +1342,12 @@ export default function Dashboard() {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <g clip-path="url(#clip0_9023_61563)">
+                  <g clipPath="url(#clip0_9023_61563)">
                     <path
                       d="M14.6437 2.05426C11.9803 1.2966 9.01686 1.64245 6.50315 3.25548C1.85499 6.23817 0.504864 12.4242 3.48756 17.0724C6.47025 21.7205 12.6563 23.0706 17.3044 20.088C20.4971 18.0393 22.1338 14.4793 21.8792 10.9444"
                       stroke="stroke-current"
-                      stroke-width="1.4"
-                      stroke-linecap="round"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
                       className="my-path"
                     ></path>
                   </g>
@@ -1519,8 +1383,7 @@ export default function Dashboard() {
                     onClick={handleNext}
                     isActive={currentPage < maxPage}
                     style={{
-                      cursor:
-                        currentPage === maxPage ? "not-allowed" : "pointer",
+                      cursor: currentPage === maxPage ? "not-allowed" : "pointer",
                     }}
                   />
                 </PaginationItem>
@@ -1530,5 +1393,5 @@ export default function Dashboard() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }
