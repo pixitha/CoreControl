@@ -45,15 +45,15 @@ const NODE_WIDTH = 220;
 const NODE_HEIGHT = 60;
 const APP_NODE_WIDTH = 160;
 const APP_NODE_HEIGHT = 40;
-const HORIZONTAL_SPACING = 800; // Stark erhöht für mehr Hauptabstand
-const VERTICAL_SPACING = 150;   // Vergrößerter Basisabstand
+const HORIZONTAL_SPACING = 700;
+const VERTICAL_SPACING = 80;
 const START_Y = 120;
 const ROOT_NODE_WIDTH = 300;
 const CONTAINER_PADDING = 40;
-const COLUMN_SPACING = 300;     // Vergrößerter Seitenabstand
-const VM_APP_SPACING = 250;     // Vergrößerter App-Abstand
-const MIN_VM_SPACING = 10;      // Mindestabstand auch bei leeren VMs
-const APP_ROW_SPACING = 30;     // Abstand zwischen App-Nodes
+const COLUMN_SPACING = 220;
+const VM_APP_SPACING = 220;
+const MIN_VM_SPACING = 10;
+const APP_ROW_SPACING = 15;
 
 export async function GET() {
   try {
