@@ -45,6 +45,12 @@ model server {
   gpu           String?
   ram           String?
   disk          String?
+  monitoring    Boolean   @default(false)
+  monitoringURL String?
+  cpuUsage      String?
+  ramUsage      String?
+  diskUsage     String?
+  online        Boolean   @default(true)
 }
 
 model settings {
