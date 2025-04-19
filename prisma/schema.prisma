@@ -72,4 +72,8 @@ model notification {
   telegramChatId String?
   telegramToken String?
   discordWebhook String?
+  gotifyUrl     String?
+  gotifyToken   String?
+  ntfyUrl       String?
+  ntfyToken     String?
 }
