@@ -13,12 +13,16 @@ interface AddRequest {
     telegramToken?: string;
     telegramChatId?: string;
     discordWebhook?: string;
+    gotifyUrl?: string;
+    gotifyToken?: string;
+    ntfyUrl?: string;
+    ntfyToken?: string;
 }
 
 export async function POST(request: NextRequest) {
     try {
         const body: AddRequest = await request.json();
-        const { type, smtpHost, smtpPort, smtpSecure, smtpUsername, smtpPassword, smtpFrom, smtpTo, telegramToken, telegramChatId, discordWebhook } = body; 
+        const { type, smtpHost, smtpPort, smtpSecure, smtpUsername, smtpPassword, smtpFrom, smtpTo, telegramToken, telegramChatId, discordWebhook, gotifyUrl, gotifyToken, ntfyUrl, ntfyToken } = body; 
         
         const notification = await prisma.notification.create({
             data: {
@@ -33,6 +37,10 @@ export async function POST(request: NextRequest) {
                 telegramChatId: telegramChatId,
                 telegramToken: telegramToken,
                 discordWebhook: discordWebhook,
+                gotifyUrl: gotifyUrl,
+                gotifyToken: gotifyToken,
+                ntfyUrl: ntfyUrl,
+                ntfyToken: ntfyToken,
             }
         });
 
