@@ -77,10 +77,12 @@ import axios from "axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DynamicIcon } from 'lucide-react/dynamic';
 
 interface Server {
   id: number;
   name: string;
+  icon: string;
   host: boolean;
   hostServer: number | null;
   os?: string;
@@ -103,6 +105,7 @@ export default function Dashboard() {
   const [host, setHost] = useState<boolean>(false);
   const [hostServer, setHostServer] = useState<number>(0);
   const [name, setName] = useState<string>("");
+  const [icon, setIcon] = useState<string>("");
   const [os, setOs] = useState<string>("");
   const [ip, setIp] = useState<string>("");
   const [url, setUrl] = useState<string>("");
@@ -122,6 +125,7 @@ export default function Dashboard() {
   const [editHost, setEditHost] = useState<boolean>(false);
   const [editHostServer, setEditHostServer] = useState<number | null>(0);
   const [editName, setEditName] = useState<string>("");
+  const [editIcon, setEditIcon] = useState<string>("");
   const [editOs, setEditOs] = useState<string>("");
   const [editIp, setEditIp] = useState<string>("");
   const [editUrl, setEditUrl] = useState<string>("");
@@ -160,6 +164,7 @@ export default function Dashboard() {
         host,
         hostServer,
         name,
+        icon,
         os,
         ip,
         url,
@@ -171,7 +176,7 @@ export default function Dashboard() {
       setIsAddDialogOpen(false);
       setHost(false);
       setHostServer(0);
-
+      setIcon("");
       setName("");
       setOs("");
       setIp("");
@@ -234,6 +239,7 @@ export default function Dashboard() {
     setEditHost(server.host);
     setEditHostServer(server.hostServer || null);
     setEditName(server.name);
+    setEditIcon(server.icon || "");
     setEditOs(server.os || "");
     setEditIp(server.ip || "");
     setEditUrl(server.url || "");
@@ -252,6 +258,7 @@ export default function Dashboard() {
         host: editHost,
         hostServer: editHostServer,
         name: editName,
+        icon: editIcon,
         os: editOs,
         ip: editIp,
         url: editUrl,
@@ -318,6 +325,17 @@ export default function Dashboard() {
     const hostServer = servers.find(server => server.id === hostServerId);
     return hostServer ? hostServer.name : "";
   };
+
+  const icons = [
+    "server", "network", "database", "cloud",
+    "terminal", "code", "cpu", "hard-drive", "router",
+    "activity", "monitor", "bug", "settings", "shield",
+    "lock", "key", "wifi", "antenna", "power",
+    "folder", "file-code", "clipboard-list", "binary", "command",
+    "git-branch", "git-commit", "git-merge", "git-pull-request", "github",
+    "life-buoy", "alarm-check", "alert-triangle", "check-circle", "x-octagon"
+  ];
+  
 
   return (
     <SidebarProvider>
@@ -390,6 +408,37 @@ export default function Dashboard() {
                         </TabsList>
                         <TabsContent value="general">
                           <div className="space-y-4 pt-4">
+                            <div className="flex items-center gap-2">
+                              <div className="grid w-[calc(100%-52px)] items-center gap-1.5">
+                                <Label htmlFor="icon">Icon</Label>
+                                <Select value={icon} onValueChange={(value) => setIcon(value)}>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select an icon">
+                                      {icon && <div className="flex items-center gap-2">
+                                        <DynamicIcon name={icon as any} color="white" size={18} />
+                                        <span>{icon}</span>
+                                      </div>}
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {icons.map((icon) => (
+                                      <SelectItem key={icon} value={icon}>
+                                        <div className="flex items-center gap-2">
+                                          <DynamicIcon name={icon as any} color="white" size={18} />
+                                          <span>{icon}</span>
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="grid w-[52px] items-center gap-1.5">
+                                <Label htmlFor="icon">Preview</Label>
+                                <div className="flex items-center justify-center">
+                                  {icon &&   <DynamicIcon name={icon as any} color="white" size={36} />}
+                                </div>
+                              </div>
+                            </div>
                             <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="name">Name</Label>
                               <Input
@@ -605,7 +654,10 @@ export default function Dashboard() {
                         <div className="flex items-center">
                           <div className="ml-4">
                             <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                              {server.name}
+                              <div className="flex items-center gap-2">
+                                {server.icon && <DynamicIcon name={server.icon as any} color="white" size={24} />}
+                                {server.name}
+                              </div>
                               {server.isVM && (
                                 <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">VM</span>
                               )}
@@ -728,9 +780,40 @@ export default function Dashboard() {
                                         </TabsList>
                                         <TabsContent value="general">
                                           <div className="space-y-4 pt-4">
-                                            <div className="grid w-full items-center gap-1.5">
-                                              <Label htmlFor="editName">
-                                                Name
+                                          <div className="flex items-center gap-2">
+                                            <div className="grid w-[calc(100%-52px)] items-center gap-1.5">
+                                              <Label htmlFor="icon">Icon</Label>
+                                              <Select value={editIcon} onValueChange={(value) => setEditIcon(value)}>
+                                                <SelectTrigger className="w-full">
+                                                  <SelectValue placeholder="Select an icon">
+                                                    {editIcon && <div className="flex items-center gap-2">
+                                                      <DynamicIcon name={editIcon as any} color="white" size={18} />
+                                                      <span>{editIcon}</span>
+                                                    </div>}
+                                                  </SelectValue>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  {icons.map((icon) => (
+                                                    <SelectItem key={icon} value={icon}>
+                                                      <div className="flex items-center gap-2">
+                                                        <DynamicIcon name={icon as any} color="white" size={18} />
+                                                        <span>{icon}</span>
+                                                      </div>
+                                                    </SelectItem>
+                                                  ))}
+                                                </SelectContent>
+                                              </Select>
+                                            </div>
+                                            <div className="grid w-[52px] items-center gap-1.5">
+                                              <Label htmlFor="icon">Preview</Label>
+                                              <div className="flex items-center justify-center">
+                                                {editIcon &&   <DynamicIcon name={editIcon as any} color="white" size={36} />}
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="grid w-full items-center gap-1.5">
+                                            <Label htmlFor="editName">
+                                              Name
                                               </Label>
                                               <Input
                                                 id="editName"
@@ -940,8 +1023,11 @@ export default function Dashboard() {
                                                       className="flex flex-col gap-2 border border-muted py-2 px-4 rounded-md"
                                                     >
                                                       <div className="flex items-center justify-between">
-                                                        <div className="text-base font-extrabold">
-                                                          {hostedVM.name}
+                                                        <div className="flex items-center gap-2">
+                                                          {hostedVM.icon && <DynamicIcon name={hostedVM.icon as any} color="white" size={24} />}
+                                                          <div className="text-base font-extrabold">  
+                                                            {hostedVM.name}
+                                                          </div>
                                                         </div>
                                                         <div className="flex items-center gap-2 text-foreground/80">
                                                           <Button
@@ -1008,6 +1094,37 @@ export default function Dashboard() {
                                                                   </TabsList>
                                                                   <TabsContent value="general">
                                                                     <div className="space-y-4 pt-4">
+                                                                      <div className="flex items-center gap-2">
+                                                                        <div className="grid w-[calc(100%-52px)] items-center gap-1.5">
+                                                                          <Label htmlFor="editIcon">Icon</Label>
+                                                                          <Select value={editIcon} onValueChange={(value) => setEditIcon(value)}>
+                                                                            <SelectTrigger className="w-full">
+                                                                              <SelectValue placeholder="Select an icon">
+                                                                                {editIcon && <div className="flex items-center gap-2">
+                                                                                  <DynamicIcon name={editIcon as any} color="white" size={18} />
+                                                                                  <span>{editIcon}</span>
+                                                                                </div>}
+                                                                              </SelectValue>
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                              {icons.map((icon) => (
+                                                                                <SelectItem key={icon} value={icon}>
+                                                                                  <div className="flex items-center gap-2">
+                                                                                    <DynamicIcon name={icon as any} color="white" size={18} />
+                                                                                    <span>{icon}</span>
+                                                                                  </div>
+                                                                                </SelectItem>
+                                                                              ))}
+                                                                            </SelectContent>
+                                                                          </Select>
+                                                                        </div>
+                                                                        <div className="grid w-[52px] items-center gap-1.5">
+                                                                          <Label htmlFor="editIcon">Preview</Label>
+                                                                          <div className="flex items-center justify-center">
+                                                                            {editIcon && <DynamicIcon name={editIcon as any} color="white" size={36} />}
+                                                                          </div>
+                                                                        </div>
+                                                                      </div>
                                                                       <div className="grid w-full items-center gap-1.5">
                                                                         <Label htmlFor="editName">
                                                                           Name
