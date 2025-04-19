@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/x509"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -40,6 +42,10 @@ type Notification struct {
 	TelegramChatID sql.NullString
 	TelegramToken  sql.NullString
 	DiscordWebhook sql.NullString
+	GotifyUrl      sql.NullString
+	GotifyToken    sql.NullString
+	NtfyUrl        sql.NullString
+	NtfyToken      sql.NullString
 }
 
 var (
@@ -134,7 +140,7 @@ func isIPAddress(host string) bool {
 func loadNotifications(db *sql.DB) ([]Notification, error) {
 	rows, err := db.Query(
 		`SELECT id, enabled, type, "smtpHost", "smtpPort", "smtpFrom", "smtpUser", "smtpPass", "smtpSecure", "smtpTo",
-		       "telegramChatId", "telegramToken", "discordWebhook"
+		       "telegramChatId", "telegramToken", "discordWebhook", "gotifyUrl", "gotifyToken", "ntfyUrl", "ntfyToken"
 		FROM notification
 		WHERE enabled = true`,
 	)
@@ -149,7 +155,7 @@ func loadNotifications(db *sql.DB) ([]Notification, error) {
 		if err := rows.Scan(
 			&n.ID, &n.Enabled, &n.Type,
 			&n.SMTPHost, &n.SMTPPort, &n.SMTPFrom, &n.SMTPUser, &n.SMTPPass, &n.SMTPSecure, &n.SMTPTo,
-			&n.TelegramChatID, &n.TelegramToken, &n.DiscordWebhook,
+			&n.TelegramChatID, &n.TelegramToken, &n.DiscordWebhook, &n.GotifyUrl, &n.GotifyToken, &n.NtfyUrl, &n.NtfyToken,
 		); err != nil {
 			fmt.Printf("Error scanning notification: %v\n", err)
 			continue
@@ -200,7 +206,7 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 	var notificationTemplate string
 	err := db.QueryRow("SELECT notification_text FROM settings LIMIT 1").Scan(&notificationTemplate)
 	if err != nil || notificationTemplate == "" {
-		notificationTemplate = "The application '!name' (!url) went !status!"
+		notificationTemplate = "The application !name (!url) went !status!"
 	}
 
 	for _, app := range apps {
@@ -314,6 +320,14 @@ func sendNotifications(message string) {
 			if n.DiscordWebhook.Valid {
 				sendDiscord(n, message)
 			}
+		case "gotify":
+			if n.GotifyUrl.Valid && n.GotifyToken.Valid {
+				sendGotify(n, message)
+			}
+		case "ntfy":
+			if n.NtfyUrl.Valid && n.NtfyToken.Valid {
+				sendNtfy(n, message)
+			}
 		}
 	}
 }
@@ -370,4 +384,70 @@ func sendDiscord(n Notification, message string) {
 		return
 	}
 	resp.Body.Close()
+}
+
+func sendGotify(n Notification, message string) {
+	baseURL := strings.TrimSuffix(n.GotifyUrl.String, "/")
+	targetURL := fmt.Sprintf("%s/message", baseURL)
+
+	form := url.Values{}
+	form.Add("message", message)
+	form.Add("priority", "5")
+
+	req, err := http.NewRequest("POST", targetURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		fmt.Printf("Gotify: ERROR creating request: %v\n", err)
+		return
+	}
+
+	req.Header.Set("X-Gotify-Key", n.GotifyToken.String)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Gotify: ERROR sending request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Gotify: ERROR status code: %d\n", resp.StatusCode)
+	}
+}
+
+func sendNtfy(n Notification, message string) {
+	baseURL := strings.TrimSuffix(n.NtfyUrl.String, "/")
+	topic := "corecontrol"
+	requestURL := fmt.Sprintf("%s/%s", baseURL, topic)
+
+	payload := map[string]string{"message": message}
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		fmt.Printf("Ntfy: ERROR marshaling JSON: %v\n", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Printf("Ntfy: ERROR creating request: %v\n", err)
+		return
+	}
+
+	if n.NtfyToken.Valid {
+		req.Header.Set("Authorization", "Bearer "+n.NtfyToken.String)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Ntfy: ERROR sending request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Ntfy: ERROR status code: %d\n", resp.StatusCode)
+	}
 }

@@ -37,6 +37,7 @@ model server {
   host          Boolean   @default(false)
   hostServer    Int?
   name          String
+  icon          String?
   os            String?
   ip            String?
   url           String?
@@ -72,4 +73,8 @@ model notification {
   telegramChatId String?
   telegramToken String?
   discordWebhook String?
+  gotifyUrl     String?
+  gotifyToken   String?
+  ntfyUrl       String?
+  ntfyToken     String?
 }

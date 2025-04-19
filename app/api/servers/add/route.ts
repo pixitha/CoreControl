@@ -5,6 +5,7 @@ interface AddRequest {
     host: boolean;
     hostServer: number;
     name: string;
+    icon: string;
     os: string;
     ip: string;
     url: string;
@@ -18,13 +19,14 @@ interface AddRequest {
 export async function POST(request: NextRequest) {
     try {
         const body: AddRequest = await request.json();
-        const { host, hostServer, name, os, ip, url, cpu, gpu, ram, disk } = body;  
+        const { host, hostServer, name, icon, os, ip, url, cpu, gpu, ram, disk } = body;  
         
         const server = await prisma.server.create({
             data: {
                 host,
                 hostServer,
                 name,
+                icon,
                 os,
                 ip,
                 url,
