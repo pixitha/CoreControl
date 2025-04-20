@@ -24,7 +24,7 @@ import {
   MicroscopeIcon as Microchip,
   MemoryStick,
   HardDrive,
-  Server,
+  LucideServer,
 } from "lucide-react"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -75,6 +75,10 @@ interface Server {
   isVM?: boolean
   monitoring?: boolean
   monitoringURL?: string
+  online?: boolean
+  cpuUsage?: number
+  ramUsage?: number
+  diskUsage?: number
 }
 
 interface GetServersResponse {
@@ -96,6 +100,10 @@ export default function Dashboard() {
   const [disk, setDisk] = useState<string>("")
   const [monitoring, setMonitoring] = useState<boolean>(false)
   const [monitoringURL, setMonitoringURL] = useState<string>("")
+  const [online, setOnline] = useState<boolean>(false)
+  const [cpuUsage, setCpuUsage] = useState<number>(0)
+  const [ramUsage, setRamUsage] = useState<number>(0)
+  const [diskUsage, setDiskUsage] = useState<number>(0)
 
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [maxPage, setMaxPage] = useState<number>(1)
@@ -118,7 +126,6 @@ export default function Dashboard() {
   const [editDisk, setEditDisk] = useState<string>("")
   const [editMonitoring, setEditMonitoring] = useState<boolean>(false)
   const [editMonitoringURL, setEditMonitoringURL] = useState<string>("")
-
 
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [isSearching, setIsSearching] = useState<boolean>(false)
@@ -638,6 +645,7 @@ export default function Dashboard() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
           <br />
           {!loading ? (
             <div className={isGridLayout ? "grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4" : "space-y-4"}>
@@ -646,19 +654,27 @@ export default function Dashboard() {
                 .map((server) => (
                   <Card
                     key={server.id}
-                    className={isGridLayout ? "h-full flex flex-col justify-between" : "w-full mb-4"}
+                    className={`${isGridLayout ? "h-full flex flex-col justify-between" : "w-full mb-4"} hover:shadow-md transition-all duration-200 max-w-full`}
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center">
-                          <div className="ml-4">
+                        <div className="flex items-center w-4/6">
+                          <div className="ml-4 flex-grow">
                             <CardTitle className="text-2xl font-bold flex items-center gap-2">
                               <div className="flex items-center gap-2">
                                 {server.icon && <DynamicIcon name={server.icon as any} color="white" size={24} />}
-                                <span className=" font-bold">{server.icon && "･"} {server.name}</span>
+                                <span className="font-bold">
+                                  {server.icon && "･"} {server.name}
+                                </span>
                               </div>
                               {server.isVM && (
                                 <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">VM</span>
+                              )}
+                              {server.monitoring && (
+                                <div
+                                  className={`ml-2 h-2.5 w-2.5 rounded-full ${server.online ? "bg-emerald-500" : "bg-destructive"}`}
+                                  title={server.online ? "Online" : "Offline"}
+                                />
                               )}
                             </CardTitle>
                             <CardDescription
@@ -681,7 +697,7 @@ export default function Dashboard() {
 
                               {server.isVM && server.hostServer && (
                                 <div className="flex items-center gap-2 text-foreground/80">
-                                  <Server className="h-4 w-4 text-muted-foreground" />
+                                  <LucideServer className="h-4 w-4 text-muted-foreground" />
                                   <span>
                                     <b>Host:</b> {getHostServerName(server.hostServer)}
                                   </span>
@@ -716,10 +732,72 @@ export default function Dashboard() {
                                   <b>Disk:</b> {server.disk || "-"}
                                 </span>
                               </div>
+
+                              {server.monitoring && server.hostServer === 0 && (
+                                <>
+                                  <div className="col-span-full pt-2 pb-2">
+                                    <Separator />
+                                  </div>
+
+                                  <div className="col-span-full">
+                                    <h4 className="text-sm font-semibold mb-3">Resource Usage</h4>
+                                    <div className={`${!isGridLayout ? "grid grid-cols-3 gap-4" : "space-y-3"}`}>
+                                      <div>
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <Cpu className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm font-medium">CPU</span>
+                                          </div>
+                                          <span className="text-xs font-medium">{server.cpuUsage || 0}%</span>
+                                        </div>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                          <div
+                                            className={`h-full ${server.cpuUsage && server.cpuUsage > 80 ? "bg-destructive" : server.cpuUsage && server.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                            style={{ width: `${server.cpuUsage || 0}%` }}
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm font-medium">RAM</span>
+                                          </div>
+                                          <span className="text-xs font-medium">{server.ramUsage || 0}%</span>
+                                        </div>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                          <div
+                                            className={`h-full ${server.ramUsage && server.ramUsage > 80 ? "bg-destructive" : server.ramUsage && server.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                            style={{ width: `${server.ramUsage || 0}%` }}
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <HardDrive className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm font-medium">Disk</span>
+                                          </div>
+                                          <span className="text-xs font-medium">{server.diskUsage || 0}%</span>
+                                        </div>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                          <div
+                                            className={`h-full ${server.diskUsage && server.diskUsage > 80 ? "bg-destructive" : server.diskUsage && server.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                            style={{ width: `${server.diskUsage || 0}%` }}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
                             </CardDescription>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end justify-start space-y-2 w-[120px]">
+                        <div className="w-1/6" />
+                        <div className="flex flex-col items-end justify-start space-y-2 w-1/6">
                           <div className="flex items-center justify-end gap-2 w-full">
                             <div className="flex flex-col items-end gap-2">
                               <div className="flex gap-2">
@@ -729,7 +807,7 @@ export default function Dashboard() {
                                     className="gap-2"
                                     onClick={() => window.open(server.url, "_blank")}
                                   >
-                                    <Link className="h-4 w-4" />                                    
+                                    <Link className="h-4 w-4" />
                                   </Button>
                                 )}
                                 <Button
@@ -1002,7 +1080,7 @@ export default function Dashboard() {
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button variant="outline" className="h-9 flex items-center gap-2 px-3 w-full">
-                                      <Server className="h-4 w-4" />
+                                      <LucideServer className="h-4 w-4" />
                                       <span>VMs</span>
                                     </Button>
                                   </AlertDialogTrigger>
@@ -1028,7 +1106,10 @@ export default function Dashboard() {
                                                             size={24}
                                                           />
                                                         )}
-                                                        <div className="text-base font-extrabold">{hostedVM.icon && "･ "}{hostedVM.name}</div>
+                                                        <div className="text-base font-extrabold">
+                                                          {hostedVM.icon && "･ "}
+                                                          {hostedVM.name}
+                                                        </div>
                                                       </div>
                                                       <div className="flex items-center gap-2 text-foreground/80">
                                                         <Button
@@ -1371,6 +1452,70 @@ export default function Dashboard() {
                                                         <b>Disk:</b> {hostedVM.disk || "-"}
                                                       </span>
                                                     </div>
+
+                                                    {hostedVM.monitoring && (
+                                                      <>
+                                                        <div className="col-span-full pt-2 pb-2">
+                                                          <Separator />
+                                                        </div>
+
+                                                        <div className="col-span-full grid grid-cols-3 gap-4">
+                                                          <div>
+                                                            <div className="flex items-center justify-between">
+                                                              <div className="flex items-center gap-2">
+                                                                <Cpu className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="text-sm font-medium">CPU</span>
+                                                              </div>
+                                                              <span className="text-xs font-medium">
+                                                                {hostedVM.cpuUsage || 0}%
+                                                              </span>
+                                                            </div>
+                                                            <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                                              <div
+                                                                className={`h-full ${hostedVM.cpuUsage && hostedVM.cpuUsage > 80 ? "bg-destructive" : hostedVM.cpuUsage && hostedVM.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                                                style={{ width: `${hostedVM.cpuUsage || 0}%` }}
+                                                              />
+                                                            </div>
+                                                          </div>
+
+                                                          <div>
+                                                            <div className="flex items-center justify-between">
+                                                              <div className="flex items-center gap-2">
+                                                                <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="text-sm font-medium">RAM</span>
+                                                              </div>
+                                                              <span className="text-xs font-medium">
+                                                                {hostedVM.ramUsage || 0}%
+                                                              </span>
+                                                            </div>
+                                                            <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                                              <div
+                                                                className={`h-full ${hostedVM.ramUsage && hostedVM.ramUsage > 80 ? "bg-destructive" : hostedVM.ramUsage && hostedVM.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                                                style={{ width: `${hostedVM.ramUsage || 0}%` }}
+                                                              />
+                                                            </div>
+                                                          </div>
+
+                                                          <div>
+                                                            <div className="flex items-center justify-between">
+                                                              <div className="flex items-center gap-2">
+                                                                <HardDrive className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="text-sm font-medium">Disk</span>
+                                                              </div>
+                                                              <span className="text-xs font-medium">
+                                                                {hostedVM.diskUsage || 0}%
+                                                              </span>
+                                                            </div>
+                                                            <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                                              <div
+                                                                className={`h-full ${hostedVM.diskUsage && hostedVM.diskUsage > 80 ? "bg-destructive" : hostedVM.diskUsage && hostedVM.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                                                style={{ width: `${hostedVM.diskUsage || 0}%` }}
+                                                              />
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                      </>
+                                                    )}
                                                   </div>
                                                 ))}
                                               </div>
