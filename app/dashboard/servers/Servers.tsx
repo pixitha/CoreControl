@@ -586,12 +586,19 @@ export default function Dashboard() {
                                 <Label>Host Server</Label>
                                 <Select
                                   value={hostServer?.toString()}
-                                  onValueChange={(value) => setHostServer(Number(value))}
+                                  onValueChange={(value) => {
+                                    const newHostServer = Number(value);
+                                    setHostServer(newHostServer);
+                                    if (newHostServer !== 0) {
+                                      setMonitoring(false);
+                                    }
+                                  }}
                                 >
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a host server" />
                                   </SelectTrigger>
                                   <SelectContent>
+                                    <SelectItem value="0">No host server</SelectItem>
                                     {hostServers.map((server) => (
                                       <SelectItem key={server.id} value={server.id.toString()}>
                                         {server.name}
@@ -712,6 +719,10 @@ export default function Dashboard() {
 
                               <div className="col-span-full pt-2 pb-2">
                                 <Separator />
+                              </div>
+
+                              <div className="col-span-full mb-2">
+                                <h4 className="text-sm font-semibold">Hardware Information</h4>
                               </div>
 
                               <div className="flex items-center gap-2 text-foreground/80">
@@ -839,7 +850,7 @@ export default function Dashboard() {
                                             <TabsTrigger value="general">General</TabsTrigger>
                                             <TabsTrigger value="hardware">Hardware</TabsTrigger>
                                             <TabsTrigger value="virtualization">Virtualization</TabsTrigger>
-                                            <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
+                                            {(!editHostServer || editHostServer === 0) && <TabsTrigger value="monitoring">Monitoring</TabsTrigger>}
                                           </TabsList>
                                           <TabsContent value="general">
                                             <div className="space-y-4 pt-4">
@@ -1028,12 +1039,19 @@ export default function Dashboard() {
                                                   <Label>Host Server</Label>
                                                   <Select
                                                     value={editHostServer?.toString()}
-                                                    onValueChange={(value) => setEditHostServer(Number(value))}
+                                                    onValueChange={(value) => {
+                                                      const newHostServer = Number(value);
+                                                      setEditHostServer(newHostServer);
+                                                      if (newHostServer !== 0) {
+                                                        setEditMonitoring(false);
+                                                      }
+                                                    }}
                                                   >
                                                     <SelectTrigger>
                                                       <SelectValue placeholder="Select a host server" />
                                                     </SelectTrigger>
                                                     <SelectContent>
+                                                      <SelectItem value="0">No host server</SelectItem>
                                                       {hostServers
                                                         .filter((server) => server.id !== editId)
                                                         .map((server) => (
@@ -1377,23 +1395,25 @@ export default function Dashboard() {
                                                                           <Label>Host Server</Label>
                                                                           <Select
                                                                             value={editHostServer?.toString()}
-                                                                            onValueChange={(value) =>
-                                                                              setEditHostServer(Number(value))
-                                                                            }
+                                                                            onValueChange={(value) => {
+                                                                              const newHostServer = Number(value);
+                                                                              setEditHostServer(newHostServer);
+                                                                              if (newHostServer !== 0) {
+                                                                                setEditMonitoring(false);
+                                                                              }
+                                                                            }}
                                                                           >
                                                                             <SelectTrigger>
                                                                               <SelectValue placeholder="Select a host server" />
                                                                             </SelectTrigger>
                                                                             <SelectContent>
+                                                                              <SelectItem value="0">No host server</SelectItem>
                                                                               {hostServers
                                                                                 .filter(
                                                                                   (server) => server.id !== editId,
                                                                                 )
                                                                                 .map((server) => (
-                                                                                  <SelectItem
-                                                                                    key={server.id}
-                                                                                    value={server.id.toString()}
-                                                                                  >
+                                                                                  <SelectItem key={server.id} value={server.id.toString()}>
                                                                                     {server.name}
                                                                                   </SelectItem>
                                                                                 ))}
@@ -1432,6 +1452,10 @@ export default function Dashboard() {
                                                           <b>IP:</b> {hostedVM.ip || "Not set"}
                                                         </span>
                                                       </div>
+                                                    </div>
+
+                                                    <div className="col-span-full mb-2">
+                                                      <h4 className="text-sm font-semibold">Hardware Information</h4>
                                                     </div>
 
                                                     <div className="flex items-center gap-2 text-foreground/80">
