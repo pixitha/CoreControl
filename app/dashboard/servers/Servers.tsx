@@ -654,9 +654,21 @@ export default function Dashboard() {
                 .map((server) => (
                   <Card
                     key={server.id}
-                    className={`${isGridLayout ? "h-full flex flex-col justify-between" : "w-full mb-4"} hover:shadow-md transition-all duration-200 max-w-full`}
+                    className={`${isGridLayout ? "h-full flex flex-col justify-between" : "w-full mb-4"} hover:shadow-md transition-all duration-200 max-w-full relative`}
                   >
                     <CardHeader>
+                      {server.monitoring && (
+                        <div className="absolute top-2 right-2">
+                          <div
+                            className={`w-4 h-4 rounded-full flex items-center justify-center ${server.online ? "bg-green-700" : "bg-red-700"}`}
+                            title={server.online ? "Online" : "Offline"}
+                          >
+                            <div
+                              className={`w-2 h-2 rounded-full ${server.online ? "bg-green-500" : "bg-red-500"}`}
+                            />
+                          </div>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center w-4/6">
                           <div className="ml-4 flex-grow">
@@ -669,12 +681,6 @@ export default function Dashboard() {
                               </div>
                               {server.isVM && (
                                 <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">VM</span>
-                              )}
-                              {server.monitoring && (
-                                <div
-                                  className={`ml-2 h-2.5 w-2.5 rounded-full ${server.online ? "bg-emerald-500" : "bg-destructive"}`}
-                                  title={server.online ? "Online" : "Offline"}
-                                />
                               )}
                             </CardTitle>
                             <CardDescription
