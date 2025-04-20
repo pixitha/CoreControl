@@ -14,12 +14,14 @@ interface EditRequest {
     gpu: string;
     ram: string;
     disk: string;
+    monitoring: boolean;
+    monitoringURL: string;
 }
 
 export async function PUT(request: NextRequest) {
     try {
         const body: EditRequest = await request.json();
-        const { host, hostServer, id, name, icon, os, ip, url, cpu, gpu, ram, disk } = body;
+        const { host, hostServer, id, name, icon, os, ip, url, cpu, gpu, ram, disk, monitoring, monitoringURL } = body;
 
         const existingServer = await prisma.server.findUnique({ where: { id } });
         if (!existingServer) {
@@ -46,7 +48,9 @@ export async function PUT(request: NextRequest) {
                 cpu,
                 gpu,
                 ram,
-                disk
+                disk,
+                monitoring,
+                monitoringURL
             }
         });
 
