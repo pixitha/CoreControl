@@ -4,25 +4,39 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "CoreControl",
   description: "Dashboard to manage your entire server infrastructure",
+  lastUpdated: true,
+  cleanUrls: true,
+  metaChunk: true,
+  head: [
+    ['link', { rel: 'icon', type: 'image/png', href: '/logo.png' }],
+  ],
   themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
+    logo: '/logo.png',
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Examples', link: '/markdown-examples' }
+      { text: 'Installation', link: '/installation' }
     ],
+
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2025-present CoreControl'
+    },
+
+    search: {
+      provider: 'local',
+    },
 
     sidebar: [
       {
-        text: 'Examples',
+        text: 'Deploy',
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
+          { text: 'Installation', link: '/installation' },
         ]
       }
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/crocofied/corecontrol' }
     ]
   }
 })
