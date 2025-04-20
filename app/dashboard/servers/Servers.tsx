@@ -25,6 +25,7 @@ import {
   MemoryStick,
   HardDrive,
   LucideServer,
+  Copy,
 } from "lucide-react"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -343,6 +344,40 @@ export default function Dashboard() {
   // Flatten icons for search
   const allIcons = Object.values(iconCategories).flat()
 
+  const copyServerDetails = (sourceServer: Server) => {
+    // First clear all fields
+    setName("")
+    setIcon("")
+    setOs("")
+    setIp("")
+    setUrl("")
+    setCpu("")
+    setGpu("")
+    setRam("")
+    setDisk("")
+    setMonitoring(false)
+    setMonitoringURL("")
+    setHost(false)
+    setHostServer(0)
+
+    // Then copy the new server details
+    setTimeout(() => {
+      setName(sourceServer.name + " (Copy)")
+      setIcon(sourceServer.icon || "")
+      setOs(sourceServer.os || "")
+      setIp(sourceServer.ip || "")
+      setUrl(sourceServer.url || "")
+      setCpu(sourceServer.cpu || "")
+      setGpu(sourceServer.gpu || "")
+      setRam(sourceServer.ram || "")
+      setDisk(sourceServer.disk || "")
+      setMonitoring(sourceServer.monitoring || false)
+      setMonitoringURL(sourceServer.monitoringURL || "")
+      setHost(sourceServer.host)
+      setHostServer(sourceServer.hostServer || 0)
+    }, 0)
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -390,7 +425,60 @@ export default function Dashboard() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Add an server</AlertDialogTitle>
+                    <AlertDialogTitle className="flex justify-between items-center">
+                      <span>Add a server</span>
+                      <Select 
+                        onValueChange={(value) => {
+                          if (!value) return;
+                          const sourceServer = servers.find(s => s.id === parseInt(value));
+                          if (!sourceServer) return;
+                          
+                          // Clear all fields first
+                          setName("");
+                          setIcon("");
+                          setOs("");
+                          setIp("");
+                          setUrl("");
+                          setCpu("");
+                          setGpu("");
+                          setRam("");
+                          setDisk("");
+                          setMonitoring(false);
+                          setMonitoringURL("");
+                          setHost(false);
+                          setHostServer(0);
+
+                          // Copy new server details
+                          setName(sourceServer.name + " (Copy)");
+                          setIcon(sourceServer.icon || "");
+                          setOs(sourceServer.os || "");
+                          setIp(sourceServer.ip || "");
+                          setUrl(sourceServer.url || "");
+                          setCpu(sourceServer.cpu || "");
+                          setGpu(sourceServer.gpu || "");
+                          setRam(sourceServer.ram || "");
+                          setDisk(sourceServer.disk || "");
+                          setMonitoring(sourceServer.monitoring || false);
+                          setMonitoringURL(sourceServer.monitoringURL || "");
+                          setHost(sourceServer.host);
+                          setHostServer(sourceServer.hostServer || 0);
+                        }}
+                      >
+                        <SelectTrigger className="w-[140px] h-8 text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <Copy className="h-3 w-3 text-muted-foreground" />
+                            <SelectValue placeholder="Copy server" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {servers.map((server) => (
+                            <SelectItem key={server.id} value={server.id.toString()} className="text-sm">
+                              {server.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                       <Tabs defaultValue="general" className="w-full">
                         <TabsList className="w-full">
@@ -471,6 +559,7 @@ export default function Dashboard() {
                                 id="name"
                                 type="text"
                                 placeholder="e.g. Server1"
+                                value={name}
                                 onChange={(e) => setName(e.target.value)}
                               />
                             </div>
@@ -478,7 +567,7 @@ export default function Dashboard() {
                               <Label htmlFor="description">
                                 Operating System <span className="text-stone-600">(optional)</span>
                               </Label>
-                              <Select onValueChange={(value) => setOs(value)}>
+                              <Select value={os} onValueChange={(value) => setOs(value)}>
                                 <SelectTrigger className="w-full">
                                   <SelectValue placeholder="Select OS" />
                                 </SelectTrigger>
@@ -490,13 +579,14 @@ export default function Dashboard() {
                               </Select>
                             </div>
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="icon">
+                              <Label htmlFor="ip">
                                 IP Adress <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="icon"
+                                id="ip"
                                 type="text"
                                 placeholder="e.g. 192.168.100.2"
+                                value={ip}
                                 onChange={(e) => setIp(e.target.value)}
                               />
                             </div>
@@ -518,6 +608,7 @@ export default function Dashboard() {
                                 id="publicURL"
                                 type="text"
                                 placeholder="e.g. https://proxmox.server1.com"
+                                value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                               />
                             </div>
@@ -526,46 +617,50 @@ export default function Dashboard() {
                         <TabsContent value="hardware">
                           <div className="space-y-4 pt-4">
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="name">
+                              <Label htmlFor="cpu">
                                 CPU <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="name"
+                                id="cpu"
                                 type="text"
                                 placeholder="e.g. AMD Ryzen™ 7 7800X3D"
+                                value={cpu}
                                 onChange={(e) => setCpu(e.target.value)}
                               />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="name">
+                              <Label htmlFor="gpu">
                                 GPU <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="name"
+                                id="gpu"
                                 type="text"
                                 placeholder="e.g. AMD Radeon™ Graphics"
+                                value={gpu}
                                 onChange={(e) => setGpu(e.target.value)}
                               />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="name">
+                              <Label htmlFor="ram">
                                 RAM <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="name"
+                                id="ram"
                                 type="text"
                                 placeholder="e.g. 64GB DDR5"
+                                value={ram}
                                 onChange={(e) => setRam(e.target.value)}
                               />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="name">
+                              <Label htmlFor="disk">
                                 Disk <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="name"
+                                id="disk"
                                 type="text"
                                 placeholder="e.g. 2TB SSD"
+                                value={disk}
                                 onChange={(e) => setDisk(e.target.value)}
                               />
                             </div>
@@ -628,6 +723,7 @@ export default function Dashboard() {
                                     id="monitoringURL"
                                     type="text"
                                     placeholder={`http://${ip}:61208`}
+                                    value={monitoringURL}
                                     onChange={(e) => setMonitoringURL(e.target.value)}
                                   />
                                 </div>
