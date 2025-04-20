@@ -73,6 +73,8 @@ interface Server {
   disk?: string
   hostedVMs?: Server[]
   isVM?: boolean
+  monitoring?: boolean
+  monitoringURL?: string
 }
 
 interface GetServersResponse {
@@ -92,6 +94,8 @@ export default function Dashboard() {
   const [gpu, setGpu] = useState<string>("")
   const [ram, setRam] = useState<string>("")
   const [disk, setDisk] = useState<string>("")
+  const [monitoring, setMonitoring] = useState<boolean>(false)
+  const [monitoringURL, setMonitoringURL] = useState<string>("")
 
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [maxPage, setMaxPage] = useState<number>(1)
@@ -112,6 +116,9 @@ export default function Dashboard() {
   const [editGpu, setEditGpu] = useState<string>("")
   const [editRam, setEditRam] = useState<string>("")
   const [editDisk, setEditDisk] = useState<string>("")
+  const [editMonitoring, setEditMonitoring] = useState<boolean>(false)
+  const [editMonitoringURL, setEditMonitoringURL] = useState<string>("")
+
 
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [isSearching, setIsSearching] = useState<boolean>(false)
@@ -151,6 +158,8 @@ export default function Dashboard() {
         gpu,
         ram,
         disk,
+        monitoring,
+        monitoringURL,
       })
       setIsAddDialogOpen(false)
       setHost(false)
@@ -164,6 +173,8 @@ export default function Dashboard() {
       setGpu("")
       setRam("")
       setDisk("")
+      setMonitoring(false)
+      setMonitoringURL("")
       getServers()
     } catch (error: any) {
       console.log(error.response.data)
@@ -223,6 +234,8 @@ export default function Dashboard() {
     setEditGpu(server.gpu || "")
     setEditRam(server.ram || "")
     setEditDisk(server.disk || "")
+    setEditMonitoring(server.monitoring || false)
+    setEditMonitoringURL(server.monitoringURL || "")
   }
 
   const edit = async () => {
@@ -242,6 +255,8 @@ export default function Dashboard() {
         gpu: editGpu,
         ram: editRam,
         disk: editDisk,
+        monitoring: editMonitoring,
+        monitoringURL: editMonitoringURL,
       })
       getServers()
       setEditId(null)
@@ -375,6 +390,7 @@ export default function Dashboard() {
                           <TabsTrigger value="general">General</TabsTrigger>
                           <TabsTrigger value="hardware">Hardware</TabsTrigger>
                           <TabsTrigger value="virtualization">Virtualization</TabsTrigger>
+                          <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
                         </TabsList>
                         <TabsContent value="general">
                           <div className="space-y-4 pt-4">
@@ -580,6 +596,29 @@ export default function Dashboard() {
                             )}
                           </div>
                         </TabsContent>
+                        <TabsContent value="monitoring">
+                          <div className="space-y-4 pt-4">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="monitoringCheckbox"
+                                checked={monitoring}
+                                onCheckedChange={(checked) => setMonitoring(checked === true)}
+                              />
+                              <Label htmlFor="monitoringCheckbox">Enable monitoring</Label>
+                            </div>
+                            {monitoring && (
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="monitoringURL">Monitoring URL</Label>
+                                <Input
+                                  id="monitoringURL"
+                                  type="text"
+                                  placeholder={`http://${ip}:61208`}
+                                  onChange={(e) => setMonitoringURL(e.target.value)}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </TabsContent>
                       </Tabs>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
@@ -716,6 +755,7 @@ export default function Dashboard() {
                                             <TabsTrigger value="general">General</TabsTrigger>
                                             <TabsTrigger value="hardware">Hardware</TabsTrigger>
                                             <TabsTrigger value="virtualization">Virtualization</TabsTrigger>
+                                            <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
                                           </TabsList>
                                           <TabsContent value="general">
                                             <div className="space-y-4 pt-4">
@@ -845,7 +885,6 @@ export default function Dashboard() {
                                               </div>
                                             </div>
                                           </TabsContent>
-
                                           <TabsContent value="hardware">
                                             <div className="space-y-4 pt-4">
                                               <div className="grid w-full items-center gap-1.5">
@@ -920,6 +959,30 @@ export default function Dashboard() {
                                                         ))}
                                                     </SelectContent>
                                                   </Select>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </TabsContent>
+                                          <TabsContent value="monitoring">
+                                            <div className="space-y-4 pt-4">
+                                              <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                  id="editMonitoringCheckbox"
+                                                  checked={editMonitoring}
+                                                  onCheckedChange={(checked) => setEditMonitoring(checked === true)}
+                                                />
+                                                <Label htmlFor="editMonitoringCheckbox">Enable monitoring</Label>
+                                              </div>
+                                              {editMonitoring && (
+                                                <div className="grid w-full items-center gap-1.5">
+                                                  <Label htmlFor="editMonitoringURL">Monitoring URL</Label>
+                                                  <Input
+                                                    id="editMonitoringURL"
+                                                    type="text"
+                                                    placeholder={`http://${editIp}:61208`}
+                                                    value={editMonitoringURL}
+                                                    onChange={(e) => setEditMonitoringURL(e.target.value)}
+                                                  />
                                                 </div>
                                               )}
                                             </div>
