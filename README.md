@@ -60,9 +60,6 @@ services:
     environment:
       JWT_SECRET: RANDOM_SECRET # Replace with a secure random string
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres"
-    depends_on:
-      - db
-      - agent
 
   agent:
     image: haedlessdev/corecontrol-agent:latest
