@@ -269,7 +269,7 @@ func getServers(db *sql.DB) []Server {
 
 func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 	var notificationTemplate string
-	err := db.QueryRow("SELECT notification_text FROM settings LIMIT 1").Scan(&notificationTemplate)
+	err := db.QueryRow("SELECT notification_text_application FROM settings LIMIT 1").Scan(&notificationTemplate)
 	if err != nil || notificationTemplate == "" {
 		notificationTemplate = "The application !name (!url) went !status!"
 	}

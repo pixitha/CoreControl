@@ -32,6 +32,16 @@ model uptime_history {
   createdAt     DateTime  @default(now())
 }
 
+model server_history {
+  id            Int       @id @default(autoincrement())
+  serverId      Int       @default(1)
+  online        Boolean   @default(true)
+  cpuUsage      String?
+  ramUsage      String?
+  diskUsage     String?
+  createdAt     DateTime  @default(now())
+}
+
 model server {
   id            Int       @id @default(autoincrement())
   host          Boolean   @default(false)
