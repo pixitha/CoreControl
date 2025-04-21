@@ -616,7 +616,7 @@ export default function Settings() {
                                 <Input
                                   type="text"
                                   id="pushoverUrl"
-                                  placeholder=""
+                                  placeholder="e.g. https://api.pushover.net/1/messages.json"
                                   onChange={(e) => setPushoverUrl(e.target.value)}
                                 />
                               </div>
@@ -626,7 +626,7 @@ export default function Settings() {
                                 <Input
                                   type="text"
                                   id="pushoverToken"
-                                  placeholder=""
+                                  placeholder="e.g. 1234567890"
                                   onChange={(e) => setPushoverToken(e.target.value)}
                                 />
                               </div>
@@ -636,7 +636,7 @@ export default function Settings() {
                                 <Input
                                   type="text"
                                   id="pushoverUser"
-                                  placeholder=""
+                                  placeholder="e.g. 1234567890"
                                   onChange={(e) => setPushoverUser(e.target.value)}
                                 />
                               </div>
