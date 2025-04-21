@@ -610,7 +610,7 @@ export default function Settings() {
                           )}
 
                           {notificationType === "pushover" && (
-                            <div className="mt-4">
+                            <div className="mt-4 flex flex-col gap-2">
                               <div className="grid w-full items-center gap-1.5">
                                 <Label htmlFor="pushoverUrl">Pushover URL</Label>
                                 <Input
