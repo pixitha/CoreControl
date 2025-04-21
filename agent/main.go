@@ -208,6 +208,7 @@ func deleteOldEntries(db *sql.DB) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// Delete old uptime history entries
 	res, err := db.ExecContext(ctx,
 		`DELETE FROM uptime_history WHERE "createdAt" < now() - interval '30 days'`,
 	)
@@ -216,6 +217,17 @@ func deleteOldEntries(db *sql.DB) error {
 	}
 	affected, _ := res.RowsAffected()
 	fmt.Printf("Deleted %d old entries from uptime_history\n", affected)
+
+	// Delete old server history entries
+	res, err = db.ExecContext(ctx,
+		`DELETE FROM server_history WHERE "createdAt" < now() - interval '30 days'`,
+	)
+	if err != nil {
+		return err
+	}
+	affected, _ = res.RowsAffected()
+	fmt.Printf("Deleted %d old entries from server_history\n", affected)
+
 	return nil
 }
 
@@ -368,6 +380,12 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 }
 
 func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Server) {
+	var notificationTemplate string
+	err := db.QueryRow("SELECT notification_text_server FROM settings LIMIT 1").Scan(&notificationTemplate)
+	if err != nil || notificationTemplate == "" {
+		notificationTemplate = "The server !name is now !status!"
+	}
+
 	for _, server := range servers {
 		if !server.Monitoring || !server.MonitoringURL.Valid {
 			continue
@@ -385,76 +403,110 @@ func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Serve
 		if err != nil {
 			fmt.Printf("%s CPU request failed: %v\n", logPrefix, err)
 			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
-		}
-		defer cpuResp.Body.Close()
+			online = false
+		} else {
+			defer cpuResp.Body.Close()
 
-		if cpuResp.StatusCode != http.StatusOK {
-			fmt.Printf("%s Bad CPU status code: %d\n", logPrefix, cpuResp.StatusCode)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
-		}
-
-		var cpuData CPUResponse
-		if err := json.NewDecoder(cpuResp.Body).Decode(&cpuData); err != nil {
-			fmt.Printf("%s Failed to parse CPU JSON: %v\n", logPrefix, err)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
-		}
-		cpuUsage = cpuData.Total
-
-		// Get Memory usage
-		memResp, err := client.Get(fmt.Sprintf("%s/api/4/mem", baseURL))
-		if err != nil {
-			fmt.Printf("%s Memory request failed: %v\n", logPrefix, err)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
-		}
-		defer memResp.Body.Close()
-
-		if memResp.StatusCode != http.StatusOK {
-			fmt.Printf("%s Bad memory status code: %d\n", logPrefix, memResp.StatusCode)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
+			if cpuResp.StatusCode != http.StatusOK {
+				fmt.Printf("%s Bad CPU status code: %d\n", logPrefix, cpuResp.StatusCode)
+				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				online = false
+			} else {
+				var cpuData CPUResponse
+				if err := json.NewDecoder(cpuResp.Body).Decode(&cpuData); err != nil {
+					fmt.Printf("%s Failed to parse CPU JSON: %v\n", logPrefix, err)
+					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					online = false
+				} else {
+					cpuUsage = cpuData.Total
+				}
+			}
 		}
 
-		var memData MemoryResponse
-		if err := json.NewDecoder(memResp.Body).Decode(&memData); err != nil {
-			fmt.Printf("%s Failed to parse memory JSON: %v\n", logPrefix, err)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
-		}
-		ramUsage = memData.Percent
+		if online {
+			// Get Memory usage
+			memResp, err := client.Get(fmt.Sprintf("%s/api/4/mem", baseURL))
+			if err != nil {
+				fmt.Printf("%s Memory request failed: %v\n", logPrefix, err)
+				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				online = false
+			} else {
+				defer memResp.Body.Close()
 
-		// Get Disk usage
-		fsResp, err := client.Get(fmt.Sprintf("%s/api/4/fs", baseURL))
-		if err != nil {
-			fmt.Printf("%s Filesystem request failed: %v\n", logPrefix, err)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
-		}
-		defer fsResp.Body.Close()
-
-		if fsResp.StatusCode != http.StatusOK {
-			fmt.Printf("%s Bad filesystem status code: %d\n", logPrefix, fsResp.StatusCode)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
-		}
-
-		var fsData FSResponse
-		if err := json.NewDecoder(fsResp.Body).Decode(&fsData); err != nil {
-			fmt.Printf("%s Failed to parse filesystem JSON: %v\n", logPrefix, err)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
-			continue
+				if memResp.StatusCode != http.StatusOK {
+					fmt.Printf("%s Bad memory status code: %d\n", logPrefix, memResp.StatusCode)
+					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					online = false
+				} else {
+					var memData MemoryResponse
+					if err := json.NewDecoder(memResp.Body).Decode(&memData); err != nil {
+						fmt.Printf("%s Failed to parse memory JSON: %v\n", logPrefix, err)
+						updateServerStatus(db, server.ID, false, 0, 0, 0)
+						online = false
+					} else {
+						ramUsage = memData.Percent
+					}
+				}
+			}
 		}
 
-		// Use the first filesystem entry's percentage
-		if len(fsData) > 0 {
-			diskUsage = fsData[0].Percent
+		if online {
+			// Get Disk usage
+			fsResp, err := client.Get(fmt.Sprintf("%s/api/4/fs", baseURL))
+			if err != nil {
+				fmt.Printf("%s Filesystem request failed: %v\n", logPrefix, err)
+				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				online = false
+			} else {
+				defer fsResp.Body.Close()
+
+				if fsResp.StatusCode != http.StatusOK {
+					fmt.Printf("%s Bad filesystem status code: %d\n", logPrefix, fsResp.StatusCode)
+					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					online = false
+				} else {
+					var fsData FSResponse
+					if err := json.NewDecoder(fsResp.Body).Decode(&fsData); err != nil {
+						fmt.Printf("%s Failed to parse filesystem JSON: %v\n", logPrefix, err)
+						updateServerStatus(db, server.ID, false, 0, 0, 0)
+						online = false
+					} else if len(fsData) > 0 {
+						diskUsage = fsData[0].Percent
+					}
+				}
+			}
+		}
+
+		// Check if status changed and send notification if needed
+		if online != server.Online {
+			status := "offline"
+			if online {
+				status = "online"
+			}
+
+			message := notificationTemplate
+			message = strings.ReplaceAll(message, "!name", server.Name)
+			message = strings.ReplaceAll(message, "!status", status)
+
+			sendNotifications(message)
 		}
 
 		// Update server status with metrics
 		updateServerStatus(db, server.ID, online, cpuUsage, ramUsage, diskUsage)
+
+		// Add entry to server history
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		_, err = db.ExecContext(ctx,
+			`INSERT INTO server_history(
+				"serverId", online, "cpuUsage", "ramUsage", "diskUsage", "createdAt"
+			) VALUES ($1, $2, $3, $4, $5, now())`,
+			server.ID, online, fmt.Sprintf("%.2f", cpuUsage), fmt.Sprintf("%.2f", ramUsage), fmt.Sprintf("%.2f", diskUsage),
+		)
+		cancel()
+		if err != nil {
+			fmt.Printf("%s Failed to insert history: %v\n", logPrefix, err)
+		}
+
 		fmt.Printf("%s Updated - CPU: %.2f%%, RAM: %.2f%%, Disk: %.2f%%\n",
 			logPrefix, cpuUsage, ramUsage, diskUsage)
 	}
