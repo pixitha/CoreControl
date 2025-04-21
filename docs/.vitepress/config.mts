@@ -32,7 +32,30 @@ export default defineConfig({
         items: [
           { text: 'Installation', link: '/installation' },
         ]
+      },
+      {
+        text: 'General',
+        items: [
+          { text: 'Dashboard', link: '/general/dashboard' },
+          { text: 'Servers', link: '/general/servers' },
+          { text: 'Applications', link: '/general/applications' },
+          { text: 'Uptime', link: '/general/uptime' },
+          { text: 'Network', link: '/general/network' },
+          { text: 'Settings', link: '/general/settings' },
+        ]
+      },
+      {
+        text: 'Notifications',
+        items: [
+          { text: 'Notifications', link: '/notifications/general' },
+          { text: 'Email', link: '/notifications/email' },
+          { text: 'Telegram', link: '/notifications/telegram' },
+          { text: 'Discord', link: '/notifications/discord' },
+          { text: 'Gotify', link: '/notifications/gotify' },
+          { text: 'Ntfy', link: '/notifications/ntfy' },
+        ]
       }
+      
     ],
 
     socialLinks: [

@@ -5,7 +5,6 @@ layout: home
 hero:
   name: "CoreControl"
   text: "Manage your server infrastructure"
-  tagline: My great project tagline
   actions:
     - theme: brand
       text: Install
@@ -18,12 +17,24 @@ hero:
     alt: Logo
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - icon: 🚀
+    title: Easy Deployment
+    details: Deploy and manage your servers with just a few clicks - thanks to docker
+  - icon: 🔒
+    title: Secure Management
+    details: Secure connections with the panel and a more secure authentication system
+  - icon: 📊
+    title: Real-time Monitoring
+    details: Monitor server performance, resource usage and uptime in real-time
+  - icon: 🎮
+    title: Easy to Manage
+    details: Simple and intuitive management interface for all your needs
+  - icon: 🔔
+    title: Notifications
+    details: Stay informed withalerts and notifications about your servers & applications status
+  - icon: ✨
+    title: Clean UI
+    details: Modern and user-friendly interface designed for the best user experience
 ---
 
 <style>
