@@ -39,7 +39,8 @@ interface NotificationsResponse {
   notifications: any[]
 }
 interface NotificationResponse {
-  notification_text?: string
+  notification_text_application?: string
+  notification_text_server?: string
 }
 
 export default function Settings() {
@@ -76,7 +77,8 @@ export default function Settings() {
 
   const [notifications, setNotifications] = useState<any[]>([])
 
-  const [notificationText, setNotificationText] = useState<string>("")
+  const [notificationTextApplication, setNotificationTextApplication] = useState<string>("")
+  const [notificationTextServer, setNotificationTextServer] = useState<string>("")
 
   const changeEmail = async () => {
     setEmailErrorVisible(false)
@@ -215,10 +217,15 @@ export default function Settings() {
     try {
       const response = await axios.post<NotificationResponse>("/api/settings/get_notification_text", {})
       if (response.status === 200) {
-        if (response.data.notification_text) {
-          setNotificationText(response.data.notification_text)
+        if (response.data.notification_text_application) {
+          setNotificationTextApplication(response.data.notification_text_application)
         } else {
-          setNotificationText("The application !name (!url) is now !status.")
+          setNotificationTextApplication("The application !name (!url) is now !status.")
+        }
+        if (response.data.notification_text_server) {
+          setNotificationTextServer(response.data.notification_text_server)
+        } else {
+          setNotificationTextServer("The server !name is now !status.")
         }
       }
     } catch (error: any) {
@@ -229,7 +236,8 @@ export default function Settings() {
   const editNotificationText = async () => {
     try {
       const response = await axios.post("/api/settings/notification_text", {
-        text: notificationText,
+        text_application: notificationTextApplication,
+        text_server: notificationTextServer,
       })
     } catch (error: any) {
       alert(error.response.data.error)
@@ -613,12 +621,22 @@ export default function Settings() {
                       <AlertDialogDescription>
                         <div className="space-y-4">
                           <div className="space-y-1.5">
-                            <Label htmlFor="text">Notification Text</Label>
+                            <Label htmlFor="text_application">Notification Text for Applications</Label>
                             <Textarea
-                              id="text"
+                              id="text_application"
                               placeholder="Type here..."
-                              value={notificationText}
-                              onChange={(e) => setNotificationText(e.target.value)}
+                              value={notificationTextApplication}
+                              onChange={(e) => setNotificationTextApplication(e.target.value)}
+                              rows={4}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="text_server">Notification Text for Servers</Label>
+                            <Textarea
+                              id="text_server"
+                              placeholder="Type here..."
+                              value={notificationTextServer}
+                              onChange={(e) => setNotificationTextServer(e.target.value)}
                               rows={4}
                             />
                           </div>
@@ -627,13 +645,19 @@ export default function Settings() {
                           You can use the following placeholders in the text:
                           <ul className="list-disc list-inside space-y-1 pt-2">
                             <li>
-                              <strong>!name</strong> - Application name
+                                <b>Server related:</b>
+                                <ul className="list-disc list-inside ml-4 space-y-1 pt-1 text-muted-foreground">
+                                    <li>!name - The name of the server</li>
+                                    <li>!status - The current status of the server (online/offline)</li>
+                                </ul>
                             </li>
                             <li>
-                              <strong>!url</strong> - Application URL
-                            </li>
-                            <li>
-                              <strong>!status</strong> - Application status (online/offline)
+                                <b>Application related:</b>
+                                <ul className="list-disc list-inside ml-4 space-y-1 pt-1 text-muted-foreground">
+                                    <li>!name - The name of the application</li>
+                                    <li>!url - The URL where the application is hosted</li>
+                                    <li>!status - The current status of the application (online/offline)</li>
+                                </ul>
                             </li>
                           </ul>
                         </div>
