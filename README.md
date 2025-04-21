@@ -102,6 +102,7 @@ The application is build with:
 - Icons by [Lucide](https://lucide.dev/)
 - Flowcharts by [React Flow](https://reactflow.dev/)
 - Application icons by [selfh.st/icons](selfh.st/icons)
+- Monitoring Tool by [Glances](https://github.com/nicolargo/glances)
 - and a lot of love ❤️
 
 ## Star History
