@@ -20,7 +20,7 @@ Login Page:
 ![Login Page](https://i.ibb.co/DfS7BJdX/image.png)
 
 Dashboard Page:
-![Dashboard Page](https://i.ibb.co/wFMb7StT/image.png)
+![Dashboard Page](https://i.ibb.co/mVgGJN6H/image.png)
 
 Servers Page:
 ![Servers Page](https://i.ibb.co/HLMD9HPZ/image.png)
@@ -29,13 +29,13 @@ VM Display:
 ![VM Display](https://i.ibb.co/My45mv8k/image.png)
 
 Applications Page:
-![Applications Page](https://i.ibb.co/qMwrKwn3/image.png)
+![Applications Page](https://i.ibb.co/Hc2HQpV/image.png)
 
 Uptime Page:
 ![Uptime Page](https://i.ibb.co/jvGcL9Y6/image.png)
 
 Network Page:
-![Network Page](https://i.ibb.co/qYcL2Fws/image.png)
+![Network Page](https://i.ibb.co/ymLHcNqM/image.png)
 
 Settings Page:
 ![Settings Page](https://i.ibb.co/rRQB9Hcz/image.png)
@@ -44,7 +44,8 @@ Settings Page:
 - [X] Edit Applications, Applications searchbar
 - [X] Uptime History
 - [X] Notifications
-- [ ] Simple Server Monitoring
+- [X] Simple Server Monitoring
+- [ ] Simple Server Monitoring History
 - [ ] Improved Network Flowchart with custom elements (like Network switches)
 - [ ] Advanced Settings (Disable Uptime Tracking & more)
 
@@ -60,9 +61,6 @@ services:
     environment:
       JWT_SECRET: RANDOM_SECRET # Replace with a secure random string
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres"
-    depends_on:
-      - db
-      - agent
 
   agent:
     image: haedlessdev/corecontrol-agent:latest
@@ -105,6 +103,7 @@ The application is build with:
 - Icons by [Lucide](https://lucide.dev/)
 - Flowcharts by [React Flow](https://reactflow.dev/)
 - Application icons by [selfh.st/icons](selfh.st/icons)
+- Monitoring Tool by [Glances](https://github.com/nicolargo/glances)
 - and a lot of love ❤️
 
 ## Star History

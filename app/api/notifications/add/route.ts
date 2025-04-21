@@ -17,12 +17,15 @@ interface AddRequest {
     gotifyToken?: string;
     ntfyUrl?: string;
     ntfyToken?: string;
+    pushoverUrl?: string;
+    pushoverToken?: string;
+    pushoverUser?: string;
 }
 
 export async function POST(request: NextRequest) {
     try {
         const body: AddRequest = await request.json();
-        const { type, smtpHost, smtpPort, smtpSecure, smtpUsername, smtpPassword, smtpFrom, smtpTo, telegramToken, telegramChatId, discordWebhook, gotifyUrl, gotifyToken, ntfyUrl, ntfyToken } = body; 
+        const { type, smtpHost, smtpPort, smtpSecure, smtpUsername, smtpPassword, smtpFrom, smtpTo, telegramToken, telegramChatId, discordWebhook, gotifyUrl, gotifyToken, ntfyUrl, ntfyToken, pushoverUrl, pushoverToken, pushoverUser } = body; 
         
         const notification = await prisma.notification.create({
             data: {
@@ -41,6 +44,9 @@ export async function POST(request: NextRequest) {
                 gotifyToken: gotifyToken,
                 ntfyUrl: ntfyUrl,
                 ntfyToken: ntfyToken,
+                pushoverUrl: pushoverUrl,
+                pushoverToken: pushoverToken,
+                pushoverUser: pushoverUser,
             }
         });
 

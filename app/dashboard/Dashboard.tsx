@@ -72,83 +72,94 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight mb-6">Dashboard</h1>
 
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-          <Card className="overflow-hidden border-t-4 border-t-rose-500 shadow-lg transition-all hover:shadow-xl hover:border-t-rose-600">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl font-semibold">Servers</CardTitle>
-                  <CardDescription className="mt-1">Physical and virtual servers overview</CardDescription>
-                </div>
-                <Server className="h-8 w-8 text-rose-500 p-1.5 rounded-lg" />
-              </div>
-            </CardHeader>
-            <CardContent className="pt-2 pb-4">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Physical Servers */}
-                <div className="flex items-center space-x-4 border border-gray-background p-4 rounded-lg">
-                  <div className="bg-rose-100 p-2 rounded-full">
-                    <Server className="h-6 w-6 text-rose-600" />
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold">{serverCountNoVMs}</div>
-                    <p className="text-sm text-muted-foreground">Physical Servers</p>
-                  </div>
-                </div>
-
-                {/* Virtual Machines */}
-                <div className="flex items-center space-x-4 border border-gray-background p-4 rounded-lg">
-                  <div className="bg-violet-100 p-2 rounded-full">
-                    <Network className="h-6 w-6 text-violet-600" />
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold">{serverCountOnlyVMs}</div>
-                    <p className="text-sm text-muted-foreground">Virtual Servers</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="border-t bg-muted/10 p-4">
-              <Button 
-                variant="ghost" 
-                size="lg"
-                className="w-full hover:bg-rose-50font-semibold transition-colors"
-                asChild
-              >
-                <Link href="/dashboard/servers" className="flex items-center justify-between">
-                  <span>Manage Servers</span>
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-            <Card className="overflow-hidden border-t-4 border-t-amber-500 shadow-sm transition-all hover:shadow-md">
-              <CardHeader className="pb-2">
+            <Card className="overflow-hidden border-t-4 border-t-rose-500 shadow-lg transition-all hover:shadow-xl hover:border-t-rose-600">
+              <CardHeader className="py-3 pb-1">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-medium">Applications</CardTitle>
-                  <Layers className="h-6 w-6 text-amber-500" />
+                  <div>
+                    <CardTitle className="text-2xl font-semibold">Servers</CardTitle>
+                    <CardDescription className="mt-1">Physical and virtual servers overview</CardDescription>
+                  </div>
+                  <Server className="h-8 w-8 text-rose-500 p-1.5 rounded-lg" />
                 </div>
-                <CardDescription>Manage your deployed applications</CardDescription>
               </CardHeader>
-              <CardContent className="pt-2 pb-4">
-                <div className="text-4xl font-bold">{applicationCount}</div>
-                <p className="text-sm text-muted-foreground mt-2">Running applications</p>
+              <CardContent className="pt-1 pb-2 min-h-[120px]">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Physical Servers */}
+                  <div className="flex items-center space-x-4 border border-gray-background p-4 rounded-lg">
+                    <div className="bg-rose-100 p-2 rounded-full">
+                      <Server className="h-6 w-6 text-rose-600" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold">{serverCountNoVMs}</div>
+                      <p className="text-sm text-muted-foreground">Physical Servers</p>
+                    </div>
+                  </div>
+
+                  {/* Virtual Machines */}
+                  <div className="flex items-center space-x-4 border border-gray-background p-4 rounded-lg">
+                    <div className="bg-violet-100 p-2 rounded-full">
+                      <Network className="h-6 w-6 text-violet-600" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold">{serverCountOnlyVMs}</div>
+                      <p className="text-sm text-muted-foreground">Virtual Servers</p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
-              <CardFooter className="border-t bg-muted/20 p-4">
-                <Button variant="ghost" size="default" className="w-full hover:bg-background font-medium" asChild>
-                  <Link href="/dashboard/applications">View all applications</Link>
+              <CardFooter className="border-t bg-muted/10 py-2 px-4">
+                <Button
+                  variant="outline"
+                  size="default"
+                  className="w-full font-semibold transition-colors border border-muted-foreground/20 hover:bg-primary hover:text-primary-foreground"
+                  asChild
+                >
+                  <Link href="/dashboard/servers" className="flex items-center justify-between">
+                    <span>Manage Servers</span>
+                  </Link>
                 </Button>
               </CardFooter>
             </Card>
 
-            <Card className="overflow-hidden border-t-4 border-t-emerald-500 shadow-sm transition-all hover:shadow-md">
-              <CardHeader className="pb-2">
+            <Card className="overflow-hidden border-t-4 border-t-amber-500 shadow-lg transition-all hover:shadow-xl hover:border-t-amber-600">
+              <CardHeader className="py-3 pb-1">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-medium">Uptime</CardTitle>
-                  <Activity className="h-6 w-6 text-emerald-500" />
+                  <div>
+                    <CardTitle className="text-2xl font-semibold">Applications</CardTitle>
+                    <CardDescription className="mt-1">Manage your deployed applications</CardDescription>
+                  </div>
+                  <Layers className="h-8 w-8 text-amber-500 p-1.5 rounded-lg" />
                 </div>
-                <CardDescription>Monitor your service availability</CardDescription>
               </CardHeader>
-              <CardContent className="pt-2 pb-4">
+              <CardContent className="pt-1 pb-2 min-h-[120px]">
+                <div className="text-4xl font-bold">{applicationCount}</div>
+                <p className="text-sm text-muted-foreground mt-2">Running applications</p>
+              </CardContent>
+              <CardFooter className="border-t bg-muted/10 py-2 px-4">
+                <Button
+                  variant="outline"
+                  size="default"
+                  className="w-full font-semibold transition-colors border border-muted-foreground/20 hover:bg-primary hover:text-primary-foreground"
+                  asChild
+                >
+                  <Link href="/dashboard/applications" className="flex items-center justify-between">
+                    <span>View all applications</span>
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+
+            <Card className="overflow-hidden border-t-4 border-t-emerald-500 shadow-lg transition-all hover:shadow-xl hover:border-t-emerald-600">
+              <CardHeader className="py-3 pb-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl font-semibold">Uptime</CardTitle>
+                    <CardDescription className="mt-1">Monitor your service availability</CardDescription>
+                  </div>
+                  <Activity className="h-8 w-8 text-emerald-500 p-1.5 rounded-lg" />
+                </div>
+              </CardHeader>
+              <CardContent className="pt-1 pb-2 min-h-[120px]">
                 <div className="flex flex-col">
                   <div className="text-4xl font-bold flex items-center justify-between">
                     <span>
@@ -169,28 +180,44 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground mt-2">Online applications</p>
                 </div>
               </CardContent>
-              <CardFooter className="border-t bg-muted/20 p-4">
-                <Button variant="ghost" size="default" className="w-full hover:bg-background font-medium" asChild>
-                  <Link href="/dashboard/uptime">View uptime metrics</Link>
+              <CardFooter className="border-t bg-muted/10 py-2 px-4">
+                <Button
+                  variant="outline"
+                  size="default"
+                  className="w-full font-semibold transition-colors border border-muted-foreground/20 hover:bg-primary hover:text-primary-foreground"
+                  asChild
+                >
+                  <Link href="/dashboard/uptime" className="flex items-center justify-between">
+                    <span>View uptime metrics</span>
+                  </Link>
                 </Button>
               </CardFooter>
             </Card>
 
-            <Card className="overflow-hidden border-t-4 border-t-sky-500 shadow-sm transition-all hover:shadow-md">
-              <CardHeader className="pb-2">
+            <Card className="overflow-hidden border-t-4 border-t-sky-500 shadow-lg transition-all hover:shadow-xl hover:border-t-sky-600">
+              <CardHeader className="py-3 pb-1">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-medium">Network</CardTitle>
-                  <Network className="h-6 w-6 text-sky-500" />
+                  <div>
+                    <CardTitle className="text-2xl font-semibold">Network</CardTitle>
+                    <CardDescription className="mt-1">Manage network configuration</CardDescription>
+                  </div>
+                  <Network className="h-8 w-8 text-sky-500 p-1.5 rounded-lg" />
                 </div>
-                <CardDescription>Manage network configuration</CardDescription>
               </CardHeader>
-              <CardContent className="pt-2 pb-4">
+              <CardContent className="pt-1 pb-2 min-h-[120px]">
                 <div className="text-4xl font-bold">{serverCountNoVMs + serverCountOnlyVMs + applicationCount}</div>
                 <p className="text-sm text-muted-foreground mt-2">Active connections</p>
               </CardContent>
-              <CardFooter className="border-t bg-muted/20 p-4">
-                <Button variant="ghost" size="default" className="w-full hover:bg-background font-medium" asChild>
-                  <Link href="/dashboard/network">View network details</Link>
+              <CardFooter className="border-t bg-muted/10 py-2 px-4">
+                <Button
+                  variant="outline"
+                  size="default"
+                  className="w-full font-semibold transition-colors border border-muted-foreground/20 hover:bg-primary hover:text-primary-foreground"
+                  asChild
+                >
+                  <Link href="/dashboard/network" className="flex items-center justify-between">
+                    <span>View network details</span>
+                  </Link>
                 </Button>
               </CardFooter>
             </Card>

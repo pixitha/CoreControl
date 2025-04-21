@@ -13,13 +13,15 @@ interface AddRequest {
     gpu: string;
     ram: string;
     disk: string;
+    monitoring: boolean;
+    monitoringURL: string;
 
 }
 
 export async function POST(request: NextRequest) {
     try {
         const body: AddRequest = await request.json();
-        const { host, hostServer, name, icon, os, ip, url, cpu, gpu, ram, disk } = body;  
+        const { host, hostServer, name, icon, os, ip, url, cpu, gpu, ram, disk, monitoring, monitoringURL } = body;  
         
         const server = await prisma.server.create({
             data: {
@@ -33,7 +35,9 @@ export async function POST(request: NextRequest) {
                 cpu,
                 gpu,
                 ram,
-                disk
+                disk,
+                monitoring,
+                monitoringURL
             }
         });
 

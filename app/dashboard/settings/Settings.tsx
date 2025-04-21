@@ -39,7 +39,8 @@ interface NotificationsResponse {
   notifications: any[]
 }
 interface NotificationResponse {
-  notification_text?: string
+  notification_text_application?: string
+  notification_text_server?: string
 }
 
 export default function Settings() {
@@ -73,10 +74,14 @@ export default function Settings() {
   const [gotifyToken, setGotifyToken] = useState<string>("")
   const [ntfyUrl, setNtfyUrl] = useState<string>("")
   const [ntfyToken, setNtfyToken] = useState<string>("")
+  const [pushoverUrl, setPushoverUrl] = useState<string>("")
+  const [pushoverToken, setPushoverToken] = useState<string>("")
+  const [pushoverUser, setPushoverUser] = useState<string>("")
 
   const [notifications, setNotifications] = useState<any[]>([])
 
-  const [notificationText, setNotificationText] = useState<string>("")
+  const [notificationTextApplication, setNotificationTextApplication] = useState<string>("")
+  const [notificationTextServer, setNotificationTextServer] = useState<string>("")
 
   const changeEmail = async () => {
     setEmailErrorVisible(false)
@@ -176,6 +181,9 @@ export default function Settings() {
         gotifyToken: gotifyToken,
         ntfyUrl: ntfyUrl,
         ntfyToken: ntfyToken,
+        pushoverUrl: pushoverUrl,
+        pushoverToken: pushoverToken,
+        pushoverUser: pushoverUser,
       })
       getNotifications()
     } catch (error: any) {
@@ -215,10 +223,15 @@ export default function Settings() {
     try {
       const response = await axios.post<NotificationResponse>("/api/settings/get_notification_text", {})
       if (response.status === 200) {
-        if (response.data.notification_text) {
-          setNotificationText(response.data.notification_text)
+        if (response.data.notification_text_application) {
+          setNotificationTextApplication(response.data.notification_text_application)
         } else {
-          setNotificationText("The application !name (!url) is now !status.")
+          setNotificationTextApplication("The application !name (!url) is now !status.")
+        }
+        if (response.data.notification_text_server) {
+          setNotificationTextServer(response.data.notification_text_server)
+        } else {
+          setNotificationTextServer("The server !name is now !status.")
         }
       }
     } catch (error: any) {
@@ -229,7 +242,8 @@ export default function Settings() {
   const editNotificationText = async () => {
     try {
       const response = await axios.post("/api/settings/notification_text", {
-        text: notificationText,
+        text_application: notificationTextApplication,
+        text_server: notificationTextServer,
       })
     } catch (error: any) {
       alert(error.response.data.error)
@@ -433,6 +447,7 @@ export default function Settings() {
                             <SelectItem value="discord">Discord</SelectItem>
                             <SelectItem value="gotify">Gotify</SelectItem>
                             <SelectItem value="ntfy">Ntfy</SelectItem>
+                            <SelectItem value="pushover">Pushover</SelectItem>
                           </SelectContent>
 
                           {notificationType === "smtp" && (
@@ -593,6 +608,40 @@ export default function Settings() {
                               </div>  
                             </div>
                           )}
+
+                          {notificationType === "pushover" && (
+                            <div className="mt-4 flex flex-col gap-2">
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="pushoverUrl">Pushover URL</Label>
+                                <Input
+                                  type="text"
+                                  id="pushoverUrl"
+                                  placeholder="e.g. https://api.pushover.net/1/messages.json"
+                                  onChange={(e) => setPushoverUrl(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="pushoverToken">Pushover Token</Label>
+                                <Input
+                                  type="text"
+                                  id="pushoverToken"
+                                  placeholder="e.g. 1234567890"
+                                  onChange={(e) => setPushoverToken(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="pushoverUser">Pushover User</Label>
+                                <Input
+                                  type="text"
+                                  id="pushoverUser"
+                                  placeholder="e.g. 1234567890"
+                                  onChange={(e) => setPushoverUser(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </Select>
                       </AlertDialogDescription>
                       <AlertDialogFooter>
@@ -613,12 +662,22 @@ export default function Settings() {
                       <AlertDialogDescription>
                         <div className="space-y-4">
                           <div className="space-y-1.5">
-                            <Label htmlFor="text">Notification Text</Label>
+                            <Label htmlFor="text_application">Notification Text for Applications</Label>
                             <Textarea
-                              id="text"
+                              id="text_application"
                               placeholder="Type here..."
-                              value={notificationText}
-                              onChange={(e) => setNotificationText(e.target.value)}
+                              value={notificationTextApplication}
+                              onChange={(e) => setNotificationTextApplication(e.target.value)}
+                              rows={4}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="text_server">Notification Text for Servers</Label>
+                            <Textarea
+                              id="text_server"
+                              placeholder="Type here..."
+                              value={notificationTextServer}
+                              onChange={(e) => setNotificationTextServer(e.target.value)}
                               rows={4}
                             />
                           </div>
@@ -627,13 +686,19 @@ export default function Settings() {
                           You can use the following placeholders in the text:
                           <ul className="list-disc list-inside space-y-1 pt-2">
                             <li>
-                              <strong>!name</strong> - Application name
+                                <b>Server related:</b>
+                                <ul className="list-disc list-inside ml-4 space-y-1 pt-1 text-muted-foreground">
+                                    <li>!name - The name of the server</li>
+                                    <li>!status - The current status of the server (online/offline)</li>
+                                </ul>
                             </li>
                             <li>
-                              <strong>!url</strong> - Application URL
-                            </li>
-                            <li>
-                              <strong>!status</strong> - Application status (online/offline)
+                                <b>Application related:</b>
+                                <ul className="list-disc list-inside ml-4 space-y-1 pt-1 text-muted-foreground">
+                                    <li>!name - The name of the application</li>
+                                    <li>!url - The URL where the application is hosted</li>
+                                    <li>!status - The current status of the application (online/offline)</li>
+                                </ul>
                             </li>
                           </ul>
                         </div>
@@ -681,6 +746,11 @@ export default function Settings() {
                                 <Bell className="h-5 w-5 text-primary" />
                               </div>
                             )}
+                            {notification.type === "pushover" && (
+                              <div className="bg-muted/20 p-2 rounded-full">
+                                <Bell className="h-5 w-5 text-primary" />
+                              </div>
+                            )}
                             <div className="space-y-1">
                               <h3 className="font-medium capitalize">{notification.type}</h3>
                               <p className="text-xs text-muted-foreground">
@@ -689,6 +759,7 @@ export default function Settings() {
                                 {notification.type === "discord" && "Discord webhook alerts"}
                                 {notification.type === "gotify" && "Gotify notifications"}
                                 {notification.type === "ntfy" && "Ntfy notifications"}
+                                {notification.type === "pushover" && "Pushover notifications"}
                               </p>
                             </div>
                           </div>

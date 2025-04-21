@@ -28,6 +28,31 @@ type Application struct {
 	Online    bool
 }
 
+type Server struct {
+	ID            int
+	Name          string
+	Monitoring    bool
+	MonitoringURL sql.NullString
+	Online        bool
+	CpuUsage      sql.NullFloat64
+	RamUsage      sql.NullFloat64
+	DiskUsage     sql.NullFloat64
+}
+
+type CPUResponse struct {
+	Total float64 `json:"total"`
+}
+
+type MemoryResponse struct {
+	Percent float64 `json:"percent"`
+}
+
+type FSResponse []struct {
+	DeviceName string  `json:"device_name"`
+	MntPoint   string  `json:"mnt_point"`
+	Percent    float64 `json:"percent"`
+}
+
 type Notification struct {
 	ID             int
 	Enabled        bool
@@ -46,6 +71,9 @@ type Notification struct {
 	GotifyToken    sql.NullString
 	NtfyUrl        sql.NullString
 	NtfyToken      sql.NullString
+	PushoverUrl    sql.NullString
+	PushoverToken  sql.NullString
+	PushoverUser   sql.NullString
 }
 
 var (
@@ -108,12 +136,26 @@ func main() {
 		}
 	}()
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	client := &http.Client{
+	appClient := &http.Client{
 		Timeout: 4 * time.Second,
 	}
+
+	// Server monitoring every 5 seconds
+	go func() {
+		serverClient := &http.Client{
+			Timeout: 5 * time.Second,
+		}
+		serverTicker := time.NewTicker(5 * time.Second)
+		defer serverTicker.Stop()
+
+		for range serverTicker.C {
+			servers := getServers(db)
+			checkAndUpdateServerStatus(db, serverClient, servers)
+		}
+	}()
+
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
 
 	for now := range ticker.C {
 		if now.Second()%10 != 0 {
@@ -121,7 +163,7 @@ func main() {
 		}
 
 		apps := getApplications(db)
-		checkAndUpdateStatus(db, client, apps)
+		checkAndUpdateStatus(db, appClient, apps)
 	}
 }
 
@@ -169,6 +211,7 @@ func deleteOldEntries(db *sql.DB) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// Delete old uptime history entries
 	res, err := db.ExecContext(ctx,
 		`DELETE FROM uptime_history WHERE "createdAt" < now() - interval '30 days'`,
 	)
@@ -177,6 +220,17 @@ func deleteOldEntries(db *sql.DB) error {
 	}
 	affected, _ := res.RowsAffected()
 	fmt.Printf("Deleted %d old entries from uptime_history\n", affected)
+
+	// Delete old server history entries
+	res, err = db.ExecContext(ctx,
+		`DELETE FROM server_history WHERE "createdAt" < now() - interval '30 days'`,
+	)
+	if err != nil {
+		return err
+	}
+	affected, _ = res.RowsAffected()
+	fmt.Printf("Deleted %d old entries from server_history\n", affected)
+
 	return nil
 }
 
@@ -202,9 +256,35 @@ func getApplications(db *sql.DB) []Application {
 	return apps
 }
 
+func getServers(db *sql.DB) []Server {
+	rows, err := db.Query(
+		`SELECT id, name, monitoring, "monitoringURL", online, "cpuUsage", "ramUsage", "diskUsage" 
+         FROM server WHERE monitoring = true`,
+	)
+	if err != nil {
+		fmt.Printf("Error fetching servers: %v\n", err)
+		return nil
+	}
+	defer rows.Close()
+
+	var servers []Server
+	for rows.Next() {
+		var server Server
+		if err := rows.Scan(
+			&server.ID, &server.Name, &server.Monitoring, &server.MonitoringURL,
+			&server.Online, &server.CpuUsage, &server.RamUsage, &server.DiskUsage,
+		); err != nil {
+			fmt.Printf("Error scanning server row: %v\n", err)
+			continue
+		}
+		servers = append(servers, server)
+	}
+	return servers
+}
+
 func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 	var notificationTemplate string
-	err := db.QueryRow("SELECT notification_text FROM settings LIMIT 1").Scan(&notificationTemplate)
+	err := db.QueryRow("SELECT notification_text_application FROM settings LIMIT 1").Scan(&notificationTemplate)
 	if err != nil || notificationTemplate == "" {
 		notificationTemplate = "The application !name (!url) went !status!"
 	}
@@ -301,6 +381,154 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		dbCancel2()
 	}
 }
+
+func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Server) {
+	var notificationTemplate string
+	err := db.QueryRow("SELECT notification_text_server FROM settings LIMIT 1").Scan(&notificationTemplate)
+	if err != nil || notificationTemplate == "" {
+		notificationTemplate = "The server !name is now !status!"
+	}
+
+	for _, server := range servers {
+		if !server.Monitoring || !server.MonitoringURL.Valid {
+			continue
+		}
+
+		logPrefix := fmt.Sprintf("[Server %s]", server.Name)
+		fmt.Printf("%s Checking...\n", logPrefix)
+
+		baseURL := strings.TrimSuffix(server.MonitoringURL.String, "/")
+		var cpuUsage, ramUsage, diskUsage float64
+		var online = true
+
+		// Get CPU usage
+		cpuResp, err := client.Get(fmt.Sprintf("%s/api/4/cpu", baseURL))
+		if err != nil {
+			fmt.Printf("%s CPU request failed: %v\n", logPrefix, err)
+			updateServerStatus(db, server.ID, false, 0, 0, 0)
+			online = false
+		} else {
+			defer cpuResp.Body.Close()
+
+			if cpuResp.StatusCode != http.StatusOK {
+				fmt.Printf("%s Bad CPU status code: %d\n", logPrefix, cpuResp.StatusCode)
+				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				online = false
+			} else {
+				var cpuData CPUResponse
+				if err := json.NewDecoder(cpuResp.Body).Decode(&cpuData); err != nil {
+					fmt.Printf("%s Failed to parse CPU JSON: %v\n", logPrefix, err)
+					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					online = false
+				} else {
+					cpuUsage = cpuData.Total
+				}
+			}
+		}
+
+		if online {
+			// Get Memory usage
+			memResp, err := client.Get(fmt.Sprintf("%s/api/4/mem", baseURL))
+			if err != nil {
+				fmt.Printf("%s Memory request failed: %v\n", logPrefix, err)
+				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				online = false
+			} else {
+				defer memResp.Body.Close()
+
+				if memResp.StatusCode != http.StatusOK {
+					fmt.Printf("%s Bad memory status code: %d\n", logPrefix, memResp.StatusCode)
+					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					online = false
+				} else {
+					var memData MemoryResponse
+					if err := json.NewDecoder(memResp.Body).Decode(&memData); err != nil {
+						fmt.Printf("%s Failed to parse memory JSON: %v\n", logPrefix, err)
+						updateServerStatus(db, server.ID, false, 0, 0, 0)
+						online = false
+					} else {
+						ramUsage = memData.Percent
+					}
+				}
+			}
+		}
+
+		if online {
+			// Get Disk usage
+			fsResp, err := client.Get(fmt.Sprintf("%s/api/4/fs", baseURL))
+			if err != nil {
+				fmt.Printf("%s Filesystem request failed: %v\n", logPrefix, err)
+				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				online = false
+			} else {
+				defer fsResp.Body.Close()
+
+				if fsResp.StatusCode != http.StatusOK {
+					fmt.Printf("%s Bad filesystem status code: %d\n", logPrefix, fsResp.StatusCode)
+					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					online = false
+				} else {
+					var fsData FSResponse
+					if err := json.NewDecoder(fsResp.Body).Decode(&fsData); err != nil {
+						fmt.Printf("%s Failed to parse filesystem JSON: %v\n", logPrefix, err)
+						updateServerStatus(db, server.ID, false, 0, 0, 0)
+						online = false
+					} else if len(fsData) > 0 {
+						diskUsage = fsData[0].Percent
+					}
+				}
+			}
+		}
+
+		// Check if status changed and send notification if needed
+		if online != server.Online {
+			status := "offline"
+			if online {
+				status = "online"
+			}
+
+			message := notificationTemplate
+			message = strings.ReplaceAll(message, "!name", server.Name)
+			message = strings.ReplaceAll(message, "!status", status)
+
+			sendNotifications(message)
+		}
+
+		// Update server status with metrics
+		updateServerStatus(db, server.ID, online, cpuUsage, ramUsage, diskUsage)
+
+		// Add entry to server history
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		_, err = db.ExecContext(ctx,
+			`INSERT INTO server_history(
+				"serverId", online, "cpuUsage", "ramUsage", "diskUsage", "createdAt"
+			) VALUES ($1, $2, $3, $4, $5, now())`,
+			server.ID, online, fmt.Sprintf("%.2f", cpuUsage), fmt.Sprintf("%.2f", ramUsage), fmt.Sprintf("%.2f", diskUsage),
+		)
+		cancel()
+		if err != nil {
+			fmt.Printf("%s Failed to insert history: %v\n", logPrefix, err)
+		}
+
+		fmt.Printf("%s Updated - CPU: %.2f%%, RAM: %.2f%%, Disk: %.2f%%\n",
+			logPrefix, cpuUsage, ramUsage, diskUsage)
+	}
+}
+
+func updateServerStatus(db *sql.DB, serverID int, online bool, cpuUsage, ramUsage, diskUsage float64) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := db.ExecContext(ctx,
+		`UPDATE server SET online = $1, "cpuUsage" = $2::float8, "ramUsage" = $3::float8, "diskUsage" = $4::float8
+		 WHERE id = $5`,
+		online, cpuUsage, ramUsage, diskUsage, serverID,
+	)
+	if err != nil {
+		fmt.Printf("Failed to update server status (ID: %d): %v\n", serverID, err)
+	}
+}
+
 func sendNotifications(message string) {
 	notifMutex.RLock()
 	notifs := notifMutexCopy(notifications)
@@ -327,6 +555,10 @@ func sendNotifications(message string) {
 		case "ntfy":
 			if n.NtfyUrl.Valid && n.NtfyToken.Valid {
 				sendNtfy(n, message)
+			}
+		case "pushover":
+			if n.PushoverUrl.Valid && n.PushoverToken.Valid && n.PushoverUser.Valid {
+				sendPushover(n, message)
 			}
 		}
 	}
@@ -449,5 +681,32 @@ func sendNtfy(n Notification, message string) {
 
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Ntfy: ERROR status code: %d\n", resp.StatusCode)
+	}
+}
+
+func sendPushover(n Notification, message string) {
+	form := url.Values{}
+	form.Add("token", n.PushoverToken.String)
+	form.Add("user", n.PushoverUser.String)
+	form.Add("message", message)
+
+	req, err := http.NewRequest("POST", n.PushoverUrl.String, strings.NewReader(form.Encode()))
+	if err != nil {
+		fmt.Printf("Pushover: ERROR creating request: %v\n", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Pushover: ERROR sending request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Pushover: ERROR status code: %d\n", resp.StatusCode)
 	}
 }

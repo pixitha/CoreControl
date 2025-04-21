@@ -32,6 +32,16 @@ model uptime_history {
   createdAt     DateTime  @default(now())
 }
 
+model server_history {
+  id            Int       @id @default(autoincrement())
+  serverId      Int       @default(1)
+  online        Boolean   @default(true)
+  cpuUsage      String?
+  ramUsage      String?
+  diskUsage     String?
+  createdAt     DateTime  @default(now())
+}
+
 model server {
   id            Int       @id @default(autoincrement())
   host          Boolean   @default(false)
@@ -45,12 +55,19 @@ model server {
   gpu           String?
   ram           String?
   disk          String?
+  monitoring    Boolean   @default(false)
+  monitoringURL String?
+  cpuUsage      String?
+  ramUsage      String?
+  diskUsage     String?
+  online        Boolean   @default(true)
 }
 
 model settings {
   id            Int       @id @default(autoincrement())
   uptime_checks          Boolean       @default(true)
-  notification_text       String?
+  notification_text_application       String?
+  notification_text_server       String?
 }
 
 model user {
@@ -77,4 +94,7 @@ model notification {
   gotifyToken   String?
   ntfyUrl       String?
   ntfyToken     String?
+  pushoverUrl   String?
+  pushoverToken String?
+  pushoverUser  String?
 }

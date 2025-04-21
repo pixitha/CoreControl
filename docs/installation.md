@@ -1,12 +1,16 @@
----
-icon: down
----
-
 # Installation
 
-To install the application using Docker Compose, first, ensure that Docker and Docker Compose are installed on your system.&#x20;
+The easiest way to install CoreControl is using Docker Compose. Follow these steps:
 
-You can then simply install and start the following Docker compose. Remember that you have to generate a JWT\_SECRET beforehand.
+## Docker Compose Installation
+
+::: danger
+CoreControl is at an early stage of development and is subject to change. It is not recommended for use in a production environment at this time.
+:::
+
+1. Make sure [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) are installed on your system.
+
+2. Create a file named `docker-compose.yml` with the following content:
 
 ```yaml
 services:
@@ -17,14 +21,14 @@ services:
     environment:
       JWT_SECRET: RANDOM_SECRET # Replace with a secure random string
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres"
-    depends_on:
-      - db
-      - agent
 
   agent:
     image: haedlessdev/corecontrol-agent:latest
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@db:5432/postgres"
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:17
@@ -35,22 +39,36 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
 
 volumes:
   postgres_data:
 ```
 
-Now start the application:
+3. Generate a custom JWT_SECRET with e.g. [jwtsecret.com/generate](https://jwtsecret.com/generate)
+3. Start CoreControl with the following command:
 
-```sh
+```bash
+docker-compose up -d
+# OR
 docker compose up -d
 ```
 
+5. The application is now available at `http://localhost:3000`.
 
+## Authentication
 
-**The default login is:**
+CoreControl comes with a default administrator account:
 
-E-Mail: [admin@example.com](mailto:admin@example.com)\
-Password: admin
+- **Email**: admin@example.com
+- **Password**: admin
 
-_Be sure to set your own password and customize the e-mail, otherwise this poses a security risk!_
+::: warning
+For security reasons, it is strongly recommended to change the default credentials immediately after your first login.
+:::
+
+You can change the administrator password in the settings after logging in.

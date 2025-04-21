@@ -24,7 +24,8 @@ import {
   MicroscopeIcon as Microchip,
   MemoryStick,
   HardDrive,
-  Server,
+  LucideServer,
+  Copy,
 } from "lucide-react"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -57,7 +58,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { DynamicIcon } from "lucide-react/dynamic"
-
+import { StatusIndicator } from "@/components/status-indicator"
 interface Server {
   id: number
   name: string
@@ -73,11 +74,25 @@ interface Server {
   disk?: string
   hostedVMs?: Server[]
   isVM?: boolean
+  monitoring?: boolean
+  monitoringURL?: string
+  online?: boolean
+  cpuUsage?: number
+  ramUsage?: number
+  diskUsage?: number
 }
 
 interface GetServersResponse {
   servers: Server[]
   maxPage: number
+}
+
+interface MonitoringData {
+  id: number
+  online: boolean
+  cpuUsage: number
+  ramUsage: number
+  diskUsage: number
 }
 
 export default function Dashboard() {
@@ -92,12 +107,16 @@ export default function Dashboard() {
   const [gpu, setGpu] = useState<string>("")
   const [ram, setRam] = useState<string>("")
   const [disk, setDisk] = useState<string>("")
+  const [monitoring, setMonitoring] = useState<boolean>(false)
+  const [monitoringURL, setMonitoringURL] = useState<string>("")
+  const [online, setOnline] = useState<boolean>(false)
+  const [cpuUsage, setCpuUsage] = useState<number>(0)
+  const [ramUsage, setRamUsage] = useState<number>(0)
+  const [diskUsage, setDiskUsage] = useState<number>(0)
 
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [maxPage, setMaxPage] = useState<number>(1)
-  const [itemsPerPage, setItemsPerPage] = useState<number>(4)
   const [servers, setServers] = useState<Server[]>([])
-  const [isGridLayout, setIsGridLayout] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
 
   const [editId, setEditId] = useState<number | null>(null)
@@ -112,6 +131,8 @@ export default function Dashboard() {
   const [editGpu, setEditGpu] = useState<string>("")
   const [editRam, setEditRam] = useState<string>("")
   const [editDisk, setEditDisk] = useState<string>("")
+  const [editMonitoring, setEditMonitoring] = useState<boolean>(false)
+  const [editMonitoringURL, setEditMonitoringURL] = useState<string>("")
 
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [isSearching, setIsSearching] = useState<boolean>(false)
@@ -119,23 +140,25 @@ export default function Dashboard() {
   const [hostServers, setHostServers] = useState<Server[]>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
-  useEffect(() => {
-    const savedLayout = Cookies.get("layoutPreference-servers")
-    const layout_bool = savedLayout === "grid"
-    setIsGridLayout(layout_bool)
-    setItemsPerPage(layout_bool ? 6 : 4)
-  }, [])
+  const [monitoringInterval, setMonitoringInterval] = useState<NodeJS.Timeout | null>(null);
+
+  const savedLayout = Cookies.get("layoutPreference-servers");
+  const initialIsGridLayout = savedLayout === "grid";
+  const initialItemsPerPage = initialIsGridLayout ? 6 : 4;
+
+  const [isGridLayout, setIsGridLayout] = useState<boolean>(initialIsGridLayout);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(initialItemsPerPage);
 
   const toggleLayout = () => {
-    const newLayout = !isGridLayout
-    setIsGridLayout(newLayout)
+    const newLayout = !isGridLayout;
+    setIsGridLayout(newLayout);
     Cookies.set("layoutPreference-servers", newLayout ? "grid" : "standard", {
       expires: 365,
       path: "/",
       sameSite: "strict",
-    })
-    setItemsPerPage(newLayout ? 6 : 4)
-  }
+    });
+    setItemsPerPage(newLayout ? 6 : 4); // Update itemsPerPage based on new layout
+  };
 
   const add = async () => {
     try {
@@ -151,6 +174,8 @@ export default function Dashboard() {
         gpu,
         ram,
         disk,
+        monitoring,
+        monitoringURL,
       })
       setIsAddDialogOpen(false)
       setHost(false)
@@ -164,6 +189,8 @@ export default function Dashboard() {
       setGpu("")
       setRam("")
       setDisk("")
+      setMonitoring(false)
+      setMonitoringURL("")
       getServers()
     } catch (error: any) {
       console.log(error.response.data)
@@ -223,6 +250,8 @@ export default function Dashboard() {
     setEditGpu(server.gpu || "")
     setEditRam(server.ram || "")
     setEditDisk(server.disk || "")
+    setEditMonitoring(server.monitoring || false)
+    setEditMonitoringURL(server.monitoringURL || "")
   }
 
   const edit = async () => {
@@ -242,6 +271,8 @@ export default function Dashboard() {
         gpu: editGpu,
         ram: editRam,
         disk: editDisk,
+        monitoring: editMonitoring,
+        monitoringURL: editMonitoringURL,
       })
       getServers()
       setEditId(null)
@@ -321,6 +352,78 @@ export default function Dashboard() {
   // Flatten icons for search
   const allIcons = Object.values(iconCategories).flat()
 
+  const copyServerDetails = (sourceServer: Server) => {
+    // First clear all fields
+    setName("")
+    setIcon("")
+    setOs("")
+    setIp("")
+    setUrl("")
+    setCpu("")
+    setGpu("")
+    setRam("")
+    setDisk("")
+    setMonitoring(false)
+    setMonitoringURL("")
+    setHost(false)
+    setHostServer(0)
+
+    // Then copy the new server details
+    setTimeout(() => {
+      setName(sourceServer.name + " (Copy)")
+      setIcon(sourceServer.icon || "")
+      setOs(sourceServer.os || "")
+      setIp(sourceServer.ip || "")
+      setUrl(sourceServer.url || "")
+      setCpu(sourceServer.cpu || "")
+      setGpu(sourceServer.gpu || "")
+      setRam(sourceServer.ram || "")
+      setDisk(sourceServer.disk || "")
+      setMonitoring(sourceServer.monitoring || false)
+      setMonitoringURL(sourceServer.monitoringURL || "")
+      setHost(sourceServer.host)
+      setHostServer(sourceServer.hostServer || 0)
+    }, 0)
+  }
+
+  const updateMonitoringData = async () => {
+    try {
+      const response = await axios.get<MonitoringData[]>("/api/servers/monitoring");
+      const monitoringData = response.data;
+
+      setServers(prevServers => 
+        prevServers.map(server => {
+          const serverMonitoring = monitoringData.find(m => m.id === server.id);
+          if (serverMonitoring) {
+            return {
+              ...server,
+              online: serverMonitoring.online,
+              cpuUsage: serverMonitoring.cpuUsage,
+              ramUsage: serverMonitoring.ramUsage,
+              diskUsage: serverMonitoring.diskUsage
+            };
+          }
+          return server;
+        })
+      );
+    } catch (error) {
+      console.error("Error updating monitoring data:", error);
+    }
+  };
+
+  // Set up monitoring interval
+  useEffect(() => {
+    updateMonitoringData();
+    const interval = setInterval(updateMonitoringData, 5000);
+    setMonitoringInterval(interval);
+
+    return () => {
+      if (monitoringInterval) {
+        clearInterval(monitoringInterval);
+      }
+    };
+  }, []);
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -368,13 +471,67 @@ export default function Dashboard() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Add an server</AlertDialogTitle>
+                    <AlertDialogTitle className="flex justify-between items-center">
+                      <span>Add a server</span>
+                      <Select 
+                        onValueChange={(value) => {
+                          if (!value) return;
+                          const sourceServer = servers.find(s => s.id === parseInt(value));
+                          if (!sourceServer) return;
+                          
+                          // Clear all fields first
+                          setName("");
+                          setIcon("");
+                          setOs("");
+                          setIp("");
+                          setUrl("");
+                          setCpu("");
+                          setGpu("");
+                          setRam("");
+                          setDisk("");
+                          setMonitoring(false);
+                          setMonitoringURL("");
+                          setHost(false);
+                          setHostServer(0);
+
+                          // Copy new server details
+                          setName(sourceServer.name + " (Copy)");
+                          setIcon(sourceServer.icon || "");
+                          setOs(sourceServer.os || "");
+                          setIp(sourceServer.ip || "");
+                          setUrl(sourceServer.url || "");
+                          setCpu(sourceServer.cpu || "");
+                          setGpu(sourceServer.gpu || "");
+                          setRam(sourceServer.ram || "");
+                          setDisk(sourceServer.disk || "");
+                          setMonitoring(sourceServer.monitoring || false);
+                          setMonitoringURL(sourceServer.monitoringURL || "");
+                          setHost(sourceServer.host);
+                          setHostServer(sourceServer.hostServer || 0);
+                        }}
+                      >
+                        <SelectTrigger className="w-[140px] h-8 text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <Copy className="h-3 w-3 text-muted-foreground" />
+                            <SelectValue placeholder="Copy server" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {servers.map((server) => (
+                            <SelectItem key={server.id} value={server.id.toString()} className="text-sm">
+                              {server.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                       <Tabs defaultValue="general" className="w-full">
                         <TabsList className="w-full">
                           <TabsTrigger value="general">General</TabsTrigger>
                           <TabsTrigger value="hardware">Hardware</TabsTrigger>
                           <TabsTrigger value="virtualization">Virtualization</TabsTrigger>
+                          <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
                         </TabsList>
                         <TabsContent value="general">
                           <div className="space-y-4 pt-4">
@@ -448,6 +605,7 @@ export default function Dashboard() {
                                 id="name"
                                 type="text"
                                 placeholder="e.g. Server1"
+                                value={name}
                                 onChange={(e) => setName(e.target.value)}
                               />
                             </div>
@@ -455,7 +613,7 @@ export default function Dashboard() {
                               <Label htmlFor="description">
                                 Operating System <span className="text-stone-600">(optional)</span>
                               </Label>
-                              <Select onValueChange={(value) => setOs(value)}>
+                              <Select value={os} onValueChange={(value) => setOs(value)}>
                                 <SelectTrigger className="w-full">
                                   <SelectValue placeholder="Select OS" />
                                 </SelectTrigger>
@@ -467,13 +625,14 @@ export default function Dashboard() {
                               </Select>
                             </div>
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="icon">
+                              <Label htmlFor="ip">
                                 IP Adress <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="icon"
+                                id="ip"
                                 type="text"
                                 placeholder="e.g. 192.168.100.2"
+                                value={ip}
                                 onChange={(e) => setIp(e.target.value)}
                               />
                             </div>
@@ -495,6 +654,7 @@ export default function Dashboard() {
                                 id="publicURL"
                                 type="text"
                                 placeholder="e.g. https://proxmox.server1.com"
+                                value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                               />
                             </div>
@@ -503,46 +663,50 @@ export default function Dashboard() {
                         <TabsContent value="hardware">
                           <div className="space-y-4 pt-4">
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="name">
+                              <Label htmlFor="cpu">
                                 CPU <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="name"
+                                id="cpu"
                                 type="text"
                                 placeholder="e.g. AMD Ryzen™ 7 7800X3D"
+                                value={cpu}
                                 onChange={(e) => setCpu(e.target.value)}
                               />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="name">
+                              <Label htmlFor="gpu">
                                 GPU <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="name"
+                                id="gpu"
                                 type="text"
                                 placeholder="e.g. AMD Radeon™ Graphics"
+                                value={gpu}
                                 onChange={(e) => setGpu(e.target.value)}
                               />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="name">
+                              <Label htmlFor="ram">
                                 RAM <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="name"
+                                id="ram"
                                 type="text"
                                 placeholder="e.g. 64GB DDR5"
+                                value={ram}
                                 onChange={(e) => setRam(e.target.value)}
                               />
                             </div>
                             <div className="grid w-full items-center gap-1.5">
-                              <Label htmlFor="name">
+                              <Label htmlFor="disk">
                                 Disk <span className="text-stone-600">(optional)</span>
                               </Label>
                               <Input
-                                id="name"
+                                id="disk"
                                 type="text"
                                 placeholder="e.g. 2TB SSD"
+                                value={disk}
                                 onChange={(e) => setDisk(e.target.value)}
                               />
                             </div>
@@ -563,12 +727,19 @@ export default function Dashboard() {
                                 <Label>Host Server</Label>
                                 <Select
                                   value={hostServer?.toString()}
-                                  onValueChange={(value) => setHostServer(Number(value))}
+                                  onValueChange={(value) => {
+                                    const newHostServer = Number(value);
+                                    setHostServer(newHostServer);
+                                    if (newHostServer !== 0) {
+                                      setMonitoring(false);
+                                    }
+                                  }}
                                 >
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a host server" />
                                   </SelectTrigger>
                                   <SelectContent>
+                                    <SelectItem value="0">No host server</SelectItem>
                                     {hostServers.map((server) => (
                                       <SelectItem key={server.id} value={server.id.toString()}>
                                         {server.name}
@@ -577,6 +748,52 @@ export default function Dashboard() {
                                   </SelectContent>
                                 </Select>
                               </div>
+                            )}
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="monitoring">
+                          <div className="space-y-4 pt-4">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="monitoringCheckbox"
+                                checked={monitoring}
+                                onCheckedChange={(checked) => setMonitoring(checked === true)}
+                              />
+                              <Label htmlFor="monitoringCheckbox">Enable monitoring</Label>
+                            </div>
+                            {monitoring && (
+                              <>
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="monitoringURL">Monitoring URL</Label>
+                                  <Input
+                                    id="monitoringURL"
+                                    type="text"
+                                    placeholder={`http://${ip}:61208`}
+                                    value={monitoringURL}
+                                    onChange={(e) => setMonitoringURL(e.target.value)}
+                                  />
+                                </div>
+                                <div className="mt-4 p-4 border rounded-lg bg-muted">
+                                  <h4 className="text-sm font-semibold mb-2">Required Server Setup</h4>
+                                  <p className="text-sm text-muted-foreground mb-3">
+                                    To enable monitoring, you need to install Glances on your server. Here's an example Docker Compose configuration:
+                                  </p>
+                                  <pre className="bg-background p-4 rounded-md text-sm">
+                                    <code>{`services:
+  glances:
+    image: nicolargo/glances:latest
+    container_name: glances
+    restart: unless-stopped
+    ports:
+      - "61208:61208"
+    pid: "host"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - GLANCES_OPT=-w --disable-webui`}</code>
+                                  </pre>
+                                </div>
+                              </>
                             )}
                           </div>
                         </TabsContent>
@@ -599,6 +816,7 @@ export default function Dashboard() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
           <br />
           {!loading ? (
             <div className={isGridLayout ? "grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4" : "space-y-4"}>
@@ -607,16 +825,23 @@ export default function Dashboard() {
                 .map((server) => (
                   <Card
                     key={server.id}
-                    className={isGridLayout ? "h-full flex flex-col justify-between" : "w-full mb-4"}
+                    className={`${isGridLayout ? "h-full flex flex-col justify-between" : "w-full mb-4"} hover:shadow-md transition-all duration-200 max-w-full relative`}
                   >
                     <CardHeader>
+                      {server.monitoring && (
+                        <div className="absolute top-2 right-2">
+                          <StatusIndicator isOnline={server.online} />
+                        </div>
+                      )}
                       <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center">
-                          <div className="ml-4">
+                        <div className="flex items-center w-4/6">
+                          <div className="ml-4 flex-grow">
                             <CardTitle className="text-2xl font-bold flex items-center gap-2">
                               <div className="flex items-center gap-2">
                                 {server.icon && <DynamicIcon name={server.icon as any} color="white" size={24} />}
-                                <span className=" font-bold">{server.icon && "･"} {server.name}</span>
+                                <span className="font-bold">
+                                  {server.icon && "･"} {server.name}
+                                </span>
                               </div>
                               {server.isVM && (
                                 <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded">VM</span>
@@ -642,7 +867,7 @@ export default function Dashboard() {
 
                               {server.isVM && server.hostServer && (
                                 <div className="flex items-center gap-2 text-foreground/80">
-                                  <Server className="h-4 w-4 text-muted-foreground" />
+                                  <LucideServer className="h-4 w-4 text-muted-foreground" />
                                   <span>
                                     <b>Host:</b> {getHostServerName(server.hostServer)}
                                   </span>
@@ -651,6 +876,10 @@ export default function Dashboard() {
 
                               <div className="col-span-full pt-2 pb-2">
                                 <Separator />
+                              </div>
+
+                              <div className="col-span-full mb-2">
+                                <h4 className="text-sm font-semibold">Hardware Information</h4>
                               </div>
 
                               <div className="flex items-center gap-2 text-foreground/80">
@@ -677,10 +906,72 @@ export default function Dashboard() {
                                   <b>Disk:</b> {server.disk || "-"}
                                 </span>
                               </div>
+
+                              {server.monitoring && server.hostServer === 0 && (
+                                <>
+                                  <div className="col-span-full pt-2 pb-2">
+                                    <Separator />
+                                  </div>
+
+                                  <div className="col-span-full">
+                                    <h4 className="text-sm font-semibold mb-3">Resource Usage</h4>
+                                    <div className={`${!isGridLayout ? "grid grid-cols-3 gap-4" : "space-y-3"}`}>
+                                      <div>
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <Cpu className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm font-medium">CPU</span>
+                                          </div>
+                                          <span className="text-xs font-medium">{server.cpuUsage || 0}%</span>
+                                        </div>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                          <div
+                                            className={`h-full ${server.cpuUsage && server.cpuUsage > 80 ? "bg-destructive" : server.cpuUsage && server.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                            style={{ width: `${server.cpuUsage || 0}%` }}
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm font-medium">RAM</span>
+                                          </div>
+                                          <span className="text-xs font-medium">{server.ramUsage || 0}%</span>
+                                        </div>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                          <div
+                                            className={`h-full ${server.ramUsage && server.ramUsage > 80 ? "bg-destructive" : server.ramUsage && server.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                            style={{ width: `${server.ramUsage || 0}%` }}
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <HardDrive className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-sm font-medium">Disk</span>
+                                          </div>
+                                          <span className="text-xs font-medium">{server.diskUsage || 0}%</span>
+                                        </div>
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                          <div
+                                            className={`h-full ${server.diskUsage && server.diskUsage > 80 ? "bg-destructive" : server.diskUsage && server.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                            style={{ width: `${server.diskUsage || 0}%` }}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
                             </CardDescription>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end justify-start space-y-2 w-[120px]">
+                        <div className="w-1/6" />
+                        <div className="flex flex-col items-end justify-start space-y-2 w-1/6">
                           <div className="flex items-center justify-end gap-2 w-full">
                             <div className="flex flex-col items-end gap-2">
                               <div className="flex gap-2">
@@ -690,7 +981,7 @@ export default function Dashboard() {
                                     className="gap-2"
                                     onClick={() => window.open(server.url, "_blank")}
                                   >
-                                    <Link className="h-4 w-4" />                                    
+                                    <Link className="h-4 w-4" />
                                   </Button>
                                 )}
                                 <Button
@@ -716,6 +1007,7 @@ export default function Dashboard() {
                                             <TabsTrigger value="general">General</TabsTrigger>
                                             <TabsTrigger value="hardware">Hardware</TabsTrigger>
                                             <TabsTrigger value="virtualization">Virtualization</TabsTrigger>
+                                            {(!editHostServer || editHostServer === 0) && <TabsTrigger value="monitoring">Monitoring</TabsTrigger>}
                                           </TabsList>
                                           <TabsContent value="general">
                                             <div className="space-y-4 pt-4">
@@ -845,7 +1137,6 @@ export default function Dashboard() {
                                               </div>
                                             </div>
                                           </TabsContent>
-
                                           <TabsContent value="hardware">
                                             <div className="space-y-4 pt-4">
                                               <div className="grid w-full items-center gap-1.5">
@@ -905,12 +1196,19 @@ export default function Dashboard() {
                                                   <Label>Host Server</Label>
                                                   <Select
                                                     value={editHostServer?.toString()}
-                                                    onValueChange={(value) => setEditHostServer(Number(value))}
+                                                    onValueChange={(value) => {
+                                                      const newHostServer = Number(value);
+                                                      setEditHostServer(newHostServer);
+                                                      if (newHostServer !== 0) {
+                                                        setEditMonitoring(false);
+                                                      }
+                                                    }}
                                                   >
                                                     <SelectTrigger>
                                                       <SelectValue placeholder="Select a host server" />
                                                     </SelectTrigger>
                                                     <SelectContent>
+                                                      <SelectItem value="0">No host server</SelectItem>
                                                       {hostServers
                                                         .filter((server) => server.id !== editId)
                                                         .map((server) => (
@@ -921,6 +1219,52 @@ export default function Dashboard() {
                                                     </SelectContent>
                                                   </Select>
                                                 </div>
+                                              )}
+                                            </div>
+                                          </TabsContent>
+                                          <TabsContent value="monitoring">
+                                            <div className="space-y-4 pt-4">
+                                              <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                  id="editMonitoringCheckbox"
+                                                  checked={editMonitoring}
+                                                  onCheckedChange={(checked) => setEditMonitoring(checked === true)}
+                                                />
+                                                <Label htmlFor="editMonitoringCheckbox">Enable monitoring</Label>
+                                              </div>
+                                              {editMonitoring && (
+                                                <>
+                                                  <div className="grid w-full items-center gap-1.5">
+                                                    <Label htmlFor="editMonitoringURL">Monitoring URL</Label>
+                                                    <Input
+                                                      id="editMonitoringURL"
+                                                      type="text"
+                                                      placeholder={`http://${editIp}:61208`}
+                                                      value={editMonitoringURL}
+                                                      onChange={(e) => setEditMonitoringURL(e.target.value)}
+                                                    />
+                                                  </div>
+                                                  <div className="mt-4 p-4 border rounded-lg bg-muted">
+                                                    <h4 className="text-sm font-semibold mb-2">Required Server Setup</h4>
+                                                    <p className="text-sm text-muted-foreground mb-3">
+                                                      To enable monitoring, you need to install Glances on your server. Here's an example Docker Compose configuration:
+                                                    </p>
+                                                    <pre className="bg-background p-4 rounded-md text-sm">
+                                                      <code>{`services:
+  glances:
+    image: nicolargo/glances:latest
+    container_name: glances
+    restart: unless-stopped
+    ports:
+      - "61208:61208"
+    pid: "host"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - GLANCES_OPT=-w --disable-webui`}</code>
+                                                    </pre>
+                                                  </div>
+                                                </>
                                               )}
                                             </div>
                                           </TabsContent>
@@ -939,7 +1283,7 @@ export default function Dashboard() {
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button variant="outline" className="h-9 flex items-center gap-2 px-3 w-full">
-                                      <Server className="h-4 w-4" />
+                                      <LucideServer className="h-4 w-4" />
                                       <span>VMs</span>
                                     </Button>
                                   </AlertDialogTrigger>
@@ -965,7 +1309,10 @@ export default function Dashboard() {
                                                             size={24}
                                                           />
                                                         )}
-                                                        <div className="text-base font-extrabold">{hostedVM.icon && "･ "}{hostedVM.name}</div>
+                                                        <div className="text-base font-extrabold">
+                                                          {hostedVM.icon && "･ "}
+                                                          {hostedVM.name}
+                                                        </div>
                                                       </div>
                                                       <div className="flex items-center gap-2 text-foreground/80">
                                                         <Button
@@ -1227,23 +1574,25 @@ export default function Dashboard() {
                                                                           <Label>Host Server</Label>
                                                                           <Select
                                                                             value={editHostServer?.toString()}
-                                                                            onValueChange={(value) =>
-                                                                              setEditHostServer(Number(value))
-                                                                            }
+                                                                            onValueChange={(value) => {
+                                                                              const newHostServer = Number(value);
+                                                                              setEditHostServer(newHostServer);
+                                                                              if (newHostServer !== 0) {
+                                                                                setEditMonitoring(false);
+                                                                              }
+                                                                            }}
                                                                           >
                                                                             <SelectTrigger>
                                                                               <SelectValue placeholder="Select a host server" />
                                                                             </SelectTrigger>
                                                                             <SelectContent>
+                                                                              <SelectItem value="0">No host server</SelectItem>
                                                                               {hostServers
                                                                                 .filter(
                                                                                   (server) => server.id !== editId,
                                                                                 )
                                                                                 .map((server) => (
-                                                                                  <SelectItem
-                                                                                    key={server.id}
-                                                                                    value={server.id.toString()}
-                                                                                  >
+                                                                                  <SelectItem key={server.id} value={server.id.toString()}>
                                                                                     {server.name}
                                                                                   </SelectItem>
                                                                                 ))}
@@ -1284,6 +1633,10 @@ export default function Dashboard() {
                                                       </div>
                                                     </div>
 
+                                                    <div className="col-span-full mb-2">
+                                                      <h4 className="text-sm font-semibold">Hardware Information</h4>
+                                                    </div>
+
                                                     <div className="flex items-center gap-2 text-foreground/80">
                                                       <Cpu className="h-4 w-4 text-muted-foreground" />
                                                       <span>
@@ -1308,6 +1661,70 @@ export default function Dashboard() {
                                                         <b>Disk:</b> {hostedVM.disk || "-"}
                                                       </span>
                                                     </div>
+
+                                                    {hostedVM.monitoring && (
+                                                      <>
+                                                        <div className="col-span-full pt-2 pb-2">
+                                                          <Separator />
+                                                        </div>
+
+                                                        <div className="col-span-full grid grid-cols-3 gap-4">
+                                                          <div>
+                                                            <div className="flex items-center justify-between">
+                                                              <div className="flex items-center gap-2">
+                                                                <Cpu className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="text-sm font-medium">CPU</span>
+                                                              </div>
+                                                              <span className="text-xs font-medium">
+                                                                {hostedVM.cpuUsage || 0}%
+                                                              </span>
+                                                            </div>
+                                                            <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                                              <div
+                                                                className={`h-full ${hostedVM.cpuUsage && hostedVM.cpuUsage > 80 ? "bg-destructive" : hostedVM.cpuUsage && hostedVM.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                                                style={{ width: `${hostedVM.cpuUsage || 0}%` }}
+                                                              />
+                                                            </div>
+                                                          </div>
+
+                                                          <div>
+                                                            <div className="flex items-center justify-between">
+                                                              <div className="flex items-center gap-2">
+                                                                <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="text-sm font-medium">RAM</span>
+                                                              </div>
+                                                              <span className="text-xs font-medium">
+                                                                {hostedVM.ramUsage || 0}%
+                                                              </span>
+                                                            </div>
+                                                            <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                                              <div
+                                                                className={`h-full ${hostedVM.ramUsage && hostedVM.ramUsage > 80 ? "bg-destructive" : hostedVM.ramUsage && hostedVM.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                                                style={{ width: `${hostedVM.ramUsage || 0}%` }}
+                                                              />
+                                                            </div>
+                                                          </div>
+
+                                                          <div>
+                                                            <div className="flex items-center justify-between">
+                                                              <div className="flex items-center gap-2">
+                                                                <HardDrive className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="text-sm font-medium">Disk</span>
+                                                              </div>
+                                                              <span className="text-xs font-medium">
+                                                                {hostedVM.diskUsage || 0}%
+                                                              </span>
+                                                            </div>
+                                                            <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                                              <div
+                                                                className={`h-full ${hostedVM.diskUsage && hostedVM.diskUsage > 80 ? "bg-destructive" : hostedVM.diskUsage && hostedVM.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                                                style={{ width: `${hostedVM.diskUsage || 0}%` }}
+                                                              />
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                      </>
+                                                    )}
                                                   </div>
                                                 ))}
                                               </div>
