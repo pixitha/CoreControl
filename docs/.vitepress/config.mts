@@ -36,26 +36,25 @@ export default defineConfig({
       {
         text: 'General',
         items: [
-          { text: 'Dashboard', link: '/general/dashboard' },
-          { text: 'Servers', link: '/general/servers' },
-          { text: 'Applications', link: '/general/applications' },
-          { text: 'Uptime', link: '/general/uptime' },
-          { text: 'Network', link: '/general/network' },
-          { text: 'Settings', link: '/general/settings' },
+          { text: 'Dashboard', link: '/general/Dashboard' },
+          { text: 'Servers', link: '/general/Servers' },
+          { text: 'Applications', link: '/general/Applications' },
+          { text: 'Uptime', link: '/general/Uptime' },
+          { text: 'Network', link: '/general/Network' },
+          { text: 'Settings', link: '/general/Settings' },
         ]
       },
       {
         text: 'Notifications',
         items: [
-          { text: 'Notifications', link: '/notifications/general' },
-          { text: 'Email', link: '/notifications/email' },
-          { text: 'Telegram', link: '/notifications/telegram' },
-          { text: 'Discord', link: '/notifications/discord' },
-          { text: 'Gotify', link: '/notifications/gotify' },
-          { text: 'Ntfy', link: '/notifications/ntfy' },
+          { text: 'General', link: '/notifications/General' },
+          { text: 'Email', link: '/notifications/Email' },
+          { text: 'Telegram', link: '/notifications/Telegram' },
+          { text: 'Discord', link: '/notifications/Discord' },
+          { text: 'Gotify', link: '/notifications/Gotify' },
+          { text: 'Ntfy', link: '/notifications/Ntfy' },
         ]
       }
-      
     ],
 
     socialLinks: [
