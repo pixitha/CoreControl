@@ -87,6 +87,14 @@ interface GetServersResponse {
   maxPage: number
 }
 
+interface MonitoringData {
+  id: number
+  online: boolean
+  cpuUsage: number
+  ramUsage: number
+  diskUsage: number
+}
+
 export default function Dashboard() {
   const [host, setHost] = useState<boolean>(false)
   const [hostServer, setHostServer] = useState<number>(0)
@@ -133,6 +141,8 @@ export default function Dashboard() {
 
   const [hostServers, setHostServers] = useState<Server[]>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+
+  const [monitoringInterval, setMonitoringInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const savedLayout = Cookies.get("layoutPreference-servers")
@@ -377,6 +387,44 @@ export default function Dashboard() {
       setHostServer(sourceServer.hostServer || 0)
     }, 0)
   }
+
+  const updateMonitoringData = async () => {
+    try {
+      const response = await axios.get<MonitoringData[]>("/api/servers/monitoring");
+      const monitoringData = response.data;
+
+      setServers(prevServers => 
+        prevServers.map(server => {
+          const serverMonitoring = monitoringData.find(m => m.id === server.id);
+          if (serverMonitoring) {
+            return {
+              ...server,
+              online: serverMonitoring.online,
+              cpuUsage: serverMonitoring.cpuUsage,
+              ramUsage: serverMonitoring.ramUsage,
+              diskUsage: serverMonitoring.diskUsage
+            };
+          }
+          return server;
+        })
+      );
+    } catch (error) {
+      console.error("Error updating monitoring data:", error);
+    }
+  };
+
+  // Set up monitoring interval
+  useEffect(() => {
+    updateMonitoringData();
+    const interval = setInterval(updateMonitoringData, 5000);
+    setMonitoringInterval(interval);
+
+    return () => {
+      if (monitoringInterval) {
+        clearInterval(monitoringInterval);
+      }
+    };
+  }, []);
 
   return (
     <SidebarProvider>
