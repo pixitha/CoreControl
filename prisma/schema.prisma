@@ -56,7 +56,8 @@ model server {
 model settings {
   id            Int       @id @default(autoincrement())
   uptime_checks          Boolean       @default(true)
-  notification_text       String?
+  notification_text_application       String?
+  notification_text_server       String?
 }
 
 model user {
