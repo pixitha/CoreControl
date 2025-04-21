@@ -4,6 +4,7 @@
 # Vitepress
 docs/.vitepress/dist
 docs/.vitepress/cache
+docs/node_modules/
 
 # dependencies
 /node_modules
