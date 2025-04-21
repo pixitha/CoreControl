@@ -116,9 +116,7 @@ export default function Dashboard() {
 
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [maxPage, setMaxPage] = useState<number>(1)
-  const [itemsPerPage, setItemsPerPage] = useState<number>(4)
   const [servers, setServers] = useState<Server[]>([])
-  const [isGridLayout, setIsGridLayout] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
 
   const [editId, setEditId] = useState<number | null>(null)
@@ -144,23 +142,23 @@ export default function Dashboard() {
 
   const [monitoringInterval, setMonitoringInterval] = useState<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    const savedLayout = Cookies.get("layoutPreference-servers")
-    const layout_bool = savedLayout === "grid"
-    setIsGridLayout(layout_bool)
-    setItemsPerPage(layout_bool ? 6 : 4)
-  }, [])
+  const savedLayout = Cookies.get("layoutPreference-servers");
+  const initialIsGridLayout = savedLayout === "grid";
+  const initialItemsPerPage = initialIsGridLayout ? 6 : 4;
+
+  const [isGridLayout, setIsGridLayout] = useState<boolean>(initialIsGridLayout);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(initialItemsPerPage);
 
   const toggleLayout = () => {
-    const newLayout = !isGridLayout
-    setIsGridLayout(newLayout)
+    const newLayout = !isGridLayout;
+    setIsGridLayout(newLayout);
     Cookies.set("layoutPreference-servers", newLayout ? "grid" : "standard", {
       expires: 365,
       path: "/",
       sameSite: "strict",
-    })
-    setItemsPerPage(newLayout ? 6 : 4)
-  }
+    });
+    setItemsPerPage(newLayout ? 6 : 4); // Update itemsPerPage based on new layout
+  };
 
   const add = async () => {
     try {

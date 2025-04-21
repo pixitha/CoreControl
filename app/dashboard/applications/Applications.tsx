@@ -116,21 +116,19 @@ export default function Dashboard() {
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [maxPage, setMaxPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(5);
   const [applications, setApplications] = useState<Application[]>([]);
   const [servers, setServers] = useState<Server[]>([]);
-  const [isGridLayout, setIsGridLayout] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
-  useEffect(() => {
-    const savedLayout = Cookies.get("layoutPreference-app");
-    const layout_bool = savedLayout === "grid";
-    setIsGridLayout(layout_bool);
-    setItemsPerPage(layout_bool ? 15 : 5);
-  }, []);
+  const savedLayout = Cookies.get("layoutPreference-app");
+  const initialIsGridLayout = savedLayout === "grid";
+  const initialItemsPerPage = initialIsGridLayout ? 15 : 5;
+
+  const [isGridLayout, setIsGridLayout] = useState<boolean>(initialIsGridLayout);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(initialItemsPerPage);
 
   const toggleLayout = () => {
     const newLayout = !isGridLayout;
