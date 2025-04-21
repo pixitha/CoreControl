@@ -71,6 +71,9 @@ type Notification struct {
 	GotifyToken    sql.NullString
 	NtfyUrl        sql.NullString
 	NtfyToken      sql.NullString
+	PushoverUrl    sql.NullString
+	PushoverToken  sql.NullString
+	PushoverUser   sql.NullString
 }
 
 var (
@@ -553,6 +556,10 @@ func sendNotifications(message string) {
 			if n.NtfyUrl.Valid && n.NtfyToken.Valid {
 				sendNtfy(n, message)
 			}
+		case "pushover":
+			if n.PushoverUrl.Valid && n.PushoverToken.Valid && n.PushoverUser.Valid {
+				sendPushover(n, message)
+			}
 		}
 	}
 }
@@ -674,5 +681,32 @@ func sendNtfy(n Notification, message string) {
 
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Ntfy: ERROR status code: %d\n", resp.StatusCode)
+	}
+}
+
+func sendPushover(n Notification, message string) {
+	form := url.Values{}
+	form.Add("token", n.PushoverToken.String)
+	form.Add("user", n.PushoverUser.String)
+	form.Add("message", message)
+
+	req, err := http.NewRequest("POST", n.PushoverUrl.String, strings.NewReader(form.Encode()))
+	if err != nil {
+		fmt.Printf("Pushover: ERROR creating request: %v\n", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Pushover: ERROR sending request: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Pushover: ERROR status code: %d\n", resp.StatusCode)
 	}
 }
