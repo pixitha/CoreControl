@@ -58,7 +58,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { DynamicIcon } from "lucide-react/dynamic"
-
+import { StatusIndicator } from "@/components/status-indicator"
 interface Server {
   id: number
   name: string
@@ -832,14 +832,7 @@ export default function Dashboard() {
                     <CardHeader>
                       {server.monitoring && (
                         <div className="absolute top-2 right-2">
-                          <div
-                            className={`w-4 h-4 rounded-full flex items-center justify-center ${server.online ? "bg-green-700" : "bg-red-700"}`}
-                            title={server.online ? "Online" : "Offline"}
-                          >
-                            <div
-                              className={`w-2 h-2 rounded-full ${server.online ? "bg-green-500" : "bg-red-500"}`}
-                            />
-                          </div>
+                          <StatusIndicator isOnline={server.online} />
                         </div>
                       )}
                       <div className="flex items-center justify-between w-full">
