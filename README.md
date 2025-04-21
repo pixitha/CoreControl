@@ -20,7 +20,7 @@ Login Page:
 ![Login Page](https://i.ibb.co/DfS7BJdX/image.png)
 
 Dashboard Page:
-![Dashboard Page](https://i.ibb.co/mVgGJN6H/image.png)
+![Dashboard Page](https://i.ibb.co/SYwrFw8/image.png)
 
 Servers Page:
 ![Servers Page](https://i.ibb.co/HLMD9HPZ/image.png)
