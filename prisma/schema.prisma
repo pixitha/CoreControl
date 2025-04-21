@@ -94,4 +94,7 @@ model notification {
   gotifyToken   String?
   ntfyUrl       String?
   ntfyToken     String?
+  pushoverUrl   String?
+  pushoverToken String?
+  pushoverUser  String?
 }
