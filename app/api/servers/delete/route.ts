@@ -18,6 +18,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Cannot delete server with associated applications" }, { status: 400 });
     }
 
+    // Delete all server history records for this server
+    await prisma.server_history.deleteMany({
+      where: { serverId: id }
+    });
+
+    // Delete the server
     await prisma.server.delete({
       where: { id: id }
     });
