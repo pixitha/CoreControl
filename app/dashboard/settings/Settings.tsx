@@ -74,6 +74,9 @@ export default function Settings() {
   const [gotifyToken, setGotifyToken] = useState<string>("")
   const [ntfyUrl, setNtfyUrl] = useState<string>("")
   const [ntfyToken, setNtfyToken] = useState<string>("")
+  const [pushoverUrl, setPushoverUrl] = useState<string>("")
+  const [pushoverToken, setPushoverToken] = useState<string>("")
+  const [pushoverUser, setPushoverUser] = useState<string>("")
 
   const [notifications, setNotifications] = useState<any[]>([])
 
@@ -178,6 +181,9 @@ export default function Settings() {
         gotifyToken: gotifyToken,
         ntfyUrl: ntfyUrl,
         ntfyToken: ntfyToken,
+        pushoverUrl: pushoverUrl,
+        pushoverToken: pushoverToken,
+        pushoverUser: pushoverUser,
       })
       getNotifications()
     } catch (error: any) {
@@ -441,6 +447,7 @@ export default function Settings() {
                             <SelectItem value="discord">Discord</SelectItem>
                             <SelectItem value="gotify">Gotify</SelectItem>
                             <SelectItem value="ntfy">Ntfy</SelectItem>
+                            <SelectItem value="pushover">Pushover</SelectItem>
                           </SelectContent>
 
                           {notificationType === "smtp" && (
@@ -601,6 +608,40 @@ export default function Settings() {
                               </div>  
                             </div>
                           )}
+
+                          {notificationType === "pushover" && (
+                            <div className="mt-4">
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="pushoverUrl">Pushover URL</Label>
+                                <Input
+                                  type="text"
+                                  id="pushoverUrl"
+                                  placeholder=""
+                                  onChange={(e) => setPushoverUrl(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="pushoverToken">Pushover Token</Label>
+                                <Input
+                                  type="text"
+                                  id="pushoverToken"
+                                  placeholder=""
+                                  onChange={(e) => setPushoverToken(e.target.value)}
+                                />
+                              </div>
+
+                              <div className="grid w-full items-center gap-1.5">
+                                <Label htmlFor="pushoverUser">Pushover User</Label>
+                                <Input
+                                  type="text"
+                                  id="pushoverUser"
+                                  placeholder=""
+                                  onChange={(e) => setPushoverUser(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </Select>
                       </AlertDialogDescription>
                       <AlertDialogFooter>
@@ -705,6 +746,11 @@ export default function Settings() {
                                 <Bell className="h-5 w-5 text-primary" />
                               </div>
                             )}
+                            {notification.type === "pushover" && (
+                              <div className="bg-muted/20 p-2 rounded-full">
+                                <Bell className="h-5 w-5 text-primary" />
+                              </div>
+                            )}
                             <div className="space-y-1">
                               <h3 className="font-medium capitalize">{notification.type}</h3>
                               <p className="text-xs text-muted-foreground">
@@ -713,6 +759,7 @@ export default function Settings() {
                                 {notification.type === "discord" && "Discord webhook alerts"}
                                 {notification.type === "gotify" && "Gotify notifications"}
                                 {notification.type === "ntfy" && "Ntfy notifications"}
+                                {notification.type === "pushover" && "Pushover notifications"}
                               </p>
                             </div>
                           </div>
