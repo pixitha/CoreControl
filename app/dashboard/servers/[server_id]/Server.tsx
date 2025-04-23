@@ -161,7 +161,8 @@ export default function ServerDetail() {
             max: 100,
             beginAtZero: true,
             ticks: {
-              stepSize: 20,
+              stepSize: 25,
+              autoSkip: false,
               callback: function(value: any) {
                 return value + '%';
               }
