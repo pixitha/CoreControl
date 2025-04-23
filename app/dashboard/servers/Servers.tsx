@@ -852,7 +852,7 @@ export default function Dashboard() {
                           </div>
                         )}
                         <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center w-4/6">
+                          <div className="flex items-center w-full">
                             <div className="ml-4 flex-grow">
                               <CardTitle className="text-2xl font-bold flex items-center gap-2">
                                 <div className="flex items-center gap-2">
