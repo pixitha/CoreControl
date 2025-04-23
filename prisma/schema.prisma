@@ -98,3 +98,8 @@ model notification {
   pushoverToken String?
   pushoverUser  String?
 }
+
+model test_notification {
+  id            Int       @id @default(autoincrement())
+  notificationId Int
+}
