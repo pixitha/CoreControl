@@ -64,7 +64,7 @@ const getIntervals = (timeRange: '1h' | '7d' | '30d' = '1h') => {
 
 const parseUsageValue = (value: string | null): number => {
     if (!value) return 0;
-    return parseFloat(value.replace('%', ''));
+    return Math.round(parseFloat(value.replace('%', '')) * 100) / 100;
 };
 
 export async function POST(request: NextRequest) {
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
                     };
 
                     const average = (arr: number[]) => 
-                        arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+                        arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 100) / 100 : null;
 
                     return {
                         timestamp: key,
@@ -202,15 +202,15 @@ export async function POST(request: NextRequest) {
                         datasets: {
                             cpu: intervals.map(d => {
                                 const data = historyMap.get(d.toISOString())?.cpu || [];
-                                return data.length ? data.reduce((a, b) => a + b) / data.length : null;
+                                return data.length ? Math.round((data.reduce((a, b) => a + b) / data.length) * 100) / 100 : null;
                             }),
                             ram: intervals.map(d => {
                                 const data = historyMap.get(d.toISOString())?.ram || [];
-                                return data.length ? data.reduce((a, b) => a + b) / data.length : null;
+                                return data.length ? Math.round((data.reduce((a, b) => a + b) / data.length) * 100) / 100 : null;
                             }),
                             disk: intervals.map(d => {
                                 const data = historyMap.get(d.toISOString())?.disk || [];
-                                return data.length ? data.reduce((a, b) => a + b) / data.length : null;
+                                return data.length ? Math.round((data.reduce((a, b) => a + b) / data.length) * 100) / 100 : null;
                             }),
                             online: intervals.map(d => {
                                 const data = historyMap.get(d.toISOString())?.online || [];
