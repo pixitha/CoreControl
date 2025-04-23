@@ -407,16 +407,13 @@ export default function ServerDetail() {
             <div className="space-y-6">
               {/* Server header card */}
               <Card>
-                <CardHeader>
+                <CardHeader className="relative">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {server.icon && <DynamicIcon name={server.icon as any} size={32} />}
                       <div>
                         <CardTitle className="text-2xl flex items-center gap-2">
                           {server.name}
-                          {server.monitoring && (
-                            <StatusIndicator isOnline={server.online} />
-                          )}
                         </CardTitle>
                         <CardDescription>
                           {server.os || "No OS specified"} • {server.isVM ? "Virtual Machine" : "Physical Server"}
@@ -427,6 +424,11 @@ export default function ServerDetail() {
                       </div>
                     </div>
                   </div>
+                  {server.monitoring && (
+                    <div className="absolute top-0 right-4">
+                      <StatusIndicator isOnline={server.online} />
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
