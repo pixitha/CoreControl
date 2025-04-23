@@ -1291,7 +1291,7 @@ export default function Dashboard() {
                               <TooltipTrigger asChild>
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                    <Button variant="outline" size="icon">
+                                    <Button variant="destructive" size="icon">
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </AlertDialogTrigger>
