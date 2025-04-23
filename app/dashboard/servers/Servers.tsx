@@ -1000,6 +1000,24 @@ export default function Dashboard() {
                               View Details
                             </Button>
                           </NextLink>
+                          
+                          {server.url && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => window.open(server.url, "_blank")}
+                                  >
+                                    <LinkIcon className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Open Management URL</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -1060,6 +1078,7 @@ export default function Dashboard() {
                                                           </div>
                                                         </div>
                                                         <div className="flex items-center gap-2 text-foreground/80">
+                                                        { hostedVM.url && (
                                                           <Button
                                                             variant="outline"
                                                             className="gap-2"
@@ -1067,6 +1086,7 @@ export default function Dashboard() {
                                                           >
                                                             <LinkIcon className="h-4 w-4" />
                                                           </Button>
+                                                          )}
                                                           <Button
                                                             variant="destructive"
                                                             size="icon"
