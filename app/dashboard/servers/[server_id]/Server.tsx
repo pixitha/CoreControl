@@ -220,6 +220,9 @@ export default function ServerDetail() {
                     return timeLabels[tooltipItems[0].dataIndex];
                   }
                 }
+              },
+              legend: {
+                display: false
               }
             },
             scales: {
