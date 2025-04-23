@@ -5,13 +5,19 @@ import { Prisma } from "@prisma/client";
 interface GetRequest {
     page?: number;
     ITEMS_PER_PAGE?: number;
-    timeRange?: '1h' | '7d' | '30d';
+    timeRange?: '1h' | '1d' | '7d' | '30d';
     serverId?: number;
 }
 
-const getTimeRange = (timeRange: '1h' | '7d' | '30d' = '1h') => {
+const getTimeRange = (timeRange: '1h' | '1d' | '7d' | '30d' = '1h') => {
     const now = new Date();
     switch (timeRange) {
+        case '1d':
+            return {
+                start: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+                end: now,
+                intervalMinutes: 15 // 15 minute intervals
+            };
         case '7d':
             return {
                 start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
@@ -34,11 +40,14 @@ const getTimeRange = (timeRange: '1h' | '7d' | '30d' = '1h') => {
     }
 };
 
-const getIntervals = (timeRange: '1h' | '7d' | '30d' = '1h') => {
+const getIntervals = (timeRange: '1h' | '1d' | '7d' | '30d' = '1h') => {
     const { start, end, intervalMinutes } = getTimeRange(timeRange);
     
     let intervalCount: number;
     switch (timeRange) {
+        case '1d':
+            intervalCount = 96; // 24 hours * 4 (15-minute intervals)
+            break;
         case '7d':
             intervalCount = 168; // 7 days * 24 hours
             break;

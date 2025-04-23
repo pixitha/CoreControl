@@ -67,7 +67,7 @@ export default function ServerDetail() {
   const params = useParams()
   const serverId = params.server_id as string
   const [server, setServer] = useState<Server | null>(null)
-  const [timeRange, setTimeRange] = useState<'1h' | '7d' | '30d'>('1h')
+  const [timeRange, setTimeRange] = useState<'1h' | '1d' | '7d' | '30d'>('1h')
   const [loading, setLoading] = useState(true)
   
   // Chart references
@@ -114,6 +114,12 @@ export default function ServerDetail() {
         const d = new Date(date)
         if (timeRange === '1h') {
           return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        } else if (timeRange === '1d') {
+          // For 1 day, show hours and minutes
+          return d.toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })
         } else if (timeRange === '7d') {
           // For 7 days, show day and time
           return d.toLocaleDateString([], { 
@@ -139,6 +145,8 @@ export default function ServerDetail() {
         
         if (timeRange === '1h') {
           return `Last Hour (${startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`
+        } else if (timeRange === '1d') {
+          return `Last 24 Hours (${startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`
         } else if (timeRange === '7d') {
           return `Last 7 Days (${startDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString([], { month: 'short', day: 'numeric' })})`
         } else {
@@ -516,18 +524,21 @@ export default function ServerDetail() {
                           <CardDescription>
                             {timeRange === '1h' 
                               ? 'Last hour, per minute' 
-                              : timeRange === '7d' 
-                                ? 'Last 7 days, hourly intervals' 
-                                : 'Last 30 days, 4-hour intervals'}
+                              : timeRange === '1d'
+                                ? 'Last 24 hours, 15-minute intervals'
+                                : timeRange === '7d' 
+                                  ? 'Last 7 days, hourly intervals' 
+                                  : 'Last 30 days, 4-hour intervals'}
                           </CardDescription>
                         </div>
                         <div className="flex gap-2">
-                          <Select value={timeRange} onValueChange={(value: '1h' | '7d' | '30d') => setTimeRange(value)}>
+                          <Select value={timeRange} onValueChange={(value: '1h' | '1d' | '7d' | '30d') => setTimeRange(value)}>
                             <SelectTrigger className="w-[180px]">
                               <SelectValue placeholder="Time range" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1h">Last Hour (per minute)</SelectItem>
+                              <SelectItem value="1d">Last 24 Hours (15 min)</SelectItem>
                               <SelectItem value="7d">Last 7 Days (hourly)</SelectItem>
                               <SelectItem value="30d">Last 30 Days (4h intervals)</SelectItem>
                             </SelectContent>
