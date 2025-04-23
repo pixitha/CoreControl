@@ -544,7 +544,7 @@ export default function Dashboard() {
                                       <SelectValue placeholder="Select an icon">
                                         {icon && (
                                           <div className="flex items-center gap-2">
-                                            <DynamicIcon name={icon as any} color="white" size={18} />
+                                            <DynamicIcon name={icon as any} size={18} />
                                             <span>{icon}</span>
                                           </div>
                                         )}
@@ -581,7 +581,7 @@ export default function Dashboard() {
                                               data-icon-name={iconName}
                                             >
                                               <div className="flex items-center gap-2">
-                                                <DynamicIcon name={iconName as any} color="white" size={18} />
+                                                <DynamicIcon name={iconName as any} size={18} />
                                                 <span>{iconName}</span>
                                               </div>
                                             </SelectItem>
@@ -595,7 +595,7 @@ export default function Dashboard() {
                               <div className="grid w-[52px] items-center gap-1.5">
                                 <Label htmlFor="icon">Preview</Label>
                                 <div className="flex items-center justify-center">
-                                  {icon && <DynamicIcon name={icon as any} color="white" size={36} />}
+                                  {icon && <DynamicIcon name={icon as any} size={36} />}
                                 </div>
                               </div>
                             </div>
@@ -838,7 +838,7 @@ export default function Dashboard() {
                           <div className="ml-4 flex-grow">
                             <CardTitle className="text-2xl font-bold flex items-center gap-2">
                               <div className="flex items-center gap-2">
-                                {server.icon && <DynamicIcon name={server.icon as any} color="white" size={24} />}
+                                {server.icon && <DynamicIcon name={server.icon as any} size={24} />}
                                 <span className="font-bold">
                                   {server.icon && "･"} {server.name}
                                 </span>
@@ -1025,7 +1025,6 @@ export default function Dashboard() {
                                                             <div className="flex items-center gap-2">
                                                               <DynamicIcon
                                                                 name={editIcon as any}
-                                                                color="white"
                                                                 size={18}
                                                               />
                                                               <span>{editIcon}</span>
@@ -1069,7 +1068,6 @@ export default function Dashboard() {
                                                                   <div className="flex items-center gap-2">
                                                                     <DynamicIcon
                                                                       name={iconName as any}
-                                                                      color="white"
                                                                       size={18}
                                                                     />
                                                                     <span>{iconName}</span>
@@ -1087,7 +1085,7 @@ export default function Dashboard() {
                                                   <Label htmlFor="icon">Preview</Label>
                                                   <div className="flex items-center justify-center">
                                                     {editIcon && (
-                                                      <DynamicIcon name={editIcon as any} color="white" size={36} />
+                                                      <DynamicIcon name={editIcon as any} size={36} />
                                                     )}
                                                   </div>
                                                 </div>
@@ -1305,7 +1303,6 @@ export default function Dashboard() {
                                                         {hostedVM.icon && (
                                                           <DynamicIcon
                                                             name={hostedVM.icon as any}
-                                                            color="white"
                                                             size={24}
                                                           />
                                                         )}
@@ -1371,7 +1368,6 @@ export default function Dashboard() {
                                                                                     <div className="flex items-center gap-2">
                                                                                       <DynamicIcon
                                                                                         name={editIcon as any}
-                                                                                        color="white"
                                                                                         size={18}
                                                                                       />
                                                                                       <span>{editIcon}</span>
@@ -1431,7 +1427,6 @@ export default function Dashboard() {
                                                                                           <div className="flex items-center gap-2">
                                                                                             <DynamicIcon
                                                                                               name={iconName as any}
-                                                                                              color="white"
                                                                                               size={18}
                                                                                             />
                                                                                             <span>{iconName}</span>
@@ -1451,7 +1446,6 @@ export default function Dashboard() {
                                                                             {editIcon && (
                                                                               <DynamicIcon
                                                                                 name={editIcon as any}
-                                                                                color="white"
                                                                                 size={36}
                                                                               />
                                                                             )}
