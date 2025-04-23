@@ -1,0 +1,591 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import axios from "axios"
+import Chart from 'chart.js/auto'
+import { AppSidebar } from "@/components/app-sidebar"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
+import { Link } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { StatusIndicator } from "@/components/status-indicator"
+import { DynamicIcon } from "lucide-react/dynamic"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
+import NextLink from "next/link"
+
+interface ServerHistory {
+  labels: string[];
+  datasets: {
+    cpu: (number | null)[];
+    ram: (number | null)[];
+    disk: (number | null)[];
+    online: (boolean | null)[];
+  }
+}
+
+interface Server {
+  id: number;
+  name: string;
+  icon: string;
+  host: boolean;
+  hostServer: number | null;
+  os?: string;
+  ip?: string;
+  url?: string;
+  cpu?: string;
+  gpu?: string;
+  ram?: string;
+  disk?: string;
+  hostedVMs?: Server[];
+  isVM?: boolean;
+  monitoring?: boolean;
+  monitoringURL?: string;
+  online?: boolean;
+  cpuUsage: number;
+  ramUsage: number;
+  diskUsage: number;
+  history?: ServerHistory;
+  port: number;
+}
+
+interface GetServersResponse {
+  servers: Server[];
+  maxPage: number;
+}
+
+export default function ServerDetail() {
+  const params = useParams()
+  const serverId = params.server_id as string
+  const [server, setServer] = useState<Server | null>(null)
+  const [timeRange, setTimeRange] = useState<'1h' | '7d' | '30d'>('1h')
+  const [loading, setLoading] = useState(true)
+  
+  // Chart references
+  const cpuChartRef = { current: null as Chart | null }
+  const ramChartRef = { current: null as Chart | null }
+  const diskChartRef = { current: null as Chart | null }
+
+  const fetchServerDetails = async () => {
+    try {
+      setLoading(true)
+      const response = await axios.post<GetServersResponse>("/api/servers/get", {
+        serverId: parseInt(serverId),
+        timeRange: timeRange
+      })
+      
+      if (response.data.servers && response.data.servers.length > 0) {
+        setServer(response.data.servers[0])
+      }
+      setLoading(false)
+    } catch (error) {
+      console.error("Failed to fetch server details:", error)
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchServerDetails()
+  }, [serverId, timeRange])
+
+  useEffect(() => {
+    if (!server || !server.history) return
+
+    // Clean up existing charts
+    if (cpuChartRef.current) cpuChartRef.current.destroy()
+    if (ramChartRef.current) ramChartRef.current.destroy()
+    if (diskChartRef.current) diskChartRef.current.destroy()
+
+    // Wait for DOM to be ready
+    const initTimer = setTimeout(() => {
+      const history = server.history as ServerHistory
+      
+      // Format time labels based on the selected time range
+      const timeLabels = history.labels.map((date: string) => {
+        const d = new Date(date)
+        if (timeRange === '1h') {
+          return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        } else if (timeRange === '7d') {
+          // For 7 days, show day and time
+          return d.toLocaleDateString([], { 
+            weekday: 'short',
+            month: 'numeric', 
+            day: 'numeric' 
+          }) + ' ' + d.toLocaleTimeString([], { 
+            hour: '2-digit'
+          })
+        } else {
+          // For 30 days
+          return d.toLocaleDateString([], { 
+            month: 'numeric', 
+            day: 'numeric' 
+          })
+        }
+      })
+      
+      // Create a time range title for the chart
+      const getRangeTitle = () => {
+        const now = new Date()
+        const startDate = new Date(history.labels[0])
+        
+        if (timeRange === '1h') {
+          return `Last Hour (${startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`
+        } else if (timeRange === '7d') {
+          return `Last 7 Days (${startDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString([], { month: 'short', day: 'numeric' })})`
+        } else {
+          return `Last 30 Days (${startDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} - ${now.toLocaleDateString([], { month: 'short', day: 'numeric' })})`
+        }
+      }
+
+      const chartConfig = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'nearest' as const,
+          axis: 'x' as const,
+          intersect: false
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: getRangeTitle(),
+            font: {
+              size: 14
+            }
+          },
+          tooltip: {
+            callbacks: {
+              title: function(tooltipItems: any) {
+                return timeLabels[tooltipItems[0].dataIndex];
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: {
+              display: true,
+              text: 'Usage %'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        },
+        elements: {
+          point: {
+            radius: 0
+          },
+          line: {
+            tension: 0.4
+          }
+        }
+      }
+
+      // Add individual chart configs 
+      const cpuChartConfig = {
+        ...chartConfig,
+        plugins: {
+          ...chartConfig.plugins,
+          title: {
+            ...chartConfig.plugins.title,
+            text: 'CPU Usage History'
+          }
+        }
+      };
+
+      const ramChartConfig = {
+        ...chartConfig,
+        plugins: {
+          ...chartConfig.plugins,
+          title: {
+            ...chartConfig.plugins.title,
+            text: 'RAM Usage History'
+          }
+        }
+      };
+
+      const diskChartConfig = {
+        ...chartConfig,
+        plugins: {
+          ...chartConfig.plugins,
+          title: {
+            ...chartConfig.plugins.title,
+            text: 'Disk Usage History'
+          }
+        }
+      };
+
+      const cpuCanvas = document.getElementById(`cpu-chart`) as HTMLCanvasElement
+      if (cpuCanvas) {
+        cpuChartRef.current = new Chart(cpuCanvas, {
+          type: 'line',
+          data: {
+            labels: timeLabels,
+            datasets: [{
+              label: 'CPU Usage',
+              data: history.datasets.cpu.filter(value => value !== null),
+              borderColor: 'rgb(75, 192, 192)',
+              backgroundColor: 'rgba(75, 192, 192, 0.1)',
+              fill: true
+            }]
+          },
+          options: cpuChartConfig
+        })
+      }
+
+      const ramCanvas = document.getElementById(`ram-chart`) as HTMLCanvasElement
+      if (ramCanvas) {
+        ramChartRef.current = new Chart(ramCanvas, {
+          type: 'line',
+          data: {
+            labels: timeLabels,
+            datasets: [{
+              label: 'RAM Usage',
+              data: history.datasets.ram.filter(value => value !== null),
+              borderColor: 'rgb(153, 102, 255)',
+              backgroundColor: 'rgba(153, 102, 255, 0.1)',
+              fill: true
+            }]
+          },
+          options: ramChartConfig
+        })
+      }
+
+      const diskCanvas = document.getElementById(`disk-chart`) as HTMLCanvasElement
+      if (diskCanvas) {
+        diskChartRef.current = new Chart(diskCanvas, {
+          type: 'line',
+          data: {
+            labels: timeLabels,
+            datasets: [{
+              label: 'Disk Usage',
+              data: history.datasets.disk.filter(value => value !== null),
+              borderColor: 'rgb(255, 159, 64)',
+              backgroundColor: 'rgba(255, 159, 64, 0.1)',
+              fill: true
+            }]
+          },
+          options: diskChartConfig
+        })
+      }
+    }, 100)
+
+    return () => {
+      clearTimeout(initTimer)
+      if (cpuChartRef.current) cpuChartRef.current.destroy()
+      if (ramChartRef.current) ramChartRef.current.destroy()
+      if (diskChartRef.current) diskChartRef.current.destroy()
+    }
+  }, [server, timeRange])
+
+  // Function to refresh data
+  const refreshData = () => {
+    fetchServerDetails()
+  }
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbPage>/</BreadcrumbPage>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>My Infrastructure</BreadcrumbPage>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <NextLink href="/dashboard/servers" className="hover:underline">
+                    <BreadcrumbPage>Servers</BreadcrumbPage>
+                  </NextLink>
+                </BreadcrumbItem>
+                {server && (
+                  <>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{server.name}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+
+        <div className="p-6">
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="inline-block" role="status" aria-label="loading">
+                <svg
+                  className="w-6 h-6 stroke-white animate-spin "
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g clipPath="url(#clip0_9023_61563)">
+                    <path
+                      d="M14.6437 2.05426C11.9803 1.2966 9.01686 1.64245 6.50315 3.25548C1.85499 6.23817 0.504864 12.4242 3.48756 17.0724C6.47025 21.7205 12.6563 23.0706 17.3044 20.088C20.4971 18.0393 22.1338 14.4793 21.8792 10.9444"
+                      stroke="stroke-current"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      className="my-path"
+                    ></path>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_9023_61563">
+                      <rect width="24" height="24" fill="white"></rect>
+                    </clipPath>
+                  </defs>
+                </svg>
+                <span className="sr-only">Loading...</span>
+              </div>
+            </div>
+          ) : server ? (
+            <div className="space-y-6">
+              {/* Server header card */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {server.icon && <DynamicIcon name={server.icon as any} size={32} />}
+                      <div>
+                        <CardTitle className="text-2xl flex items-center gap-2">
+                          {server.name}
+                          {server.monitoring && (
+                            <StatusIndicator isOnline={server.online} />
+                          )}
+                        </CardTitle>
+                        <CardDescription>
+                          {server.os || "No OS specified"} • {server.isVM ? "Virtual Machine" : "Physical Server"}
+                          {server.isVM && server.hostServer && (
+                            <> • Hosted on {server.hostedVMs?.[0]?.name}</>
+                          )}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Select value={timeRange} onValueChange={(value: '1h' | '7d' | '30d') => setTimeRange(value)}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Time range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1h">Last Hour</SelectItem>
+                          <SelectItem value="7d">Last 7 Days (Hourly)</SelectItem>
+                          <SelectItem value="30d">Last 30 Days (4h Intervals)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button variant="outline" onClick={refreshData}>Refresh Data</Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium">Hardware</h3>
+                      <div className="grid grid-cols-[120px_1fr] text-sm gap-1">
+                        <div className="text-muted-foreground">CPU:</div>
+                        <div>{server.cpu || "N/A"}</div>
+                        <div className="text-muted-foreground">GPU:</div>
+                        <div>{server.gpu || "N/A"}</div>
+                        <div className="text-muted-foreground">RAM:</div>
+                        <div>{server.ram || "N/A"}</div>
+                        <div className="text-muted-foreground">Disk:</div>
+                        <div>{server.disk || "N/A"}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium">Network</h3>
+                      <div className="grid grid-cols-[120px_1fr] text-sm gap-1">
+                        <div className="text-muted-foreground">IP Address:</div>
+                        <div>{server.ip || "N/A"}</div>
+                        <div className="text-muted-foreground">Management URL:</div>
+                        <div>
+                          {server.url ? (
+                            <a href={server.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-500 hover:underline">
+                              {server.url} <Link className="h-3 w-3" />
+                            </a>
+                          ) : (
+                            "N/A"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {server.monitoring && (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Current Usage</h3>
+                        <div className="grid grid-cols-[120px_1fr] text-sm gap-1">
+                          <div className="text-muted-foreground">CPU Usage:</div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${server.cpuUsage > 80 ? "bg-destructive" : server.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                style={{ width: `${server.cpuUsage}%` }}
+                              />
+                            </div>
+                            <span>{server.cpuUsage}%</span>
+                          </div>
+                          <div className="text-muted-foreground">RAM Usage:</div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${server.ramUsage > 80 ? "bg-destructive" : server.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                style={{ width: `${server.ramUsage}%` }}
+                              />
+                            </div>
+                            <span>{server.ramUsage}%</span>
+                          </div>
+                          <div className="text-muted-foreground">Disk Usage:</div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${server.diskUsage > 80 ? "bg-destructive" : server.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                style={{ width: `${server.diskUsage}%` }}
+                              />
+                            </div>
+                            <span>{server.diskUsage}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Charts */}
+              {server.monitoring && server.history && (
+                <div className="grid grid-cols-1 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>Resource Usage History</CardTitle>
+                          <CardDescription>
+                            {timeRange === '1h' 
+                              ? 'Last hour, per minute' 
+                              : timeRange === '7d' 
+                                ? 'Last 7 days, hourly intervals' 
+                                : 'Last 30 days, 4-hour intervals'}
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-[600px] pr-4">
+                        <div className="grid grid-cols-1 gap-8">
+                          <div className="h-[200px] relative bg-background">
+                            <canvas id="cpu-chart" />
+                          </div>
+                          <div className="h-[200px] relative bg-background">
+                            <canvas id="ram-chart" />
+                          </div>
+                          <div className="h-[200px] relative bg-background">
+                            <canvas id="disk-chart" />
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+              
+              {/* Virtual Machines */}
+              {server.hostedVMs && server.hostedVMs.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Virtual Machines</CardTitle>
+                    <CardDescription>Virtual machines hosted on this server</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {server.hostedVMs.map(vm => (
+                        <Card key={vm.id} className="hover:shadow-md transition-all duration-200">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {vm.icon && <DynamicIcon name={vm.icon as any} size={20} />}
+                                <NextLink href={`/dashboard/servers/${vm.id}`}>
+                                  <CardTitle className="text-lg hover:underline">{vm.name}</CardTitle>
+                                </NextLink>
+                              </div>
+                              {vm.monitoring && (
+                                <StatusIndicator isOnline={vm.online} />
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <div className="text-sm text-muted-foreground">
+                              {vm.os || "No OS specified"}
+                            </div>
+                            {vm.monitoring && (
+                              <div className="grid grid-cols-3 gap-2 mt-3">
+                                <div>
+                                  <div className="text-xs text-muted-foreground mb-1">CPU</div>
+                                  <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
+                                    <div 
+                                      className={`h-full ${vm.cpuUsage > 80 ? "bg-destructive" : vm.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                      style={{ width: `${vm.cpuUsage}%` }}
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-muted-foreground mb-1">RAM</div>
+                                  <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
+                                    <div 
+                                      className={`h-full ${vm.ramUsage > 80 ? "bg-destructive" : vm.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                      style={{ width: `${vm.ramUsage}%` }}
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-muted-foreground mb-1">Disk</div>
+                                  <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
+                                    <div 
+                                      className={`h-full ${vm.diskUsage > 80 ? "bg-destructive" : vm.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                      style={{ width: `${vm.diskUsage}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : (
+            <div className="text-center p-12">
+              <h2 className="text-2xl font-bold">Server not found</h2>
+              <p className="text-muted-foreground mt-2">The requested server could not be found or you don't have permission to view it.</p>
+            </div>
+          )}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
