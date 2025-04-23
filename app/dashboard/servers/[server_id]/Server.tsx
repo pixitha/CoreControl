@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
-import { Link } from "lucide-react"
+import { Link, Cpu, MicroscopeIcon as Microchip, MemoryStick, HardDrive, MonitorIcon as MonitorCog, FileDigit, History } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { StatusIndicator } from "@/components/status-indicator"
 import { DynamicIcon } from "lucide-react/dynamic"
@@ -561,59 +561,144 @@ export default function ServerDetail() {
                     <CardDescription>Virtual machines hosted on this server</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {server.hostedVMs.map(vm => (
-                        <Card key={vm.id} className="hover:shadow-md transition-all duration-200">
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                {vm.icon && <DynamicIcon name={vm.icon as any} size={20} />}
-                                <NextLink href={`/dashboard/servers/${vm.id}`}>
-                                  <CardTitle className="text-lg hover:underline">{vm.name}</CardTitle>
-                                </NextLink>
-                              </div>
-                              {vm.monitoring && (
-                                <StatusIndicator isOnline={vm.online} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {server.hostedVMs.map((hostedVM) => (
+                        <div
+                          key={hostedVM.id}
+                          className="flex flex-col gap-2 border border-muted py-2 px-4 rounded-md"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {hostedVM.icon && (
+                                <DynamicIcon
+                                  name={hostedVM.icon as any}
+                                  size={24}
+                                />
                               )}
+                              <NextLink href={`/dashboard/servers/${hostedVM.id}`} className="hover:underline">
+                                <div className="text-base font-extrabold">
+                                  {hostedVM.icon && "･ "}
+                                  {hostedVM.name}
+                                </div>
+                              </NextLink>
                             </div>
-                          </CardHeader>
-                          <CardContent className="pt-0">
-                            <div className="text-sm text-muted-foreground">
-                              {vm.os || "No OS specified"}
+                            {hostedVM.monitoring && (
+                              <StatusIndicator isOnline={hostedVM.online} />
+                            )}
+                          </div>
+
+                          <div className="col-span-full pb-2">
+                            <Separator />
+                          </div>
+
+                          <div className="flex gap-5 pb-2">
+                            <div className="flex items-center gap-2 text-foreground/80">
+                              <MonitorCog className="h-4 w-4 text-muted-foreground" />
+                              <span>
+                                <b>OS:</b> {hostedVM.os || "-"}
+                              </span>
                             </div>
-                            {vm.monitoring && (
-                              <div className="grid grid-cols-3 gap-2 mt-3">
+                            <div className="flex items-center gap-2 text-foreground/80">
+                              <FileDigit className="h-4 w-4 text-muted-foreground" />
+                              <span>
+                                <b>IP:</b> {hostedVM.ip || "Not set"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="col-span-full mb-2">
+                            <h4 className="text-sm font-semibold">Hardware Information</h4>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <Cpu className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              <b>CPU:</b> {hostedVM.cpu || "-"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <Microchip className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              <b>GPU:</b> {hostedVM.gpu || "-"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              <b>RAM:</b> {hostedVM.ram || "-"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <HardDrive className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              <b>Disk:</b> {hostedVM.disk || "-"}
+                            </span>
+                          </div>
+
+                          {hostedVM.monitoring && (
+                            <>
+                              <div className="col-span-full pt-2 pb-2">
+                                <Separator />
+                              </div>
+
+                              <div className="col-span-full grid grid-cols-3 gap-4">
                                 <div>
-                                  <div className="text-xs text-muted-foreground mb-1">CPU</div>
-                                  <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full ${vm.cpuUsage > 80 ? "bg-destructive" : vm.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
-                                      style={{ width: `${vm.cpuUsage}%` }}
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Cpu className="h-4 w-4 text-muted-foreground" />
+                                      <span className="text-sm font-medium">CPU</span>
+                                    </div>
+                                    <span className="text-xs font-medium">
+                                      {hostedVM.cpuUsage || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                    <div
+                                      className={`h-full ${hostedVM.cpuUsage && hostedVM.cpuUsage > 80 ? "bg-destructive" : hostedVM.cpuUsage && hostedVM.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                      style={{ width: `${hostedVM.cpuUsage || 0}%` }}
                                     />
                                   </div>
                                 </div>
+
                                 <div>
-                                  <div className="text-xs text-muted-foreground mb-1">RAM</div>
-                                  <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full ${vm.ramUsage > 80 ? "bg-destructive" : vm.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
-                                      style={{ width: `${vm.ramUsage}%` }}
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <MemoryStick className="h-4 w-4 text-muted-foreground" />
+                                      <span className="text-sm font-medium">RAM</span>
+                                    </div>
+                                    <span className="text-xs font-medium">
+                                      {hostedVM.ramUsage || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                    <div
+                                      className={`h-full ${hostedVM.ramUsage && hostedVM.ramUsage > 80 ? "bg-destructive" : hostedVM.ramUsage && hostedVM.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                      style={{ width: `${hostedVM.ramUsage || 0}%` }}
                                     />
                                   </div>
                                 </div>
+
                                 <div>
-                                  <div className="text-xs text-muted-foreground mb-1">Disk</div>
-                                  <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full ${vm.diskUsage > 80 ? "bg-destructive" : vm.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
-                                      style={{ width: `${vm.diskUsage}%` }}
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <HardDrive className="h-4 w-4 text-muted-foreground" />
+                                      <span className="text-sm font-medium">Disk</span>
+                                    </div>
+                                    <span className="text-xs font-medium">
+                                      {hostedVM.diskUsage || 0}%
+                                    </span>
+                                  </div>
+                                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mt-1">
+                                    <div
+                                      className={`h-full ${hostedVM.diskUsage && hostedVM.diskUsage > 80 ? "bg-destructive" : hostedVM.diskUsage && hostedVM.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                      style={{ width: `${hostedVM.diskUsage || 0}%` }}
                                     />
                                   </div>
                                 </div>
                               </div>
-                            )}
-                          </CardContent>
-                        </Card>
+                            </>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </CardContent>
