@@ -470,7 +470,7 @@ export default function ServerDetail() {
                         <div className="grid grid-cols-[120px_1fr] text-sm gap-1">
                           <div className="text-muted-foreground">CPU Usage:</div>
                           <div className="flex items-center gap-2">
-                            <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                               <div 
                                 className={`h-full ${server.cpuUsage > 80 ? "bg-destructive" : server.cpuUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
                                 style={{ width: `${server.cpuUsage}%` }}
@@ -480,7 +480,7 @@ export default function ServerDetail() {
                           </div>
                           <div className="text-muted-foreground">RAM Usage:</div>
                           <div className="flex items-center gap-2">
-                            <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                               <div 
                                 className={`h-full ${server.ramUsage > 80 ? "bg-destructive" : server.ramUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
                                 style={{ width: `${server.ramUsage}%` }}
@@ -490,7 +490,7 @@ export default function ServerDetail() {
                           </div>
                           <div className="text-muted-foreground">Disk Usage:</div>
                           <div className="flex items-center gap-2">
-                            <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                               <div 
                                 className={`h-full ${server.diskUsage > 80 ? "bg-destructive" : server.diskUsage > 60 ? "bg-amber-500" : "bg-emerald-500"}`}
                                 style={{ width: `${server.diskUsage}%` }}
