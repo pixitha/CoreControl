@@ -427,13 +427,13 @@ export default function ServerDetail() {
                       <h3 className="text-sm font-medium">Hardware</h3>
                       <div className="grid grid-cols-[120px_1fr] text-sm gap-1">
                         <div className="text-muted-foreground">CPU:</div>
-                        <div>{server.cpu || "N/A"}</div>
+                        <div>{server.cpu || "-"}</div>
                         <div className="text-muted-foreground">GPU:</div>
-                        <div>{server.gpu || "N/A"}</div>
+                        <div>{server.gpu || "-"}</div>
                         <div className="text-muted-foreground">RAM:</div>
-                        <div>{server.ram || "N/A"}</div>
+                        <div>{server.ram || "-"}</div>
                         <div className="text-muted-foreground">Disk:</div>
-                        <div>{server.disk || "N/A"}</div>
+                        <div>{server.disk || "-"}</div>
                       </div>
                     </div>
                     
@@ -441,7 +441,7 @@ export default function ServerDetail() {
                       <h3 className="text-sm font-medium">Network</h3>
                       <div className="grid grid-cols-[120px_1fr] text-sm gap-1">
                         <div className="text-muted-foreground">IP Address:</div>
-                        <div>{server.ip || "N/A"}</div>
+                        <div>{server.ip || "-"}</div>
                         <div className="text-muted-foreground">Management URL:</div>
                         <div>
                           {server.url ? (
@@ -449,7 +449,7 @@ export default function ServerDetail() {
                               {server.url} <Link className="h-3 w-3" />
                             </a>
                           ) : (
-                            "N/A"
+                            "-"
                           )}
                         </div>
                       </div>
