@@ -19,7 +19,9 @@ import axios from "axios"
 import Cookies from "js-cookie"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Check, Palette, User, Bell, AtSign, Send, MessageSquare, Trash2 } from "lucide-react"
+import { AlertCircle, Check, Palette, User, Bell, AtSign, Send, MessageSquare, Trash2, Play } from "lucide-react"
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 
 import {
   AlertDialog,
@@ -253,6 +255,17 @@ export default function Settings() {
   useEffect(() => {
     getNotificationText()
   }, [])
+
+  const testNotification = async (id: number) => {
+    try {
+      const response = await axios.post("/api/notifications/test", {
+        notificationId: id,
+      })
+      toast.success("Notification will be sent in a few seconds.")
+    } catch (error: any) {
+      toast.error(error.response.data.error)
+    }
+  }
 
   return (
     <SidebarProvider>
@@ -763,15 +776,25 @@ export default function Settings() {
                               </p>
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="hover:bg-muted/20"
-                            onClick={() => deleteNotification(notification.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Remove
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="hover:bg-muted/20"
+                              onClick={() => testNotification(notification.id)}
+                            >
+                              <Play className="h-4 w-4 mr-1" />
+                              Test
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="hover:bg-muted/20"
+                              onClick={() => deleteNotification(notification.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                            </Button>
+                          </div>
                         </div>
                       ))
                     ) : (
@@ -789,6 +812,7 @@ export default function Settings() {
                     )}
                   </div>
                 </div>
+                <Toaster />
               </CardContent>
             </Card>
           </div>
