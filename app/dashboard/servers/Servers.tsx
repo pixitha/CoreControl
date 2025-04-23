@@ -847,7 +847,7 @@ export default function Dashboard() {
                     >
                       <CardHeader>
                         {server.monitoring && (
-                          <div className="absolute top-2 right-2">
+                          <div className="absolute top-4 right-4">
                             <StatusIndicator isOnline={server.online} />
                           </div>
                         )}
