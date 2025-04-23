@@ -992,7 +992,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </CardHeader>
-                      <div className="px-6 pb-6">
+                      <div className="px-6">
                         <NextLink href={`/dashboard/servers/${server.id}`}>
                           <Button variant="outline" className="w-full mt-2">
                             <History className="h-4 w-4 mr-2" />
