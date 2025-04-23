@@ -543,10 +543,10 @@ export default function ServerDetail() {
                               <SelectValue placeholder="Time range" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="1h">Last Hour (per minute)</SelectItem>
-                              <SelectItem value="1d">Last 24 Hours (15 min)</SelectItem>
-                              <SelectItem value="7d">Last 7 Days (hourly)</SelectItem>
-                              <SelectItem value="30d">Last 30 Days (4h intervals)</SelectItem>
+                              <SelectItem value="1h">Last Hour</SelectItem>
+                              <SelectItem value="1d">Last 24 Hours</SelectItem>
+                              <SelectItem value="7d">Last 7 Days</SelectItem>
+                              <SelectItem value="30d">Last 30 Days</SelectItem>
                             </SelectContent>
                           </Select>
                           <Button variant="outline" onClick={refreshData}>Refresh</Button>
