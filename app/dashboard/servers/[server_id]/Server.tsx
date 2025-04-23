@@ -98,16 +98,16 @@ export default function ServerDetail() {
   }, [serverId, timeRange])
 
   useEffect(() => {
-    if (!server || !server.history) return
+    if (!server || !server.history) return;
 
     // Clean up existing charts
-    if (cpuChartRef.current) cpuChartRef.current.destroy()
-    if (ramChartRef.current) ramChartRef.current.destroy()
-    if (diskChartRef.current) diskChartRef.current.destroy()
+    if (cpuChartRef.current) cpuChartRef.current.destroy();
+    if (ramChartRef.current) ramChartRef.current.destroy();
+    if (diskChartRef.current) diskChartRef.current.destroy();
 
     // Wait for DOM to be ready
     const initTimer = setTimeout(() => {
-      const history = server.history as ServerHistory
+      const history = server.history as ServerHistory;
       
       // Format time labels based on the selected time range
       const timeLabels = history.labels.map((date: string) => {
@@ -146,7 +146,8 @@ export default function ServerDetail() {
         }
       }
 
-      const chartConfig = {
+      // Directly hardcode the y-axis maximum in each chart option
+      const commonOptions = {
         responsive: true,
         maintainAspectRatio: false,
         interaction: {
@@ -154,26 +155,17 @@ export default function ServerDetail() {
           axis: 'x' as const,
           intersect: false
         },
-        plugins: {
-          title: {
-            display: true,
-            text: getRangeTitle(),
-            font: {
-              size: 14
-            }
-          },
-          tooltip: {
-            callbacks: {
-              title: function(tooltipItems: any) {
-                return timeLabels[tooltipItems[0].dataIndex];
-              }
-            }
-          }
-        },
         scales: {
           y: {
-            beginAtZero: true,
+            min: 0,
             max: 100,
+            beginAtZero: true,
+            ticks: {
+              stepSize: 20,
+              callback: function(value: any) {
+                return value + '%';
+              }
+            },
             title: {
               display: true,
               text: 'Usage %'
@@ -190,45 +182,13 @@ export default function ServerDetail() {
             radius: 0
           },
           line: {
-            tension: 0.4
-          }
-        }
-      }
-
-      // Add individual chart configs 
-      const cpuChartConfig = {
-        ...chartConfig,
-        plugins: {
-          ...chartConfig.plugins,
-          title: {
-            ...chartConfig.plugins.title,
-            text: 'CPU Usage History'
+            tension: 0.4,
+            spanGaps: true
           }
         }
       };
 
-      const ramChartConfig = {
-        ...chartConfig,
-        plugins: {
-          ...chartConfig.plugins,
-          title: {
-            ...chartConfig.plugins.title,
-            text: 'RAM Usage History'
-          }
-        }
-      };
-
-      const diskChartConfig = {
-        ...chartConfig,
-        plugins: {
-          ...chartConfig.plugins,
-          title: {
-            ...chartConfig.plugins.title,
-            text: 'Disk Usage History'
-          }
-        }
-      };
-
+      // Create charts with very explicit y-axis max values
       const cpuCanvas = document.getElementById(`cpu-chart`) as HTMLCanvasElement
       if (cpuCanvas) {
         cpuChartRef.current = new Chart(cpuCanvas, {
@@ -237,13 +197,38 @@ export default function ServerDetail() {
             labels: timeLabels,
             datasets: [{
               label: 'CPU Usage',
-              data: history.datasets.cpu.filter(value => value !== null),
+              data: history.datasets.cpu,
               borderColor: 'rgb(75, 192, 192)',
               backgroundColor: 'rgba(75, 192, 192, 0.1)',
               fill: true
             }]
           },
-          options: cpuChartConfig
+          options: {
+            ...commonOptions,
+            plugins: {
+              title: {
+                display: true,
+                text: 'CPU Usage History',
+                font: {
+                  size: 14
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(tooltipItems: any) {
+                    return timeLabels[tooltipItems[0].dataIndex];
+                  }
+                }
+              }
+            },
+            scales: {
+              ...commonOptions.scales,
+              y: {
+                ...commonOptions.scales.y,
+                max: 100  // Force this to ensure it's applied
+              }
+            }
+          }
         })
       }
 
@@ -255,13 +240,38 @@ export default function ServerDetail() {
             labels: timeLabels,
             datasets: [{
               label: 'RAM Usage',
-              data: history.datasets.ram.filter(value => value !== null),
+              data: history.datasets.ram,
               borderColor: 'rgb(153, 102, 255)',
               backgroundColor: 'rgba(153, 102, 255, 0.1)',
               fill: true
             }]
           },
-          options: ramChartConfig
+          options: {
+            ...commonOptions,
+            plugins: {
+              title: {
+                display: true,
+                text: 'RAM Usage History',
+                font: {
+                  size: 14
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(tooltipItems: any) {
+                    return timeLabels[tooltipItems[0].dataIndex];
+                  }
+                }
+              }
+            },
+            scales: {
+              ...commonOptions.scales,
+              y: {
+                ...commonOptions.scales.y,
+                max: 100  // Force this to ensure it's applied
+              }
+            }
+          }
         })
       }
 
@@ -273,24 +283,49 @@ export default function ServerDetail() {
             labels: timeLabels,
             datasets: [{
               label: 'Disk Usage',
-              data: history.datasets.disk.filter(value => value !== null),
+              data: history.datasets.disk,
               borderColor: 'rgb(255, 159, 64)',
               backgroundColor: 'rgba(255, 159, 64, 0.1)',
               fill: true
             }]
           },
-          options: diskChartConfig
+          options: {
+            ...commonOptions,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Disk Usage History',
+                font: {
+                  size: 14
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(tooltipItems: any) {
+                    return timeLabels[tooltipItems[0].dataIndex];
+                  }
+                }
+              }
+            },
+            scales: {
+              ...commonOptions.scales,
+              y: {
+                ...commonOptions.scales.y,
+                max: 100  // Force this to ensure it's applied
+              }
+            }
+          }
         })
       }
-    }, 100)
-
+    }, 100);
+    
     return () => {
-      clearTimeout(initTimer)
-      if (cpuChartRef.current) cpuChartRef.current.destroy()
-      if (ramChartRef.current) ramChartRef.current.destroy()
-      if (diskChartRef.current) diskChartRef.current.destroy()
-    }
-  }, [server, timeRange])
+      clearTimeout(initTimer);
+      if (cpuChartRef.current) cpuChartRef.current.destroy();
+      if (ramChartRef.current) ramChartRef.current.destroy();
+      if (diskChartRef.current) diskChartRef.current.destroy();
+    };
+  }, [server, timeRange]);
 
   // Function to refresh data
   const refreshData = () => {
@@ -383,19 +418,6 @@ export default function ServerDetail() {
                           )}
                         </CardDescription>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Select value={timeRange} onValueChange={(value: '1h' | '7d' | '30d') => setTimeRange(value)}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Time range" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1h">Last Hour</SelectItem>
-                          <SelectItem value="7d">Last 7 Days (Hourly)</SelectItem>
-                          <SelectItem value="30d">Last 30 Days (4h Intervals)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button variant="outline" onClick={refreshData}>Refresh Data</Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -490,10 +512,22 @@ export default function ServerDetail() {
                                 : 'Last 30 days, 4-hour intervals'}
                           </CardDescription>
                         </div>
+                        <div className="flex gap-2">
+                          <Select value={timeRange} onValueChange={(value: '1h' | '7d' | '30d') => setTimeRange(value)}>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Time range" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1h">Last Hour (per minute)</SelectItem>
+                              <SelectItem value="7d">Last 7 Days (hourly)</SelectItem>
+                              <SelectItem value="30d">Last 30 Days (4h intervals)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button variant="outline" onClick={refreshData}>Refresh</Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <ScrollArea className="h-[600px] pr-4">
                         <div className="grid grid-cols-1 gap-8">
                           <div className="h-[200px] relative bg-background">
                             <canvas id="cpu-chart" />
@@ -505,7 +539,6 @@ export default function ServerDetail() {
                             <canvas id="disk-chart" />
                           </div>
                         </div>
-                      </ScrollArea>
                     </CardContent>
                   </Card>
                 </div>
