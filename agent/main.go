@@ -319,57 +319,37 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 		}
 
 		hostIsIP := isIPAddress(parsedURL.Hostname())
+		var isOnline bool
 
-		httpCtx, httpCancel := context.WithTimeout(context.Background(), 4*time.Second)
-		req, err := http.NewRequestWithContext(httpCtx, "HEAD", app.PublicURL, nil)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, "GET", app.PublicURL, nil)
 		if err != nil {
 			fmt.Printf("%s Request creation failed: %v\n", logPrefix, err)
-			httpCancel()
 			continue
 		}
 
 		resp, err := client.Do(req)
-
-		if err != nil || (resp != nil && (resp.StatusCode == http.StatusMethodNotAllowed || resp.StatusCode == http.StatusNotImplemented)) {
-			if resp != nil && resp.Body != nil {
-				resp.Body.Close()
-			}
-			fmt.Printf("%s HEAD failed, trying GET...\n", logPrefix)
-
-			req.Method = "GET"
-			resp, err = client.Do(req)
-		}
-
-		var isOnline bool
-		if err == nil && resp != nil {
-			isOnline = (resp.StatusCode >= 200 && resp.StatusCode < 300) ||
-				resp.StatusCode == 405 ||
-				resp.StatusCode == 302 ||
-				resp.StatusCode == 301 ||
-				resp.StatusCode == 303 ||
-				resp.StatusCode == 307 ||
-				resp.StatusCode == 308
-			resp.Body.Close()
+		if err == nil {
+			defer resp.Body.Close()
+			isOnline = resp.StatusCode >= 200 && resp.StatusCode < 400
+			fmt.Printf("%s Response status: %d\n", logPrefix, resp.StatusCode)
 		} else {
-			if err != nil {
-				fmt.Printf("%s HTTP error: %v\n", logPrefix, err)
+			fmt.Printf("%s Connection error: %v\n", logPrefix, err)
 
-				// Sonderbehandlung für IP-Adressen + TLS-Zertifikatfehler
-				if hostIsIP {
-					var urlErr *url.Error
-					if errors.As(err, &urlErr) {
-						var certErr x509.HostnameError
-						var unknownAuthErr x509.UnknownAuthorityError
-						if errors.As(urlErr.Err, &certErr) || errors.As(urlErr.Err, &unknownAuthErr) {
-							fmt.Printf("%s Ignoring TLS error for IP, marking as online.\n", logPrefix)
-							isOnline = true
-						}
+			if hostIsIP {
+				var urlErr *url.Error
+				if errors.As(err, &urlErr) {
+					var certErr x509.HostnameError
+					var unknownAuthErr x509.UnknownAuthorityError
+					if errors.As(urlErr.Err, &certErr) || errors.As(urlErr.Err, &unknownAuthErr) {
+						fmt.Printf("%s Ignoring TLS error for IP, marking as online\n", logPrefix)
+						isOnline = true
 					}
 				}
 			}
 		}
-
-		httpCancel()
 
 		if isOnline != app.Online {
 			status := "offline"
@@ -377,8 +357,7 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 				status = "online"
 			}
 
-			message := notificationTemplate
-			message = strings.ReplaceAll(message, "!name", app.Name)
+			message := strings.ReplaceAll(notificationTemplate, "!name", app.Name)
 			message = strings.ReplaceAll(message, "!url", app.PublicURL)
 			message = strings.ReplaceAll(message, "!status", status)
 
@@ -401,7 +380,7 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 			app.ID, isOnline,
 		)
 		if err != nil {
-			fmt.Printf("%s Insert into history failed: %v\n", logPrefix, err)
+			fmt.Printf("%s History insert failed: %v\n", logPrefix, err)
 		}
 		dbCancel2()
 	}
