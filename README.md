@@ -6,7 +6,7 @@
 
 The only dashboard you'll ever need to manage your entire server infrastructure. Keep all your server data organized in one central place, easily add your self-hosted applications with quick access links, and monitor their availability in real-time with built-in uptime tracking. Designed for simplicity and control, it gives you a clear overview of your entire self-hosted setup at a glance.
 
-<a href="https://buymeacoffee.com/corecontrol" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/corecontrol)
 
 ## Features
 
@@ -17,35 +17,34 @@ The only dashboard you'll ever need to manage your entire server infrastructure.
 
 ## Screenshots
 Login Page:
-![Login Page](https://i.ibb.co/DfS7BJdX/image.png)
+![Login Page](/screenshots/login.png)
 
 Dashboard Page:
-![Dashboard Page](https://i.ibb.co/SYwrFw8/image.png)
+![Dashboard Page](/screenshots/dashboard.png)
 
 Servers Page:
-![Servers Page](https://i.ibb.co/HLMD9HPZ/image.png)
+![Servers Page](/screenshots/servers.png)
 
-VM Display:
-![VM Display](https://i.ibb.co/My45mv8k/image.png)
+Server Detail Page
+![Server Detail Page](/screenshots/server.png)
 
 Applications Page:
-![Applications Page](https://i.ibb.co/Hc2HQpV/image.png)
+![Applications Page](/screenshots/applications.png)
 
 Uptime Page:
-![Uptime Page](https://i.ibb.co/jvGcL9Y6/image.png)
+![Uptime Page](/screenshots/uptime.png)
 
 Network Page:
-![Network Page](https://i.ibb.co/ymLHcNqM/image.png)
+![Network Page](/screenshots/network.png)
 
 Settings Page:
-![Settings Page](https://i.ibb.co/rRQB9Hcz/image.png)
+![Settings Page](/screenshots/settings.png)
 
 ## Roadmap
 - [X] Edit Applications, Applications searchbar
 - [X] Uptime History
 - [X] Notifications
 - [X] Simple Server Monitoring
-- [ ] Simple Server Monitoring History
 - [ ] Improved Network Flowchart with custom elements (like Network switches)
 - [ ] Advanced Settings (Disable Uptime Tracking & more)
 

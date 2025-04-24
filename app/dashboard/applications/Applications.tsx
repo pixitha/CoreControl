@@ -74,6 +74,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { StatusIndicator } from "@/components/status-indicator";
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 
 interface Application {
   id: number;
@@ -152,8 +154,10 @@ export default function Dashboard() {
         serverId,
       });
       getApplications();
+      toast.success("Application added successfully");
     } catch (error: any) {
       console.log(error.response?.data);
+      toast.error("Failed to add application");
     }
   };
 
@@ -170,6 +174,7 @@ export default function Dashboard() {
       setLoading(false);
     } catch (error: any) {
       console.log(error.response?.data);
+      toast.error("Failed to get applications");
     }
   };
 
@@ -185,8 +190,10 @@ export default function Dashboard() {
     try {
       await axios.post("/api/applications/delete", { id });
       getApplications();
+      toast.success("Application deleted successfully");
     } catch (error: any) {
       console.log(error.response?.data);
+      toast.error("Failed to delete application");
     }
   };
 
@@ -215,8 +222,10 @@ export default function Dashboard() {
       });
       getApplications();
       setEditId(null);
+      toast.success("Application edited successfully");
     } catch (error: any) {
       console.log(error.response.data);
+      toast.error("Failed to edit application");
     }
   };
 
@@ -280,6 +289,7 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
+        <Toaster />
         <div className="p-6">
           <div className="flex justify-between items-center">
             <span className="text-3xl font-bold">Your Applications</span>

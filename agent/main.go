@@ -44,7 +44,16 @@ type CPUResponse struct {
 }
 
 type MemoryResponse struct {
-	Percent float64 `json:"percent"`
+	Active    int64   `json:"active"`
+	Available int64   `json:"available"`
+	Buffers   int64   `json:"buffers"`
+	Cached    int64   `json:"cached"`
+	Free      int64   `json:"free"`
+	Inactive  int64   `json:"inactive"`
+	Percent   float64 `json:"percent"`
+	Shared    int64   `json:"shared"`
+	Total     int64   `json:"total"`
+	Used      int64   `json:"used"`
 }
 
 type FSResponse []struct {
@@ -133,6 +142,16 @@ func main() {
 			if err := deleteOldEntries(db); err != nil {
 				fmt.Printf("Error deleting old entries: %v\n", err)
 			}
+		}
+	}()
+
+	// Check for test notifications every 10 seconds
+	go func() {
+		testNotifTicker := time.NewTicker(10 * time.Second)
+		defer testNotifTicker.Stop()
+
+		for range testNotifTicker.C {
+			checkAndSendTestNotifications(db)
 		}
 	}()
 
@@ -447,7 +466,23 @@ func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Serve
 						updateServerStatus(db, server.ID, false, 0, 0, 0)
 						online = false
 					} else {
-						ramUsage = memData.Percent
+						// Calculate actual RAM usage excluding swap, cache, and buffers
+						// Formula: (total - free - cached - buffers) / total * 100
+						// This is the most accurate representation of actual used RAM
+						actualUsedRam := memData.Total - memData.Free - memData.Cached - memData.Buffers
+						if actualUsedRam < 0 {
+							actualUsedRam = 0 // Safeguard against negative values
+						}
+
+						if memData.Total > 0 {
+							ramUsage = float64(actualUsedRam) / float64(memData.Total) * 100
+							fmt.Printf("%s Calculated RAM usage: %.2f%% (Used: %d MB, Total: %d MB)\n",
+								logPrefix, ramUsage, actualUsedRam/1024/1024, memData.Total/1024/1024)
+						} else {
+							// Fallback to the provided percentage if calculation fails
+							ramUsage = memData.Percent
+							fmt.Printf("%s Using provided memory percentage because total is zero\n", logPrefix)
+						}
 					}
 				}
 			}
@@ -708,5 +743,78 @@ func sendPushover(n Notification, message string) {
 
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Pushover: ERROR status code: %d\n", resp.StatusCode)
+	}
+}
+
+func checkAndSendTestNotifications(db *sql.DB) {
+	// Query for test notifications
+	rows, err := db.Query(`SELECT tn.id, tn."notificationId" FROM test_notification tn`)
+	if err != nil {
+		fmt.Printf("Error fetching test notifications: %v\n", err)
+		return
+	}
+	defer rows.Close()
+
+	// Process each test notification
+	var testIds []int
+	for rows.Next() {
+		var id, notificationId int
+		if err := rows.Scan(&id, &notificationId); err != nil {
+			fmt.Printf("Error scanning test notification: %v\n", err)
+			continue
+		}
+
+		// Add to list of IDs to delete
+		testIds = append(testIds, id)
+
+		// Find the notification configuration
+		notifMutex.RLock()
+		for _, n := range notifications {
+			if n.ID == notificationId {
+				// Send test notification
+				fmt.Printf("Sending test notification to notification ID %d\n", notificationId)
+				sendSpecificNotification(n, "Test notification from CoreControl")
+			}
+		}
+		notifMutex.RUnlock()
+	}
+
+	// Delete processed test notifications
+	if len(testIds) > 0 {
+		for _, id := range testIds {
+			_, err := db.Exec(`DELETE FROM test_notification WHERE id = $1`, id)
+			if err != nil {
+				fmt.Printf("Error deleting test notification (ID: %d): %v\n", id, err)
+			}
+		}
+	}
+}
+
+func sendSpecificNotification(n Notification, message string) {
+	switch n.Type {
+	case "email":
+		if n.SMTPHost.Valid && n.SMTPTo.Valid {
+			sendEmail(n, message)
+		}
+	case "telegram":
+		if n.TelegramToken.Valid && n.TelegramChatID.Valid {
+			sendTelegram(n, message)
+		}
+	case "discord":
+		if n.DiscordWebhook.Valid {
+			sendDiscord(n, message)
+		}
+	case "gotify":
+		if n.GotifyUrl.Valid && n.GotifyToken.Valid {
+			sendGotify(n, message)
+		}
+	case "ntfy":
+		if n.NtfyUrl.Valid && n.NtfyToken.Valid {
+			sendNtfy(n, message)
+		}
+	case "pushover":
+		if n.PushoverUrl.Valid && n.PushoverToken.Valid && n.PushoverUser.Valid {
+			sendPushover(n, message)
+		}
 	}
 }

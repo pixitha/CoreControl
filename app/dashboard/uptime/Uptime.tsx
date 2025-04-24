@@ -34,14 +34,18 @@ const timeFormats = {
       minute: '2-digit',
       hour12: false 
     }),
-  2: (timestamp: string) => {
-    const start = new Date(timestamp);
-    const end = new Date(start.getTime() + 3 * 60 * 60 * 1000);
-    return `${start.toLocaleDateString([], { day: '2-digit', month: 'short' })} 
-      ${start.getHours().toString().padStart(2, '0')}:00 - 
-      ${end.getHours().toString().padStart(2, '0')}:00`;
-  },
+  2: (timestamp: string) => 
+    new Date(timestamp).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    }),
   3: (timestamp: string) => 
+    new Date(timestamp).toLocaleDateString([], { 
+      day: '2-digit', 
+      month: 'short' 
+    }),
+  4: (timestamp: string) => 
     new Date(timestamp).toLocaleDateString([], { 
       day: '2-digit', 
       month: 'short' 
@@ -49,9 +53,10 @@ const timeFormats = {
 };
 
 const minBoxWidths = {
-  1: 24,
-  2: 24,
-  3: 24
+  1: 20,
+  2: 20,
+  3: 24,
+  4: 24
 };
 
 interface UptimeData {
@@ -72,7 +77,7 @@ interface PaginationData {
 
 export default function Uptime() {
   const [data, setData] = useState<UptimeData[]>([]);
-  const [timespan, setTimespan] = useState<1 | 2 | 3>(1);
+  const [timespan, setTimespan] = useState<1 | 2 | 3 | 4>(1);
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
     totalPages: 1,
@@ -153,7 +158,7 @@ export default function Uptime() {
             <Select 
               value={String(timespan)} 
               onValueChange={(v) => {
-                setTimespan(Number(v) as 1 | 2 | 3);
+                setTimespan(Number(v) as 1 | 2 | 3 | 4);
                 setPagination(prev => ({...prev, currentPage: 1}));
               }}
               disabled={isLoading}
@@ -162,9 +167,10 @@ export default function Uptime() {
                 <SelectValue placeholder="Select timespan" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Last 30 minutes</SelectItem>
-                <SelectItem value="2">Last 7 days</SelectItem>
-                <SelectItem value="3">Last 30 days</SelectItem>
+                <SelectItem value="1">Last 1 hour</SelectItem>
+                <SelectItem value="2">Last 1 day</SelectItem>
+                <SelectItem value="3">Last 7 days</SelectItem>
+                <SelectItem value="4">Last 30 days</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -219,18 +225,14 @@ export default function Uptime() {
                                     >
                                       <div className="flex flex-col gap-1">
                                         <p className="font-medium">
-                                          {timespan === 2 ? (
-                                            timeFormats[2](entry.timestamp)
-                                          ) : (
-                                            new Date(entry.timestamp).toLocaleString([], {
-                                              year: 'numeric',
-                                              month: 'short',
-                                              day: 'numeric',
-                                              hour: '2-digit',
-                                              minute: timespan === 3 ? undefined : '2-digit',
-                                              hour12: false
-                                            })
-                                          )}
+                                          {new Date(entry.timestamp).toLocaleString([], {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: timespan > 2 ? 'numeric' : undefined,
+                                            hour: '2-digit',
+                                            minute: timespan === 1 ? '2-digit' : undefined,
+                                            hour12: false
+                                          })}
                                         </p>
                                         <p>
                                           {entry.missing
