@@ -17,28 +17,28 @@ The only dashboard you'll ever need to manage your entire server infrastructure.
 
 ## Screenshots
 Login Page:
-![Login Page](https://i.ibb.co/DfS7BJdX/image.png)
+![Login Page](/screenshots/login.png)
 
 Dashboard Page:
-![Dashboard Page](https://i.ibb.co/SYwrFw8/image.png)
+![Dashboard Page](/screenshots/dashboard.png)
 
 Servers Page:
-![Servers Page](https://i.ibb.co/FL4Ghwbh/image.png)
+![Servers Page](/screenshots/servers.png)
 
 Server Detail Page
-![Server Detail Page](https://i.ibb.co/fY5fmcs5/image.png)
+![Server Detail Page](/screenshots/server.png)
 
 Applications Page:
-![Applications Page](https://i.ibb.co/Hc2HQpV/image.png)
+![Applications Page](/screenshots/applications.png)
 
 Uptime Page:
-![Uptime Page](https://i.ibb.co/jvGcL9Y6/image.png)
+![Uptime Page](/screenshots/uptime.png)
 
 Network Page:
-![Network Page](https://i.ibb.co/ymLHcNqM/image.png)
+![Network Page](/screenshots/network.png)
 
 Settings Page:
-![Settings Page](https://i.ibb.co/rRQB9Hcz/image.png)
+![Settings Page](/screenshots/settings.png)
 
 ## Roadmap
 - [X] Edit Applications, Applications searchbar
