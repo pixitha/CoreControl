@@ -342,7 +342,13 @@ func checkAndUpdateStatus(db *sql.DB, client *http.Client, apps []Application) {
 
 		var isOnline bool
 		if err == nil && resp != nil {
-			isOnline = (resp.StatusCode >= 200 && resp.StatusCode < 300) || resp.StatusCode == 405
+			isOnline = (resp.StatusCode >= 200 && resp.StatusCode < 300) ||
+				resp.StatusCode == 405 ||
+				resp.StatusCode == 302 ||
+				resp.StatusCode == 301 ||
+				resp.StatusCode == 303 ||
+				resp.StatusCode == 307 ||
+				resp.StatusCode == 308
 			resp.Body.Close()
 		} else {
 			if err != nil {
