@@ -12,22 +12,27 @@ const getTimeRange = (timespan: number) => {
   switch (timespan) {
     case 1:
       return { 
-        start: new Date(now.getTime() - 30 * 60 * 1000),
+        start: new Date(now.getTime() - 60 * 60 * 1000),
         interval: 'minute' 
       };
     case 2:
       return { 
-        start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
-        interval: '3hour' 
+        start: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+        interval: 'hour' 
       };
     case 3:
+      return { 
+        start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+        interval: 'day' 
+      };
+    case 4:
       return { 
         start: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
         interval: 'day' 
       };
     default:
       return { 
-        start: new Date(now.getTime() - 30 * 60 * 1000),
+        start: new Date(now.getTime() - 60 * 60 * 1000),
         interval: 'minute' 
       };
   }
@@ -38,23 +43,31 @@ const generateIntervals = (timespan: number) => {
   now.setSeconds(0, 0);
   
   switch (timespan) {
-    case 1:
-      return Array.from({ length: 30 }, (_, i) => {
+    case 1: // 1 hour - 60 one-minute intervals
+      return Array.from({ length: 60 }, (_, i) => {
         const d = new Date(now);
         d.setMinutes(d.getMinutes() - i);
         d.setSeconds(0, 0);
         return d;
       });
       
-    case 2:
-      return Array.from({ length: 56 }, (_, i) => {
+    case 2: // 1 day - 24 one-hour intervals
+      return Array.from({ length: 24 }, (_, i) => {
         const d = new Date(now);
-        d.setHours(d.getHours() - (i * 3));
+        d.setHours(d.getHours() - i);
         d.setMinutes(0, 0, 0);
         return d;
       });
 
-    case 3:
+    case 3: // 7 days
+      return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      });
+
+    case 4: // 30 days
       return Array.from({ length: 30 }, (_, i) => {
         const d = new Date(now);
         d.setDate(d.getDate() - i);
@@ -70,14 +83,14 @@ const generateIntervals = (timespan: number) => {
 const getIntervalKey = (date: Date, timespan: number) => {
   const d = new Date(date);
   switch (timespan) {
-    case 1:
+    case 1: // 1 hour - minute intervals
       d.setSeconds(0, 0);
       return d.toISOString();
-    case 2:
-      d.setHours(Math.floor(d.getHours() / 3) * 3);
+    case 2: // 1 day - hour intervals
       d.setMinutes(0, 0, 0);
       return d.toISOString();
-    case 3:
+    case 3: // 7 days - day intervals
+    case 4: // 30 days - day intervals
       d.setHours(0, 0, 0, 0);
       return d.toISOString();
     default:
