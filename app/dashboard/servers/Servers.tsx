@@ -62,6 +62,8 @@ import { DynamicIcon } from "lucide-react/dynamic"
 import { StatusIndicator } from "@/components/status-indicator"
 import Chart from 'chart.js/auto'
 import NextLink from "next/link"
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 
 interface ServerHistory {
   labels: string[];
@@ -208,8 +210,10 @@ export default function Dashboard() {
       setMonitoring(false)
       setMonitoringURL("")
       getServers()
+      toast.success("Server added successfully");
     } catch (error: any) {
       console.log(error.response.data)
+      toast.error("Failed to add server");
     }
   }
 
@@ -228,8 +232,10 @@ export default function Dashboard() {
       console.log(response.data.servers)
       setMaxPage(response.data.maxPage)
       setLoading(false)
+      toast.success("Servers fetched successfully");
     } catch (error: any) {
       console.log(error.response)
+      toast.error("Failed to fetch servers");
     }
   }
 
@@ -249,8 +255,10 @@ export default function Dashboard() {
     try {
       await axios.post("/api/servers/delete", { id })
       getServers()
+      toast.success("Server deleted successfully");
     } catch (error: any) {
       console.log(error.response.data)
+      toast.error("Failed to delete server");
     }
   }
 
@@ -293,8 +301,10 @@ export default function Dashboard() {
       })
       getServers()
       setEditId(null)
+      toast.success("Server edited successfully");
     } catch (error: any) {
       console.log(error.response.data)
+      toast.error("Failed to edit server");
     }
   }
 
@@ -305,7 +315,7 @@ export default function Dashboard() {
       setServers(response.data.results)
       setMaxPage(1)
       setIsSearching(false)
-    } catch (error: any) {
+     } catch (error: any) {
       console.error("Search error:", error.response?.data)
       setIsSearching(false)
     }
@@ -425,6 +435,7 @@ export default function Dashboard() {
       );
     } catch (error) {
       console.error("Error updating monitoring data:", error);
+      toast.error("Failed to update monitoring data");
     }
   };
 
@@ -466,6 +477,7 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
+        <Toaster />
         <div className="p-6">
           <div className="flex justify-between items-center">
             <span className="text-3xl font-bold">Your Servers</span>
