@@ -53,6 +53,7 @@ export default defineConfig({
           { text: 'Discord', link: '/notifications/Discord' },
           { text: 'Gotify', link: '/notifications/Gotify' },
           { text: 'Ntfy', link: '/notifications/Ntfy' },
+          { text: 'Pushover', link: '/notifications/Pushover' },
         ]
       }
     ],
