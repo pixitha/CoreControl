@@ -1740,6 +1740,52 @@ export default function Dashboard() {
                                         )}
                                       </div>
                                     </TabsContent>
+                                    <TabsContent value="monitoring">
+                                      <div className="space-y-4 pt-4">
+                                        <div className="flex items-center space-x-2">
+                                          <Checkbox
+                                            id="editMonitoringCheckbox"
+                                            checked={editMonitoring}
+                                            onCheckedChange={(checked) => setEditMonitoring(checked === true)}
+                                          />
+                                          <Label htmlFor="editMonitoringCheckbox">Enable monitoring</Label>
+                                        </div>
+                                        {editMonitoring && (
+                                          <>
+                                            <div className="grid w-full items-center gap-1.5">
+                                              <Label htmlFor="editMonitoringURL">Monitoring URL</Label>
+                                              <Input
+                                                id="editMonitoringURL"
+                                                type="text"
+                                                placeholder={`http://${editIp}:61208`}
+                                                value={editMonitoringURL}
+                                                onChange={(e) => setEditMonitoringURL(e.target.value)}
+                                              />
+                                            </div>
+                                            <div className="mt-4 p-4 border rounded-lg bg-muted">
+                                              <h4 className="text-sm font-semibold mb-2">Required Server Setup</h4>
+                                              <p className="text-sm text-muted-foreground mb-3">
+                                                To enable monitoring, you need to install Glances on your server. Here's an example Docker Compose configuration:
+                                              </p>
+                                              <pre className="bg-background p-4 rounded-md text-sm">
+                                                <code>{`services:
+  glances:
+    image: nicolargo/glances:latest
+    container_name: glances
+    restart: unless-stopped
+    ports:
+      - "61208:61208"
+    pid: "host"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - GLANCES_OPT=-w --disable-webui`}</code>
+                                              </pre>
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+                                    </TabsContent>
                                   </Tabs>
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
