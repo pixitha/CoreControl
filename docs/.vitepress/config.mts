@@ -19,7 +19,7 @@ export default defineConfig({
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2025-present CoreControl'
+      copyright: 'Copyright © 2025-present CoreControl',
     },
 
     search: {
@@ -59,7 +59,8 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/crocofied/corecontrol' }
+      { icon: 'github', link: 'https://github.com/crocofied/corecontrol' },
+      { icon: 'buymeacoffee', link: 'https://www.buymeacoffee.com/corecontrol' }
     ]
   }
 })
