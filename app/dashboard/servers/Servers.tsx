@@ -232,7 +232,6 @@ export default function Dashboard() {
       console.log(response.data.servers)
       setMaxPage(response.data.maxPage)
       setLoading(false)
-      toast.success("Servers fetched successfully");
     } catch (error: any) {
       console.log(error.response)
       toast.error("Failed to fetch servers");
