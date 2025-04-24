@@ -23,10 +23,10 @@ Dashboard Page:
 ![Dashboard Page](https://i.ibb.co/SYwrFw8/image.png)
 
 Servers Page:
-![Servers Page](https://i.ibb.co/HLMD9HPZ/image.png)
+![Servers Page](https://i.ibb.co/FL4Ghwbh/image.png)
 
-VM Display:
-![VM Display](https://i.ibb.co/My45mv8k/image.png)
+Server Detail Page
+![Server Detail Page](https://i.ibb.co/fY5fmcs5/image.png)
 
 Applications Page:
 ![Applications Page](https://i.ibb.co/Hc2HQpV/image.png)
@@ -45,7 +45,6 @@ Settings Page:
 - [X] Uptime History
 - [X] Notifications
 - [X] Simple Server Monitoring
-- [ ] Simple Server Monitoring History
 - [ ] Improved Network Flowchart with custom elements (like Network switches)
 - [ ] Advanced Settings (Disable Uptime Tracking & more)
 
