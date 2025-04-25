@@ -65,7 +65,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Cookies from "js-cookie";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   Tooltip,
@@ -98,6 +98,7 @@ interface ApplicationsResponse {
   applications: Application[];
   servers: Server[];
   maxPage: number;
+  totalItems?: number;
 }
 
 export default function Dashboard() {
@@ -126,11 +127,15 @@ export default function Dashboard() {
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const savedLayout = Cookies.get("layoutPreference-app");
+  const savedItemsPerPage = Cookies.get("itemsPerPage-app");
   const initialIsGridLayout = savedLayout === "grid";
-  const initialItemsPerPage = initialIsGridLayout ? 15 : 5;
+  const defaultItemsPerPage = initialIsGridLayout ? 15 : 5;
+  const initialItemsPerPage = savedItemsPerPage ? parseInt(savedItemsPerPage) : defaultItemsPerPage;
 
   const [isGridLayout, setIsGridLayout] = useState<boolean>(initialIsGridLayout);
   const [itemsPerPage, setItemsPerPage] = useState<number>(initialItemsPerPage);
+  const customInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const toggleLayout = () => {
     const newLayout = !isGridLayout;
@@ -140,7 +145,35 @@ export default function Dashboard() {
       path: "/",
       sameSite: "strict",
     });
-    setItemsPerPage(newLayout ? 15 : 5);
+    // Don't automatically change itemsPerPage when layout changes
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    // Clear any existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set a new timer
+    debounceTimerRef.current = setTimeout(() => {
+      const newItemsPerPage = parseInt(value);
+      
+      // Ensure the value is within the valid range
+      if (isNaN(newItemsPerPage) || newItemsPerPage < 1) {
+        toast.error("Please enter a number between 1 and 100");
+        return;
+      }
+      
+      const validatedValue = Math.min(Math.max(newItemsPerPage, 1), 100);
+      
+      setItemsPerPage(validatedValue);
+      setCurrentPage(1); // Reset to first page when changing items per page
+      Cookies.set("itemsPerPage-app", String(validatedValue), {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+    }, 300); // 300ms delay
   };
 
   const add = async () => {
@@ -171,12 +204,20 @@ export default function Dashboard() {
       setApplications(response.data.applications);
       setServers(response.data.servers);
       setMaxPage(response.data.maxPage);
+      if (response.data.totalItems !== undefined) {
+        setTotalItems(response.data.totalItems);
+      }
       setLoading(false);
     } catch (error: any) {
       console.log(error.response?.data);
       toast.error("Failed to get applications");
     }
   };
+
+  // Calculate current range of items being displayed
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   useEffect(() => {
     getApplications();
@@ -308,6 +349,91 @@ export default function Dashboard() {
                   <LayoutGrid className="h-4 w-4" />
                 )}
               </Button>
+              <Select
+                value={String(itemsPerPage)}
+                onValueChange={handleItemsPerPageChange}
+                onOpenChange={(open) => {
+                  if (open && customInputRef.current) {
+                    customInputRef.current.value = String(itemsPerPage);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue>
+                    {itemsPerPage} {itemsPerPage === 1 ? 'item' : 'items'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {![5, 10, 15, 20, 25].includes(itemsPerPage) ? (
+                    <SelectItem value={String(itemsPerPage)}>
+                      {itemsPerPage} {itemsPerPage === 1 ? 'item' : 'items'} (custom)
+                    </SelectItem>
+                  ) : null}
+                  <SelectItem value="5">5 items</SelectItem>
+                  <SelectItem value="10">10 items</SelectItem>
+                  <SelectItem value="15">15 items</SelectItem>
+                  <SelectItem value="20">20 items</SelectItem>
+                  <SelectItem value="25">25 items</SelectItem>
+                  <div className="p-2 border-t mt-1">
+                    <Label htmlFor="custom-items" className="text-xs font-medium">Custom (1-100)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        id="custom-items"
+                        ref={customInputRef}
+                        type="number"
+                        min="1"
+                        max="100"
+                        className="h-8"
+                        defaultValue={itemsPerPage}
+                        onChange={(e) => {
+                          // Don't immediately apply the change while typing
+                          // Just validate the input for visual feedback
+                          const value = parseInt(e.target.value);
+                          if (isNaN(value) || value < 1 || value > 100) {
+                            e.target.classList.add("border-red-500");
+                          } else {
+                            e.target.classList.remove("border-red-500");
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Apply the change when the input loses focus
+                          const value = parseInt(e.target.value);
+                          if (value >= 1 && value <= 100) {
+                            handleItemsPerPageChange(e.target.value);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            // Clear any existing debounce timer to apply immediately
+                            if (debounceTimerRef.current) {
+                              clearTimeout(debounceTimerRef.current);
+                              debounceTimerRef.current = null;
+                            }
+                            
+                            const value = parseInt((e.target as HTMLInputElement).value);
+                            if (value >= 1 && value <= 100) {
+                              // Apply change immediately on Enter
+                              const validatedValue = Math.min(Math.max(value, 1), 100);
+                              setItemsPerPage(validatedValue);
+                              setCurrentPage(1);
+                              Cookies.set("itemsPerPage-app", String(validatedValue), {
+                                expires: 365,
+                                path: "/",
+                                sameSite: "strict",
+                              });
+                              
+                              // Close the dropdown
+                              document.body.click();
+                            }
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">items</span>
+                    </div>
+                  </div>
+                </SelectContent>
+              </Select>
               {servers.length === 0 ? (
                 <p className="text-muted-foreground">
                   You must first add a server.
@@ -680,6 +806,11 @@ export default function Dashboard() {
             </div>
           )}
           <div className="pt-4 pb-4">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-sm text-muted-foreground">
+                {totalItems > 0 ? `Showing ${startItem}-${endItem} of ${totalItems} applications` : "No applications found"}
+              </div>
+            </div>
             <Pagination>
               <PaginationContent>
                 <PaginationItem>

@@ -13,7 +13,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, CardHeader } from "@/components/ui/card";
 import * as Tooltip from "@radix-ui/react-tooltip";
@@ -26,6 +25,12 @@ import {
   PaginationNext,
   PaginationLink,
 } from "@/components/ui/pagination";
+import { useState, useEffect, useRef } from "react";
+import Cookies from "js-cookie";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 const timeFormats = {
   1: (timestamp: string) => 
@@ -84,8 +89,16 @@ export default function Uptime() {
     totalItems: 0
   });
   const [isLoading, setIsLoading] = useState(false);
+  
+  const savedItemsPerPage = Cookies.get("itemsPerPage-uptime");
+  const defaultItemsPerPage = 5;
+  const initialItemsPerPage = savedItemsPerPage ? parseInt(savedItemsPerPage) : defaultItemsPerPage;
+  
+  const [itemsPerPage, setItemsPerPage] = useState<number>(initialItemsPerPage);
+  const customInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const getData = async (selectedTimespan: number, page: number) => {
+  const getData = async (selectedTimespan: number, page: number, itemsPerPage: number) => {
     setIsLoading(true);
     try {
       const response = await axios.post<{
@@ -93,7 +106,8 @@ export default function Uptime() {
         pagination: PaginationData;
       }>("/api/applications/uptime", { 
         timespan: selectedTimespan,
-        page
+        page,
+        itemsPerPage
       });
       
       setData(response.data.data);
@@ -114,17 +128,48 @@ export default function Uptime() {
   const handlePrevious = () => {
     const newPage = Math.max(1, pagination.currentPage - 1);
     setPagination(prev => ({...prev, currentPage: newPage}));
-    getData(timespan, newPage);
+    getData(timespan, newPage, itemsPerPage);
   };
 
   const handleNext = () => {
     const newPage = Math.min(pagination.totalPages, pagination.currentPage + 1);
     setPagination(prev => ({...prev, currentPage: newPage}));
-    getData(timespan, newPage);
+    getData(timespan, newPage, itemsPerPage);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    // Clear any existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set a new timer
+    debounceTimerRef.current = setTimeout(() => {
+      const newItemsPerPage = parseInt(value);
+      
+      // Ensure the value is within the valid range
+      if (isNaN(newItemsPerPage) || newItemsPerPage < 1) {
+        toast.error("Please enter a number between 1 and 100");
+        return;
+      }
+      
+      const validatedValue = Math.min(Math.max(newItemsPerPage, 1), 100);
+      
+      setItemsPerPage(validatedValue);
+      setPagination(prev => ({...prev, currentPage: 1})); // Reset to first page
+      Cookies.set("itemsPerPage-uptime", String(validatedValue), {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+      
+      // Fetch data with new pagination
+      getData(timespan, 1, validatedValue);
+    }, 300); // 300ms delay
   };
 
   useEffect(() => {
-    getData(timespan, 1);
+    getData(timespan, 1, itemsPerPage);
   }, [timespan]);
 
   return (
@@ -152,27 +197,116 @@ export default function Uptime() {
             </Breadcrumb>
           </div>
         </header>
+        <Toaster />
         <div className="p-6">
           <div className="flex justify-between items-center">
             <span className="text-3xl font-bold">Uptime</span>
-            <Select 
-              value={String(timespan)} 
-              onValueChange={(v) => {
-                setTimespan(Number(v) as 1 | 2 | 3 | 4);
-                setPagination(prev => ({...prev, currentPage: 1}));
-              }}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select timespan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Last 1 hour</SelectItem>
-                <SelectItem value="2">Last 1 day</SelectItem>
-                <SelectItem value="3">Last 7 days</SelectItem>
-                <SelectItem value="4">Last 30 days</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select
+                value={String(itemsPerPage)}
+                onValueChange={handleItemsPerPageChange}
+                onOpenChange={(open) => {
+                  if (open && customInputRef.current) {
+                    customInputRef.current.value = String(itemsPerPage);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue>
+                    {itemsPerPage} {itemsPerPage === 1 ? 'item' : 'items'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {![5, 10, 15, 20, 25].includes(itemsPerPage) ? (
+                    <SelectItem value={String(itemsPerPage)}>
+                      {itemsPerPage} {itemsPerPage === 1 ? 'item' : 'items'} (custom)
+                    </SelectItem>
+                  ) : null}
+                  <SelectItem value="5">5 items</SelectItem>
+                  <SelectItem value="10">10 items</SelectItem>
+                  <SelectItem value="15">15 items</SelectItem>
+                  <SelectItem value="20">20 items</SelectItem>
+                  <SelectItem value="25">25 items</SelectItem>
+                  <div className="p-2 border-t mt-1">
+                    <Label htmlFor="custom-items" className="text-xs font-medium">Custom (1-100)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        id="custom-items"
+                        ref={customInputRef}
+                        type="number"
+                        min="1"
+                        max="100"
+                        className="h-8"
+                        defaultValue={itemsPerPage}
+                        onChange={(e) => {
+                          // Don't immediately apply the change while typing
+                          // Just validate the input for visual feedback
+                          const value = parseInt(e.target.value);
+                          if (isNaN(value) || value < 1 || value > 100) {
+                            e.target.classList.add("border-red-500");
+                          } else {
+                            e.target.classList.remove("border-red-500");
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Apply the change when the input loses focus
+                          const value = parseInt(e.target.value);
+                          if (value >= 1 && value <= 100) {
+                            handleItemsPerPageChange(e.target.value);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            // Clear any existing debounce timer to apply immediately
+                            if (debounceTimerRef.current) {
+                              clearTimeout(debounceTimerRef.current);
+                              debounceTimerRef.current = null;
+                            }
+                            
+                            const value = parseInt((e.target as HTMLInputElement).value);
+                            if (value >= 1 && value <= 100) {
+                              // Apply change immediately on Enter
+                              const validatedValue = Math.min(Math.max(value, 1), 100);
+                              setItemsPerPage(validatedValue);
+                              setPagination(prev => ({...prev, currentPage: 1}));
+                              Cookies.set("itemsPerPage-uptime", String(validatedValue), {
+                                expires: 365,
+                                path: "/",
+                                sameSite: "strict",
+                              });
+                              getData(timespan, 1, validatedValue);
+                              
+                              // Close the dropdown
+                              document.body.click();
+                            }
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">items</span>
+                    </div>
+                  </div>
+                </SelectContent>
+              </Select>
+              <Select 
+                value={String(timespan)} 
+                onValueChange={(v) => {
+                  setTimespan(Number(v) as 1 | 2 | 3 | 4);
+                  setPagination(prev => ({...prev, currentPage: 1}));
+                }}
+                disabled={isLoading}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select timespan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Last 1 hour</SelectItem>
+                  <SelectItem value="2">Last 1 day</SelectItem>
+                  <SelectItem value="3">Last 7 days</SelectItem>
+                  <SelectItem value="4">Last 30 days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="pt-4 space-y-4">
@@ -260,6 +394,13 @@ export default function Uptime() {
 
           {pagination.totalItems > 0 && !isLoading && (
             <div className="pt-4 pb-4">
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-sm text-muted-foreground">
+                  {pagination.totalItems > 0 
+                    ? `Showing ${((pagination.currentPage - 1) * itemsPerPage) + 1}-${Math.min(pagination.currentPage * itemsPerPage, pagination.totalItems)} of ${pagination.totalItems} items` 
+                    : "No items found"}
+                </div>
+              </div>
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>

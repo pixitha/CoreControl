@@ -233,8 +233,9 @@ export async function POST(request: NextRequest) {
 
         // Only calculate maxPage when not requesting a specific server
         let maxPage = 1;
+        let totalHosts = 0;
         if (!serverId) {
-            const totalHosts = await prisma.server.count({
+            totalHosts = await prisma.server.count({
                 where: { OR: [{ hostServer: 0 }, { hostServer: null }] }
             });
             maxPage = Math.ceil(totalHosts / ITEMS_PER_PAGE);
@@ -242,7 +243,8 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ 
             servers: hostsWithVms,
-            maxPage
+            maxPage,
+            totalItems: totalHosts
         });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
