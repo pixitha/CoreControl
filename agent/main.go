@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/x509"
 	"database/sql"
@@ -653,18 +652,14 @@ func sendGotify(n Notification, message string) {
 }
 
 func sendNtfy(n Notification, message string) {
+	fmt.Println("Sending Ntfy notification...")
 	baseURL := strings.TrimSuffix(n.NtfyUrl.String, "/")
-	topic := "corecontrol"
-	requestURL := fmt.Sprintf("%s/%s", baseURL, topic)
 
-	payload := map[string]string{"message": message}
-	jsonData, err := json.Marshal(payload)
-	if err != nil {
-		fmt.Printf("Ntfy: ERROR marshaling JSON: %v\n", err)
-		return
-	}
+	// Don't append a topic to the URL - the URL itself should have the correct endpoint
+	requestURL := baseURL
 
-	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonData))
+	// Send message directly as request body instead of JSON
+	req, err := http.NewRequest("POST", requestURL, strings.NewReader(message))
 	if err != nil {
 		fmt.Printf("Ntfy: ERROR creating request: %v\n", err)
 		return
@@ -673,7 +668,8 @@ func sendNtfy(n Notification, message string) {
 	if n.NtfyToken.Valid {
 		req.Header.Set("Authorization", "Bearer "+n.NtfyToken.String)
 	}
-	req.Header.Set("Content-Type", "application/json")
+	// Use text/plain instead of application/json
+	req.Header.Set("Content-Type", "text/plain")
 
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Do(req)
@@ -760,6 +756,7 @@ func checkAndSendTestNotifications(db *sql.DB) {
 }
 
 func sendSpecificNotification(n Notification, message string) {
+	fmt.Println("Sending specific notification..." + n.Type)
 	switch n.Type {
 	case "smtp":
 		if n.SMTPHost.Valid && n.SMTPTo.Valid {
