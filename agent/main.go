@@ -451,23 +451,7 @@ func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Serve
 						updateServerStatus(db, server.ID, false, 0, 0, 0)
 						online = false
 					} else {
-						// Calculate actual RAM usage excluding swap, cache, and buffers
-						// Formula: (total - free - cached - buffers) / total * 100
-						// This is the most accurate representation of actual used RAM
-						actualUsedRam := memData.Total - memData.Free - memData.Cached - memData.Buffers
-						if actualUsedRam < 0 {
-							actualUsedRam = 0 // Safeguard against negative values
-						}
-
-						if memData.Total > 0 {
-							ramUsage = float64(actualUsedRam) / float64(memData.Total) * 100
-							fmt.Printf("%s Calculated RAM usage: %.2f%% (Used: %d MB, Total: %d MB)\n",
-								logPrefix, ramUsage, actualUsedRam/1024/1024, memData.Total/1024/1024)
-						} else {
-							// Fallback to the provided percentage if calculation fails
-							ramUsage = memData.Percent
-							fmt.Printf("%s Using provided memory percentage because total is zero\n", logPrefix)
-						}
+						ramUsage = memData.Percent
 					}
 				}
 			}
