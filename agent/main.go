@@ -540,7 +540,7 @@ func sendNotifications(message string) {
 
 	for _, n := range notifs {
 		switch n.Type {
-		case "email":
+		case "smtp":
 			if n.SMTPHost.Valid && n.SMTPTo.Valid {
 				sendEmail(n, message)
 			}
@@ -761,7 +761,7 @@ func checkAndSendTestNotifications(db *sql.DB) {
 
 func sendSpecificNotification(n Notification, message string) {
 	switch n.Type {
-	case "email":
+	case "smtp":
 		if n.SMTPHost.Valid && n.SMTPTo.Valid {
 			sendEmail(n, message)
 		}
