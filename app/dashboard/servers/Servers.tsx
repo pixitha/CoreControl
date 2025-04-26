@@ -99,6 +99,7 @@ interface Server {
   diskUsage: number;
   history?: ServerHistory;
   port: number;
+  uptime: number; 
 }
 
 interface GetServersResponse {
@@ -113,6 +114,7 @@ interface MonitoringData {
   cpuUsage: number
   ramUsage: number
   diskUsage: number
+  uptime: number
 }
 
 export default function Dashboard() {
@@ -1021,8 +1023,13 @@ export default function Dashboard() {
                     >
                       <CardHeader>
                         {server.monitoring && (
-                          <div className="absolute top-4 right-4">
+                          <div className="absolute top-4 right-4 flex flex-col items-end">
                             <StatusIndicator isOnline={server.online} />
+                            {server.online && server.uptime && (
+                              <span className="text-xs text-muted-foreground mt-1">
+                                {server.online ? `since ${server.uptime}` : 'offline'}
+                              </span>
+                            )}
                           </div>
                         )}
                         <div className="flex items-center justify-between w-full">
