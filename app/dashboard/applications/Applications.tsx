@@ -25,6 +25,8 @@ import {
   List,
   Pencil,
   Zap,
+  ViewIcon,
+  Grid3X3,
 } from "lucide-react";
 import {
   Card,
@@ -76,6 +78,12 @@ import {
 import { StatusIndicator } from "@/components/status-indicator";
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Application {
   id: number;
@@ -129,23 +137,42 @@ export default function Dashboard() {
   const savedLayout = Cookies.get("layoutPreference-app");
   const savedItemsPerPage = Cookies.get("itemsPerPage-app");
   const initialIsGridLayout = savedLayout === "grid";
-  const defaultItemsPerPage = initialIsGridLayout ? 15 : 5;
+  const initialIsCompactLayout = savedLayout === "compact";
+  const defaultItemsPerPage = initialIsGridLayout ? 15 : (initialIsCompactLayout ? 30 : 5);
   const initialItemsPerPage = savedItemsPerPage ? parseInt(savedItemsPerPage) : defaultItemsPerPage;
 
   const [isGridLayout, setIsGridLayout] = useState<boolean>(initialIsGridLayout);
+  const [isCompactLayout, setIsCompactLayout] = useState<boolean>(initialIsCompactLayout);
   const [itemsPerPage, setItemsPerPage] = useState<number>(initialItemsPerPage);
   const customInputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const toggleLayout = () => {
-    const newLayout = !isGridLayout;
-    setIsGridLayout(newLayout);
-    Cookies.set("layoutPreference-app", newLayout ? "grid" : "standard", {
-      expires: 365,
-      path: "/",
-      sameSite: "strict",
-    });
-    // Don't automatically change itemsPerPage when layout changes
+  const toggleLayout = (layout: string) => {
+    if (layout === "standard") {
+      setIsGridLayout(false);
+      setIsCompactLayout(false);
+      Cookies.set("layoutPreference-app", "standard", {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+    } else if (layout === "grid") {
+      setIsGridLayout(true);
+      setIsCompactLayout(false);
+      Cookies.set("layoutPreference-app", "grid", {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+    } else if (layout === "compact") {
+      setIsGridLayout(false);
+      setIsCompactLayout(true);
+      Cookies.set("layoutPreference-app", "compact", {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+    }
   };
 
   const handleItemsPerPageChange = (value: string) => {
@@ -335,20 +362,30 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <span className="text-3xl font-bold">Your Applications</span>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleLayout}
-                title={
-                  isGridLayout ? "Switch to list view" : "Switch to grid view"
-                }
-              >
-                {isGridLayout ? (
-                  <List className="h-4 w-4" />
-                ) : (
-                  <LayoutGrid className="h-4 w-4" />
-                )}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" title="Change view">
+                    {isCompactLayout ? (
+                      <Grid3X3 className="h-4 w-4" />
+                    ) : isGridLayout ? (
+                      <LayoutGrid className="h-4 w-4" />
+                    ) : (
+                      <List className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => toggleLayout("standard")}>
+                    <List className="h-4 w-4 mr-2" /> List View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleLayout("grid")}>
+                    <LayoutGrid className="h-4 w-4 mr-2" /> Grid View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleLayout("compact")}>
+                    <Grid3X3 className="h-4 w-4 mr-2" /> Compact View
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Select
                 value={String(itemsPerPage)}
                 onValueChange={handleItemsPerPageChange}
@@ -559,222 +596,251 @@ export default function Dashboard() {
           {!loading ? (
             <div
               className={
-                isGridLayout
+                isCompactLayout
+                  ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2"
+                  : isGridLayout
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                   : "space-y-4"
               }
             >
               {applications.map((app) => (
-                <Card
-                  key={app.id}
-                  className={
-                    isGridLayout
-                      ? "h-full flex flex-col justify-between relative"
-                      : "w-full mb-4 relative"
-                  }
-                >
-                  <CardHeader>
-                    <div className="absolute top-2 right-2">
-                      <StatusIndicator isOnline={app.online} />
+                isCompactLayout ? (
+                  <div
+                    key={app.id}
+                    className="bg-card rounded-md border p-3 flex flex-col items-center justify-between h-[120px] w-full cursor-pointer hover:shadow-md transition-shadow relative"
+                    onClick={() => window.open(app.publicURL, "_blank")}
+                    title={app.name}
+                  >
+                    <div className="absolute top-1 right-1">
+                      <StatusIndicator isOnline={app.online} showLabel={false} />
                     </div>
-                    <div className="flex items-center justify-between w-full mt-4 mb-4">
-                      <div className="flex items-center">
-                        <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
-                          {app.icon ? (
-                            <img
-                              src={app.icon}
-                              alt={app.name}
-                              className="w-full h-full object-contain rounded-md"
-                            />
-                          ) : (
-                            <span className="text-gray-500 text-xs">Image</span>
-                          )}
-                        </div>
-                        <div className="ml-4">
-                          <CardTitle className="text-2xl font-bold">
-                            {app.name}
-                          </CardTitle>
-                          <CardDescription className="text-md">
-                            {app.description}
-                            {app.description && (
-                              <br className="hidden md:block" />
-                            )}
-                            Server: {app.server || "No server"}
-                          </CardDescription>
-                        </div>
+                    <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center">
+                      {app.icon ? (
+                        <img
+                          src={app.icon}
+                          alt={app.name}
+                          className="w-full h-full object-contain rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-500 text-xs">Icon</span>
+                      )}
+                    </div>
+                    <div className="text-center mt-2">
+                      <h3 className="text-sm font-medium truncate w-full max-w-[110px]">{app.name}</h3>
+                    </div>
+                  </div>
+                ) : (
+                  <Card
+                    key={app.id}
+                    className={
+                      isGridLayout
+                        ? "h-full flex flex-col justify-between relative"
+                        : "w-full mb-4 relative"
+                    }
+                  >
+                    <CardHeader>
+                      <div className="absolute top-2 right-2">
+                        <StatusIndicator isOnline={app.online} />
                       </div>
-                      <div className="flex flex-col items-end justify-start space-y-2 w-[190px]">
-                        <div className="flex items-center gap-2 w-full">
-                          <div className="flex flex-col space-y-2 flex-grow">
-                            <Button
-                              variant="outline"
-                              className="gap-2 w-full"
-                              onClick={() =>
-                                window.open(app.publicURL, "_blank")
-                              }
-                            >
-                              <Link className="h-4 w-4" />
-                              Public URL
-                            </Button>
-                            {app.localURL && (
+                      <div className="flex items-center justify-between w-full mt-4 mb-4">
+                        <div className="flex items-center">
+                          <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
+                            {app.icon ? (
+                              <img
+                                src={app.icon}
+                                alt={app.name}
+                                className="w-full h-full object-contain rounded-md"
+                              />
+                            ) : (
+                              <span className="text-gray-500 text-xs">Image</span>
+                            )}
+                          </div>
+                          <div className="ml-4">
+                            <CardTitle className="text-2xl font-bold">
+                              {app.name}
+                            </CardTitle>
+                            <CardDescription className="text-md">
+                              {app.description}
+                              {app.description && (
+                                <br className="hidden md:block" />
+                              )}
+                              Server: {app.server || "No server"}
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end justify-start space-y-2 w-[190px]">
+                          <div className="flex items-center gap-2 w-full">
+                            <div className="flex flex-col space-y-2 flex-grow">
                               <Button
                                 variant="outline"
                                 className="gap-2 w-full"
                                 onClick={() =>
-                                  window.open(app.localURL, "_blank")
+                                  window.open(app.publicURL, "_blank")
                                 }
                               >
-                                <Home className="h-4 w-4" />
-                                Local URL
+                                <Link className="h-4 w-4" />
+                                Public URL
                               </Button>
-                            )}
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="h-9 w-9"
-                              onClick={() => deleteApplication(app.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
+                              {app.localURL && (
                                 <Button
-                                  size="icon"
-                                  className="h-9 w-9"
-                                  onClick={() => openEditDialog(app)}
+                                  variant="outline"
+                                  className="gap-2 w-full"
+                                  onClick={() =>
+                                    window.open(app.localURL, "_blank")
+                                  }
                                 >
-                                  <Pencil className="h-4 w-4" />
+                                  <Home className="h-4 w-4" />
+                                  Local URL
                                 </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Edit Application
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    <div className="space-y-4 pt-4">
-                                      <div className="grid w-full items-center gap-1.5">
-                                        <Label>Name</Label>
-                                        <Input
-                                          placeholder="e.g. Portainer"
-                                          value={editName}
-                                          onChange={(e) =>
-                                            setEditName(e.target.value)
-                                          }
-                                        />
-                                      </div>
-                                      <div className="grid w-full items-center gap-1.5">
-                                        <Label>Server</Label>
-                                        <Select
-                                          value={
-                                            editServerId !== null
-                                              ? String(editServerId)
-                                              : undefined
-                                          }
-                                          onValueChange={(v) =>
-                                            setEditServerId(Number(v))
-                                          }
-                                          required
-                                        >
-                                          <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select server" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            {servers.map((server) => (
-                                              <SelectItem
-                                                key={server.id}
-                                                value={String(server.id)}
-                                              >
-                                                {server.name}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <div className="grid w-full items-center gap-1.5">
-                                        <Label>
-                                          Description{" "}
-                                          <span className="text-stone-600">
-                                            (optional)
-                                          </span>
-                                        </Label>
-                                        <Textarea
-                                          placeholder="Application description"
-                                          value={editDescription}
-                                          onChange={(e) =>
-                                            setEditDescription(e.target.value)
-                                          }
-                                        />
-                                      </div>
-                                      <div className="grid w-full items-center gap-1.5">
-                                        <Label>
-                                          Icon URL{" "}
-                                          <span className="text-stone-600">
-                                            (optional)
-                                          </span>
-                                        </Label>
-                                        <div className="flex gap-2">
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-9 w-9"
+                                onClick={() => deleteApplication(app.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    className="h-9 w-9"
+                                    onClick={() => openEditDialog(app)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Edit Application
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      <div className="space-y-4 pt-4">
+                                        <div className="grid w-full items-center gap-1.5">
+                                          <Label>Name</Label>
                                           <Input
-                                            placeholder="https://example.com/icon.png"
-                                            value={editIcon}
+                                            placeholder="e.g. Portainer"
+                                            value={editName}
                                             onChange={(e) =>
-                                              setEditIcon(e.target.value)
+                                              setEditName(e.target.value)
                                             }
                                           />
-                                          <Button variant="outline" size="icon" onClick={generateEditIconURL}>
-                                            <Zap />
-                                          </Button>
+                                        </div>
+                                        <div className="grid w-full items-center gap-1.5">
+                                          <Label>Server</Label>
+                                          <Select
+                                            value={
+                                              editServerId !== null
+                                                ? String(editServerId)
+                                                : undefined
+                                            }
+                                            onValueChange={(v) =>
+                                              setEditServerId(Number(v))
+                                            }
+                                            required
+                                          >
+                                            <SelectTrigger className="w-full">
+                                              <SelectValue placeholder="Select server" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {servers.map((server) => (
+                                                <SelectItem
+                                                  key={server.id}
+                                                  value={String(server.id)}
+                                                >
+                                                  {server.name}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="grid w-full items-center gap-1.5">
+                                          <Label>
+                                            Description{" "}
+                                            <span className="text-stone-600">
+                                              (optional)
+                                            </span>
+                                          </Label>
+                                          <Textarea
+                                            placeholder="Application description"
+                                            value={editDescription}
+                                            onChange={(e) =>
+                                              setEditDescription(e.target.value)
+                                            }
+                                          />
+                                        </div>
+                                        <div className="grid w-full items-center gap-1.5">
+                                          <Label>
+                                            Icon URL{" "}
+                                            <span className="text-stone-600">
+                                              (optional)
+                                            </span>
+                                          </Label>
+                                          <div className="flex gap-2">
+                                            <Input
+                                              placeholder="https://example.com/icon.png"
+                                              value={editIcon}
+                                              onChange={(e) =>
+                                                setEditIcon(e.target.value)
+                                              }
+                                            />
+                                            <Button variant="outline" size="icon" onClick={generateEditIconURL}>
+                                              <Zap />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                        <div className="grid w-full items-center gap-1.5">
+                                          <Label>Public URL</Label>
+                                          <Input
+                                            placeholder="https://example.com"
+                                            value={editPublicURL}
+                                            onChange={(e) =>
+                                              setEditPublicURL(e.target.value)
+                                            }
+                                          />
+                                        </div>
+                                        <div className="grid w-full items-center gap-1.5">
+                                          <Label>
+                                            Local URL{" "}
+                                            <span className="text-stone-600">
+                                              (optional)
+                                            </span>
+                                          </Label>
+                                          <Input
+                                            placeholder="http://localhost:3000"
+                                            value={editLocalURL}
+                                            onChange={(e) =>
+                                              setEditLocalURL(e.target.value)
+                                            }
+                                          />
                                         </div>
                                       </div>
-                                      <div className="grid w-full items-center gap-1.5">
-                                        <Label>Public URL</Label>
-                                        <Input
-                                          placeholder="https://example.com"
-                                          value={editPublicURL}
-                                          onChange={(e) =>
-                                            setEditPublicURL(e.target.value)
-                                          }
-                                        />
-                                      </div>
-                                      <div className="grid w-full items-center gap-1.5">
-                                        <Label>
-                                          Local URL{" "}
-                                          <span className="text-stone-600">
-                                            (optional)
-                                          </span>
-                                        </Label>
-                                        <Input
-                                          placeholder="http://localhost:3000"
-                                          value={editLocalURL}
-                                          onChange={(e) =>
-                                            setEditLocalURL(e.target.value)
-                                          }
-                                        />
-                                      </div>
-                                    </div>
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={edit}
-                                    disabled={
-                                      !editName || !editPublicURL || !editServerId
-                                    }
-                                  >
-                                    Save Changes
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={edit}
+                                      disabled={
+                                        !editName || !editPublicURL || !editServerId
+                                      }
+                                    >
+                                      Save Changes
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                </Card>
+                    </CardHeader>
+                  </Card>
+                )
               ))}
             </div>
           ) : (
