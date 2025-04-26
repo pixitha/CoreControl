@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -36,6 +37,7 @@ type Server struct {
 	CpuUsage      sql.NullFloat64
 	RamUsage      sql.NullFloat64
 	DiskUsage     sql.NullFloat64
+	Uptime        sql.NullString
 }
 
 type CPUResponse struct {
@@ -59,6 +61,10 @@ type FSResponse []struct {
 	DeviceName string  `json:"device_name"`
 	MntPoint   string  `json:"mnt_point"`
 	Percent    float64 `json:"percent"`
+}
+
+type UptimeResponse struct {
+	Value string `json:"value"`
 }
 
 type Notification struct {
@@ -403,28 +409,63 @@ func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Serve
 		baseURL := strings.TrimSuffix(server.MonitoringURL.String, "/")
 		var cpuUsage, ramUsage, diskUsage float64
 		var online = true
+		var uptimeStr string
 
 		// Get CPU usage
 		cpuResp, err := client.Get(fmt.Sprintf("%s/api/4/cpu", baseURL))
 		if err != nil {
 			fmt.Printf("%s CPU request failed: %v\n", logPrefix, err)
-			updateServerStatus(db, server.ID, false, 0, 0, 0)
+			updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 			online = false
 		} else {
 			defer cpuResp.Body.Close()
 
 			if cpuResp.StatusCode != http.StatusOK {
 				fmt.Printf("%s Bad CPU status code: %d\n", logPrefix, cpuResp.StatusCode)
-				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 				online = false
 			} else {
 				var cpuData CPUResponse
 				if err := json.NewDecoder(cpuResp.Body).Decode(&cpuData); err != nil {
 					fmt.Printf("%s Failed to parse CPU JSON: %v\n", logPrefix, err)
-					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 					online = false
 				} else {
 					cpuUsage = cpuData.Total
+				}
+			}
+		}
+
+		// Get uptime if server is online
+		if online {
+			uptimeResp, err := client.Get(fmt.Sprintf("%s/api/4/uptime", baseURL))
+			if err == nil && uptimeResp.StatusCode == http.StatusOK {
+				defer uptimeResp.Body.Close()
+
+				// Read the response body as a string first
+				uptimeBytes, err := io.ReadAll(uptimeResp.Body)
+				if err == nil {
+					uptimeStr = strings.Trim(string(uptimeBytes), "\"")
+
+					// Try to parse as JSON object first, then fallback to direct string if that fails
+					var uptimeData UptimeResponse
+					if jsonErr := json.Unmarshal(uptimeBytes, &uptimeData); jsonErr == nil && uptimeData.Value != "" {
+						uptimeStr = formatUptime(uptimeData.Value)
+					} else {
+						// Use the string directly
+						uptimeStr = formatUptime(uptimeStr)
+					}
+
+					fmt.Printf("%s Uptime: %s (formatted: %s)\n", logPrefix, string(uptimeBytes), uptimeStr)
+				} else {
+					fmt.Printf("%s Failed to read uptime response: %v\n", logPrefix, err)
+				}
+			} else {
+				if err != nil {
+					fmt.Printf("%s Uptime request failed: %v\n", logPrefix, err)
+				} else {
+					fmt.Printf("%s Bad uptime status code: %d\n", logPrefix, uptimeResp.StatusCode)
+					uptimeResp.Body.Close()
 				}
 			}
 		}
@@ -434,20 +475,20 @@ func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Serve
 			memResp, err := client.Get(fmt.Sprintf("%s/api/4/mem", baseURL))
 			if err != nil {
 				fmt.Printf("%s Memory request failed: %v\n", logPrefix, err)
-				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 				online = false
 			} else {
 				defer memResp.Body.Close()
 
 				if memResp.StatusCode != http.StatusOK {
 					fmt.Printf("%s Bad memory status code: %d\n", logPrefix, memResp.StatusCode)
-					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 					online = false
 				} else {
 					var memData MemoryResponse
 					if err := json.NewDecoder(memResp.Body).Decode(&memData); err != nil {
 						fmt.Printf("%s Failed to parse memory JSON: %v\n", logPrefix, err)
-						updateServerStatus(db, server.ID, false, 0, 0, 0)
+						updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 						online = false
 					} else {
 						ramUsage = memData.Percent
@@ -461,20 +502,20 @@ func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Serve
 			fsResp, err := client.Get(fmt.Sprintf("%s/api/4/fs", baseURL))
 			if err != nil {
 				fmt.Printf("%s Filesystem request failed: %v\n", logPrefix, err)
-				updateServerStatus(db, server.ID, false, 0, 0, 0)
+				updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 				online = false
 			} else {
 				defer fsResp.Body.Close()
 
 				if fsResp.StatusCode != http.StatusOK {
 					fmt.Printf("%s Bad filesystem status code: %d\n", logPrefix, fsResp.StatusCode)
-					updateServerStatus(db, server.ID, false, 0, 0, 0)
+					updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 					online = false
 				} else {
 					var fsData FSResponse
 					if err := json.NewDecoder(fsResp.Body).Decode(&fsData); err != nil {
 						fmt.Printf("%s Failed to parse filesystem JSON: %v\n", logPrefix, err)
-						updateServerStatus(db, server.ID, false, 0, 0, 0)
+						updateServerStatus(db, server.ID, false, 0, 0, 0, "")
 						online = false
 					} else if len(fsData) > 0 {
 						diskUsage = fsData[0].Percent
@@ -498,7 +539,7 @@ func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Serve
 		}
 
 		// Update server status with metrics
-		updateServerStatus(db, server.ID, online, cpuUsage, ramUsage, diskUsage)
+		updateServerStatus(db, server.ID, online, cpuUsage, ramUsage, diskUsage, uptimeStr)
 
 		// Add entry to server history
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -513,19 +554,70 @@ func checkAndUpdateServerStatus(db *sql.DB, client *http.Client, servers []Serve
 			fmt.Printf("%s Failed to insert history: %v\n", logPrefix, err)
 		}
 
-		fmt.Printf("%s Updated - CPU: %.2f%%, RAM: %.2f%%, Disk: %.2f%%\n",
-			logPrefix, cpuUsage, ramUsage, diskUsage)
+		fmt.Printf("%s Updated - CPU: %.2f%%, RAM: %.2f%%, Disk: %.2f%%, Uptime: %s\n",
+			logPrefix, cpuUsage, ramUsage, diskUsage, uptimeStr)
 	}
 }
 
-func updateServerStatus(db *sql.DB, serverID int, online bool, cpuUsage, ramUsage, diskUsage float64) {
+func formatUptime(uptimeStr string) string {
+	// Example input: "3 days, 3:52:36"
+	// Target output: "28.6 13:52"
+
+	now := time.Now()
+
+	// Parse the uptime components
+	parts := strings.Split(uptimeStr, ", ")
+
+	var days int
+	var timeStr string
+
+	if len(parts) == 2 {
+		// Has days part and time part
+		_, err := fmt.Sscanf(parts[0], "%d days", &days)
+		if err != nil {
+			// Try singular "day"
+			_, err = fmt.Sscanf(parts[0], "%d day", &days)
+			if err != nil {
+				return uptimeStr // Return original if parsing fails
+			}
+		}
+		timeStr = parts[1]
+	} else if len(parts) == 1 {
+		// Only has time part (less than a day)
+		days = 0
+		timeStr = parts[0]
+	} else {
+		return uptimeStr // Return original if format is unexpected
+	}
+
+	// Parse the time component (hours:minutes:seconds)
+	var hours, minutes, seconds int
+	_, err := fmt.Sscanf(timeStr, "%d:%d:%d", &hours, &minutes, &seconds)
+	if err != nil {
+		return uptimeStr // Return original if parsing fails
+	}
+
+	// Calculate the total duration
+	duration := time.Duration(days)*24*time.Hour +
+		time.Duration(hours)*time.Hour +
+		time.Duration(minutes)*time.Minute +
+		time.Duration(seconds)*time.Second
+
+	// Calculate the start time by subtracting the duration from now
+	startTime := now.Add(-duration)
+
+	// Format the result in the required format (day.month hour:minute)
+	return startTime.Format("2.1 15:04")
+}
+
+func updateServerStatus(db *sql.DB, serverID int, online bool, cpuUsage, ramUsage, diskUsage float64, uptime string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	_, err := db.ExecContext(ctx,
-		`UPDATE server SET online = $1, "cpuUsage" = $2::float8, "ramUsage" = $3::float8, "diskUsage" = $4::float8
-		 WHERE id = $5`,
-		online, cpuUsage, ramUsage, diskUsage, serverID,
+		`UPDATE server SET online = $1, "cpuUsage" = $2::float8, "ramUsage" = $3::float8, "diskUsage" = $4::float8, "uptime" = $5
+		 WHERE id = $6`,
+		online, cpuUsage, ramUsage, diskUsage, uptime, serverID,
 	)
 	if err != nil {
 		fmt.Printf("Failed to update server status (ID: %d): %v\n", serverID, err)

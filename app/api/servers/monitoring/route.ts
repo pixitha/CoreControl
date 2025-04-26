@@ -28,7 +28,7 @@ export async function GET() {
       cpuUsage: server.cpuUsage ? parseInt(server.cpuUsage) : 0,
       ramUsage: server.ramUsage ? parseInt(server.ramUsage) : 0,
       diskUsage: server.diskUsage ? parseInt(server.diskUsage) : 0,
-      uptime: server.uptime ? parseInt(server.uptime) : 0
+      uptime: server.uptime || ""
     }));
 
     return NextResponse.json(monitoringData)

@@ -99,7 +99,7 @@ interface Server {
   diskUsage: number;
   history?: ServerHistory;
   port: number;
-  uptime: number; 
+  uptime: string; 
 }
 
 interface GetServersResponse {
@@ -1027,7 +1027,7 @@ export default function Dashboard() {
                             <StatusIndicator isOnline={server.online} />
                             {server.online && server.uptime && (
                               <span className="text-xs text-muted-foreground mt-1">
-                                {server.online ? `since ${server.uptime}` : 'offline'}
+                                since {server.uptime}
                               </span>
                             )}
                           </div>
