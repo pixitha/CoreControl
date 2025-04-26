@@ -64,6 +64,7 @@ import Chart from 'chart.js/auto'
 import NextLink from "next/link"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface ServerHistory {
   labels: string[];
@@ -173,10 +174,9 @@ export default function Dashboard() {
   const customInputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const toggleLayout = () => {
-    const newLayout = !isGridLayout;
-    setIsGridLayout(newLayout);
-    Cookies.set("layoutPreference-servers", newLayout ? "grid" : "standard", {
+  const toggleLayout = (gridLayout: boolean) => {
+    setIsGridLayout(gridLayout);
+    Cookies.set("layoutPreference-servers", gridLayout ? "grid" : "standard", {
       expires: 365,
       path: "/",
       sameSite: "strict",
@@ -541,17 +541,26 @@ export default function Dashboard() {
         <div className="p-6">
           <div className="flex justify-between items-center">
             <span className="text-3xl font-bold">Your Servers</span>
-            <div className="flex gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={toggleLayout}>
-                      {isGridLayout ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{isGridLayout ? "Switch to list view" : "Switch to grid view"}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+            <div className="flex gap-2">              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" title="Change view">
+                    {isGridLayout ? (
+                      <LayoutGrid className="h-4 w-4" />
+                    ) : (
+                      <List className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => toggleLayout(false)}>
+                    <List className="h-4 w-4 mr-2" /> List View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleLayout(true)}>
+                    <LayoutGrid className="h-4 w-4 mr-2" /> Grid View
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               <Select
                 value={String(itemsPerPage)}
