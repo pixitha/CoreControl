@@ -61,6 +61,7 @@ model server {
   ramUsage      String?
   diskUsage     String?
   online        Boolean   @default(true)
+  uptime        String?
 }
 
 model settings {
