@@ -36,7 +36,7 @@ func InitDB() (*sql.DB, error) {
 // GetApplications fetches all applications with public URLs
 func GetApplications(db *sql.DB) ([]models.Application, error) {
 	rows, err := db.Query(
-		`SELECT id, name, "publicURL", online FROM application WHERE "publicURL" IS NOT NULL`,
+		`SELECT id, name, "publicURL", online, "uptimeCheckURL" FROM application WHERE "publicURL" IS NOT NULL`,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching applications: %v", err)
@@ -46,7 +46,7 @@ func GetApplications(db *sql.DB) ([]models.Application, error) {
 	var apps []models.Application
 	for rows.Next() {
 		var app models.Application
-		if err := rows.Scan(&app.ID, &app.Name, &app.PublicURL, &app.Online); err != nil {
+		if err := rows.Scan(&app.ID, &app.Name, &app.PublicURL, &app.Online, &app.UptimeCheckURL); err != nil {
 			fmt.Printf("Error scanning row: %v\n", err)
 			continue
 		}

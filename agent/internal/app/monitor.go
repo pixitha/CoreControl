@@ -28,7 +28,14 @@ func MonitorApplications(db *sql.DB, client *http.Client, apps []models.Applicat
 		logPrefix := fmt.Sprintf("[App %s (%s)]", app.Name, app.PublicURL)
 		fmt.Printf("%s Checking...\n", logPrefix)
 
-		parsedURL, parseErr := url.Parse(app.PublicURL)
+		// Determine which URL to use for monitoring
+		checkURL := app.PublicURL
+		if app.UptimeCheckURL != "" {
+			checkURL = app.UptimeCheckURL
+			fmt.Printf("%s Using custom uptime check URL: %s\n", logPrefix, checkURL)
+		}
+
+		parsedURL, parseErr := url.Parse(checkURL)
 		if parseErr != nil {
 			fmt.Printf("%s Invalid URL: %v\n", logPrefix, parseErr)
 			continue
@@ -40,7 +47,7 @@ func MonitorApplications(db *sql.DB, client *http.Client, apps []models.Applicat
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		req, err := http.NewRequestWithContext(ctx, "GET", app.PublicURL, nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", checkURL, nil)
 		if err != nil {
 			fmt.Printf("%s Request creation failed: %v\n", logPrefix, err)
 			continue

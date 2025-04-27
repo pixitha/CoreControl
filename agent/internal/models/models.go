@@ -5,10 +5,11 @@ import (
 )
 
 type Application struct {
-	ID        int
-	Name      string
-	PublicURL string
-	Online    bool
+	ID             int
+	Name           string
+	PublicURL      string
+	Online         bool
+	UptimeCheckURL string
 }
 
 type Server struct {
