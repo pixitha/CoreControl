@@ -363,8 +363,8 @@ export default function Dashboard() {
   }
 
   const iconCategories = {
-    Infrastructure: ["server", "network", "database", "cloud", "hard-drive", "router", "wifi", "antenna"],
-    Computing: ["cpu", "microchip", "memory-stick", "terminal", "code", "binary", "command"],
+    Infrastructure: ["server", "network", "database", "database-backup", "cloud", "hard-drive", "router", "wifi", "antenna"],
+    Computing: ["cpu", "microchip", "memory-stick", "terminal", "code", "binary", "command", "ethernet-port"],
     Monitoring: ["activity", "monitor", "gauge", "bar-chart", "line-chart", "pie-chart"],
     Security: ["shield", "lock", "key", "fingerprint", "scan-face"],
     Status: ["check-circle", "x-octagon", "alert-triangle", "alarm-check", "life-buoy"],
