@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 interface AddRequest {
     type: string;
+    name: string;
     smtpHost?: string;
     smtpPort?: number;
     smtpSecure?: boolean;
@@ -25,11 +26,12 @@ interface AddRequest {
 export async function POST(request: NextRequest) {
     try {
         const body: AddRequest = await request.json();
-        const { type, smtpHost, smtpPort, smtpSecure, smtpUsername, smtpPassword, smtpFrom, smtpTo, telegramToken, telegramChatId, discordWebhook, gotifyUrl, gotifyToken, ntfyUrl, ntfyToken, pushoverUrl, pushoverToken, pushoverUser } = body; 
+        const { type, name, smtpHost, smtpPort, smtpSecure, smtpUsername, smtpPassword, smtpFrom, smtpTo, telegramToken, telegramChatId, discordWebhook, gotifyUrl, gotifyToken, ntfyUrl, ntfyToken, pushoverUrl, pushoverToken, pushoverUser } = body; 
         
         const notification = await prisma.notification.create({
             data: {
                 type: type,
+                name: name,
                 smtpHost: smtpHost,
                 smtpPort: smtpPort,
                 smtpFrom: smtpFrom,
