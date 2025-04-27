@@ -27,6 +27,7 @@ import {
   Zap,
   ViewIcon,
   Grid3X3,
+  HelpCircle,
 } from "lucide-react";
 import {
   Card,
@@ -95,6 +96,7 @@ interface Application {
   server?: string;
   online: boolean;
   serverId: number;
+  uptimecheckUrl?: string;
 }
 
 interface Server {
@@ -116,6 +118,8 @@ export default function Dashboard() {
   const [publicURL, setPublicURL] = useState<string>("");
   const [localURL, setLocalURL] = useState<string>("");
   const [serverId, setServerId] = useState<number | null>(null);
+  const [customUptimeCheck, setCustomUptimeCheck] = useState<boolean>(false);
+  const [uptimecheckUrl, setUptimecheckUrl] = useState<string>("");
 
   const [editName, setEditName] = useState<string>("");
   const [editDescription, setEditDescription] = useState<string>("");
@@ -124,6 +128,8 @@ export default function Dashboard() {
   const [editLocalURL, setEditLocalURL] = useState<string>("");
   const [editId, setEditId] = useState<number | null>(null);
   const [editServerId, setEditServerId] = useState<number | null>(null);
+  const [editCustomUptimeCheck, setEditCustomUptimeCheck] = useState<boolean>(false);
+  const [editUptimecheckUrl, setEditUptimecheckUrl] = useState<string>("");
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [maxPage, setMaxPage] = useState<number>(1);
@@ -212,6 +218,7 @@ export default function Dashboard() {
         publicURL,
         localURL,
         serverId,
+        uptimecheckUrl: customUptimeCheck ? uptimecheckUrl : "",
       });
       getApplications();
       toast.success("Application added successfully");
@@ -273,6 +280,14 @@ export default function Dashboard() {
     setEditIcon(app.icon || "");
     setEditLocalURL(app.localURL || "");
     setEditPublicURL(app.publicURL || "");
+    
+    if (app.uptimecheckUrl) {
+      setEditCustomUptimeCheck(true);
+      setEditUptimecheckUrl(app.uptimecheckUrl);
+    } else {
+      setEditCustomUptimeCheck(false);
+      setEditUptimecheckUrl("");
+    }
   };
 
   const edit = async () => {
@@ -287,6 +302,7 @@ export default function Dashboard() {
         icon: editIcon,
         publicURL: editPublicURL,
         localURL: editLocalURL,
+        uptimecheckUrl: editCustomUptimeCheck ? editUptimecheckUrl : "",
       });
       getApplications();
       setEditId(null);
@@ -567,6 +583,36 @@ export default function Dashboard() {
                               onChange={(e) => setLocalURL(e.target.value)}
                             />
                           </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="custom-uptime-check"
+                              checked={customUptimeCheck}
+                              onChange={(e) => setCustomUptimeCheck(e.target.checked)}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <Label htmlFor="custom-uptime-check">Custom Uptime Check URL</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  When enabled, this URL replaces the Public URL for uptime monitoring checks
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          {customUptimeCheck && (
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label>Uptime Check URL</Label>
+                              <Input
+                                placeholder="https://example.com/status"
+                                value={uptimecheckUrl}
+                                onChange={(e) => setUptimecheckUrl(e.target.value)}
+                              />
+                            </div>
+                          )}
                         </div>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -820,6 +866,36 @@ export default function Dashboard() {
                                               }
                                             />
                                           </div>
+                                          <div className="flex items-center space-x-2">
+                                            <input
+                                              type="checkbox"
+                                              id="edit-custom-uptime-check"
+                                              checked={editCustomUptimeCheck}
+                                              onChange={(e) => setEditCustomUptimeCheck(e.target.checked)}
+                                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                            />
+                                            <Label htmlFor="edit-custom-uptime-check">Custom Uptime Check URL</Label>
+                                            <TooltipProvider>
+                                              <Tooltip>
+                                                <TooltipTrigger>
+                                                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                  When enabled, this URL replaces the Public URL for uptime monitoring checks
+                                                </TooltipContent>
+                                              </Tooltip>
+                                            </TooltipProvider>
+                                          </div>
+                                          {editCustomUptimeCheck && (
+                                            <div className="grid w-full items-center gap-1.5">
+                                              <Label>Uptime Check URL</Label>
+                                              <Input
+                                                placeholder="https://example.com/status"
+                                                value={editUptimecheckUrl}
+                                                onChange={(e) => setEditUptimecheckUrl(e.target.value)}
+                                              />
+                                            </div>
+                                          )}
                                         </div>
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
@@ -990,6 +1066,36 @@ export default function Dashboard() {
                                           }
                                         />
                                       </div>
+                                      <div className="flex items-center space-x-2">
+                                        <input
+                                          type="checkbox"
+                                          id="edit-custom-uptime-check"
+                                          checked={editCustomUptimeCheck}
+                                          onChange={(e) => setEditCustomUptimeCheck(e.target.checked)}
+                                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        />
+                                        <Label htmlFor="edit-custom-uptime-check">Custom Uptime Check URL</Label>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              When enabled, this URL replaces the Public URL for uptime monitoring checks
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </div>
+                                      {editCustomUptimeCheck && (
+                                        <div className="grid w-full items-center gap-1.5">
+                                          <Label>Uptime Check URL</Label>
+                                          <Input
+                                            placeholder="https://example.com/status"
+                                            value={editUptimecheckUrl}
+                                            onChange={(e) => setEditUptimecheckUrl(e.target.value)}
+                                          />
+                                        </div>
+                                      )}
                                     </div>
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
