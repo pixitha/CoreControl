@@ -62,6 +62,7 @@ export default function Settings() {
   const [emailSuccess, setEmailSuccess] = useState<boolean>(false)
 
   const [notificationType, setNotificationType] = useState<string>("")
+  const [notificationName, setNotificationName] = useState<string>("")
   const [smtpHost, setSmtpHost] = useState<string>("")
   const [smtpPort, setSmtpPort] = useState<number>(0)
   const [smtpSecure, setSmtpSecure] = useState<boolean>(false)
@@ -168,6 +169,7 @@ export default function Settings() {
   const addNotification = async () => {
     try {
       const response = await axios.post("/api/notifications/add", {
+        name: notificationName,
         type: notificationType,
         smtpHost: smtpHost,
         smtpPort: smtpPort,
@@ -450,212 +452,220 @@ export default function Settings() {
                     <AlertDialogContent>
                       <AlertDialogTitle>Add Notification</AlertDialogTitle>
                       <AlertDialogDescription>
-                        <Select value={notificationType} onValueChange={(value: string) => setNotificationType(value)}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Notification Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="smtp">SMTP</SelectItem>
-                            <SelectItem value="telegram">Telegram</SelectItem>
-                            <SelectItem value="discord">Discord</SelectItem>
-                            <SelectItem value="gotify">Gotify</SelectItem>
-                            <SelectItem value="ntfy">Ntfy</SelectItem>
-                            <SelectItem value="pushover">Pushover</SelectItem>
-                          </SelectContent>
+                        <div className="space-y-4">
+                            <Input
+                              type="text"
+                              id="notificationName"
+                              placeholder="Notification Name (optional)"
+                              onChange={(e) => setNotificationName(e.target.value)}
+                            />
+                            <Select value={notificationType} onValueChange={(value: string) => setNotificationType(value)}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Notification Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="smtp">SMTP</SelectItem>
+                              <SelectItem value="telegram">Telegram</SelectItem>
+                              <SelectItem value="discord">Discord</SelectItem>
+                              <SelectItem value="gotify">Gotify</SelectItem>
+                              <SelectItem value="ntfy">Ntfy</SelectItem>
+                              <SelectItem value="pushover">Pushover</SelectItem>
+                            </SelectContent>
 
-                          {notificationType === "smtp" && (
-                            <div className="mt-4 space-y-4">
-                              <div className="grid md:grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                  <Label htmlFor="smtpHost">SMTP Host</Label>
-                                  <Input
-                                    type="text"
-                                    id="smtpHost"
-                                    placeholder="smtp.example.com"
-                                    onChange={(e) => setSmtpHost(e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-1.5">
-                                  <Label htmlFor="smtpPort">SMTP Port</Label>
-                                  <Input
-                                    type="number"
-                                    id="smtpPort"
-                                    placeholder="587"
-                                    onChange={(e) => setSmtpPort(Number(e.target.value))}
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="flex items-center space-x-2 pt-2 pb-4">
-                                <Checkbox id="smtpSecure" onCheckedChange={(checked: any) => setSmtpSecure(checked)} />
-                                <Label htmlFor="smtpSecure" className="text-sm font-medium leading-none">
-                                  Secure Connection (TLS/SSL)
-                                </Label>
-                              </div>
-
-                              <div className="grid gap-4">
-                                <div className="space-y-1.5">
-                                  <Label htmlFor="smtpUser">SMTP Username</Label>
-                                  <Input
-                                    type="text"
-                                    id="smtpUser"
-                                    placeholder="user@example.com"
-                                    onChange={(e) => setSmtpUsername(e.target.value)}
-                                  />
-                                </div>
-
-                                <div className="space-y-1.5">
-                                  <Label htmlFor="smtpPass">SMTP Password</Label>
-                                  <Input
-                                    type="password"
-                                    id="smtpPass"
-                                    placeholder="••••••••"
-                                    onChange={(e) => setSmtpPassword(e.target.value)}
-                                  />
-                                </div>
-
+                            {notificationType === "smtp" && (
+                              <div className="mt-4 space-y-4">
                                 <div className="grid md:grid-cols-2 gap-4">
                                   <div className="space-y-1.5">
-                                    <Label htmlFor="smtpFrom">From Address</Label>
+                                    <Label htmlFor="smtpHost">SMTP Host</Label>
                                     <Input
-                                      type="email"
-                                      id="smtpFrom"
-                                      placeholder="noreply@example.com"
-                                      onChange={(e) => setSmtpFrom(e.target.value)}
+                                      type="text"
+                                      id="smtpHost"
+                                      placeholder="smtp.example.com"
+                                      onChange={(e) => setSmtpHost(e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <Label htmlFor="smtpPort">SMTP Port</Label>
+                                    <Input
+                                      type="number"
+                                      id="smtpPort"
+                                      placeholder="587"
+                                      onChange={(e) => setSmtpPort(Number(e.target.value))}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center space-x-2 pt-2 pb-4">
+                                  <Checkbox id="smtpSecure" onCheckedChange={(checked: any) => setSmtpSecure(checked)} />
+                                  <Label htmlFor="smtpSecure" className="text-sm font-medium leading-none">
+                                    Secure Connection (TLS/SSL)
+                                  </Label>
+                                </div>
+
+                                <div className="grid gap-4">
+                                  <div className="space-y-1.5">
+                                    <Label htmlFor="smtpUser">SMTP Username</Label>
+                                    <Input
+                                      type="text"
+                                      id="smtpUser"
+                                      placeholder="user@example.com"
+                                      onChange={(e) => setSmtpUsername(e.target.value)}
                                     />
                                   </div>
 
                                   <div className="space-y-1.5">
-                                    <Label htmlFor="smtpTo">To Address</Label>
+                                    <Label htmlFor="smtpPass">SMTP Password</Label>
                                     <Input
-                                      type="email"
-                                      id="smtpTo"
-                                      placeholder="admin@example.com"
-                                      onChange={(e) => setSmtpTo(e.target.value)}
+                                      type="password"
+                                      id="smtpPass"
+                                      placeholder="••••••••"
+                                      onChange={(e) => setSmtpPassword(e.target.value)}
+                                    />
+                                  </div>
+
+                                  <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                      <Label htmlFor="smtpFrom">From Address</Label>
+                                      <Input
+                                        type="email"
+                                        id="smtpFrom"
+                                        placeholder="noreply@example.com"
+                                        onChange={(e) => setSmtpFrom(e.target.value)}
+                                      />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                      <Label htmlFor="smtpTo">To Address</Label>
+                                      <Input
+                                        type="email"
+                                        id="smtpTo"
+                                        placeholder="admin@example.com"
+                                        onChange={(e) => setSmtpTo(e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {notificationType === "telegram" && (
+                              <div className="mt-4 space-y-2">
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="telegramToken">Bot Token</Label>
+                                  <Input
+                                    type="text"
+                                    id="telegramToken"
+                                    placeholder=""
+                                    onChange={(e) => setTelegramToken(e.target.value)}
+                                  />
+                                </div>
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="telegramChatId">Chat ID</Label>
+                                  <Input
+                                    type="text"
+                                    id="telegramChatId"
+                                    placeholder=""
+                                    onChange={(e) => setTelegramChatId(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {notificationType === "discord" && (
+                              <div className="mt-4">
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="discordWebhook">Webhook URL</Label>
+                                  <Input
+                                    type="text"
+                                    id="discordWebhook"
+                                    placeholder=""
+                                    onChange={(e) => setDiscordWebhook(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {notificationType === "gotify" && (
+                              <div className="mt-4">
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="gotifyUrl">Gotify URL</Label>
+                                  <Input
+                                    type="text"
+                                    id="gotifyUrl"
+                                    placeholder=""
+                                    onChange={(e) => setGotifyUrl(e.target.value)}
+                                  />
+                                  <div className="grid w-full items-center gap-1.5">
+                                    <Label htmlFor="gotifyToken">Gotify Token</Label>
+                                    <Input
+                                      type="text"
+                                      id="gotifyToken"
+                                      placeholder=""
+                                      onChange={(e) => setGotifyToken(e.target.value)}
                                     />
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          {notificationType === "telegram" && (
-                            <div className="mt-4 space-y-2">
-                              <div className="grid w-full items-center gap-1.5">
-                                <Label htmlFor="telegramToken">Bot Token</Label>
-                                <Input
-                                  type="text"
-                                  id="telegramToken"
-                                  placeholder=""
-                                  onChange={(e) => setTelegramToken(e.target.value)}
-                                />
-                              </div>
-                              <div className="grid w-full items-center gap-1.5">
-                                <Label htmlFor="telegramChatId">Chat ID</Label>
-                                <Input
-                                  type="text"
-                                  id="telegramChatId"
-                                  placeholder=""
-                                  onChange={(e) => setTelegramChatId(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {notificationType === "discord" && (
-                            <div className="mt-4">
-                              <div className="grid w-full items-center gap-1.5">
-                                <Label htmlFor="discordWebhook">Webhook URL</Label>
-                                <Input
-                                  type="text"
-                                  id="discordWebhook"
-                                  placeholder=""
-                                  onChange={(e) => setDiscordWebhook(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {notificationType === "gotify" && (
-                            <div className="mt-4">
-                              <div className="grid w-full items-center gap-1.5">
-                                <Label htmlFor="gotifyUrl">Gotify URL</Label>
-                                <Input
-                                  type="text"
-                                  id="gotifyUrl"
-                                  placeholder=""
-                                  onChange={(e) => setGotifyUrl(e.target.value)}
-                                />
+                            {notificationType === "ntfy" && (
+                              <div className="mt-4">
                                 <div className="grid w-full items-center gap-1.5">
-                                  <Label htmlFor="gotifyToken">Gotify Token</Label>
+                                  <Label htmlFor="ntfyUrl">Ntfy URL</Label>
                                   <Input
                                     type="text"
-                                    id="gotifyToken"
+                                    id="ntfyUrl"
                                     placeholder=""
-                                    onChange={(e) => setGotifyToken(e.target.value)}
+                                    onChange={(e) => setNtfyUrl(e.target.value)}
+                                  />
+                                  <div className="grid w-full items-center gap-1.5">
+                                    <Label htmlFor="ntfyToken">Ntfy Token</Label>
+                                    <Input
+                                      type="text"
+                                      id="ntfyToken"
+                                      placeholder=""
+                                      onChange={(e) => setNtfyToken(e.target.value)}
+                                    />
+                                  </div>                                
+                                </div>  
+                              </div>
+                            )}
+
+                            {notificationType === "pushover" && (
+                              <div className="mt-4 flex flex-col gap-2">
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="pushoverUrl">Pushover URL</Label>
+                                  <Input
+                                    type="text"
+                                    id="pushoverUrl"
+                                    placeholder="e.g. https://api.pushover.net/1/messages.json"
+                                    onChange={(e) => setPushoverUrl(e.target.value)}
+                                  />
+                                </div>
+
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="pushoverToken">Pushover Token</Label>
+                                  <Input
+                                    type="text"
+                                    id="pushoverToken"
+                                    placeholder="e.g. 1234567890"
+                                    onChange={(e) => setPushoverToken(e.target.value)}
+                                  />
+                                </div>
+
+                                <div className="grid w-full items-center gap-1.5">
+                                  <Label htmlFor="pushoverUser">Pushover User</Label>
+                                  <Input
+                                    type="text"
+                                    id="pushoverUser"
+                                    placeholder="e.g. 1234567890"
+                                    onChange={(e) => setPushoverUser(e.target.value)}
                                   />
                                 </div>
                               </div>
-                            </div>
-                          )}
-
-                          {notificationType === "ntfy" && (
-                            <div className="mt-4">
-                              <div className="grid w-full items-center gap-1.5">
-                                <Label htmlFor="ntfyUrl">Ntfy URL</Label>
-                                <Input
-                                  type="text"
-                                  id="ntfyUrl"
-                                  placeholder=""
-                                  onChange={(e) => setNtfyUrl(e.target.value)}
-                                />
-                                <div className="grid w-full items-center gap-1.5">
-                                  <Label htmlFor="ntfyToken">Ntfy Token</Label>
-                                  <Input
-                                    type="text"
-                                    id="ntfyToken"
-                                    placeholder=""
-                                    onChange={(e) => setNtfyToken(e.target.value)}
-                                  />
-                                </div>                                
-                              </div>  
-                            </div>
-                          )}
-
-                          {notificationType === "pushover" && (
-                            <div className="mt-4 flex flex-col gap-2">
-                              <div className="grid w-full items-center gap-1.5">
-                                <Label htmlFor="pushoverUrl">Pushover URL</Label>
-                                <Input
-                                  type="text"
-                                  id="pushoverUrl"
-                                  placeholder="e.g. https://api.pushover.net/1/messages.json"
-                                  onChange={(e) => setPushoverUrl(e.target.value)}
-                                />
-                              </div>
-
-                              <div className="grid w-full items-center gap-1.5">
-                                <Label htmlFor="pushoverToken">Pushover Token</Label>
-                                <Input
-                                  type="text"
-                                  id="pushoverToken"
-                                  placeholder="e.g. 1234567890"
-                                  onChange={(e) => setPushoverToken(e.target.value)}
-                                />
-                              </div>
-
-                              <div className="grid w-full items-center gap-1.5">
-                                <Label htmlFor="pushoverUser">Pushover User</Label>
-                                <Input
-                                  type="text"
-                                  id="pushoverUser"
-                                  placeholder="e.g. 1234567890"
-                                  onChange={(e) => setPushoverUser(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </Select>
+                            )}
+                          </Select>
+                        </div>
                       </AlertDialogDescription>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -765,7 +775,7 @@ export default function Settings() {
                               </div>
                             )}
                             <div className="space-y-1">
-                              <h3 className="font-medium capitalize">{notification.type}</h3>
+                              <h3 className="font-medium capitalize">{notification.name && notification.name !== "" ? notification.name : notification.type}</h3>
                               <p className="text-xs text-muted-foreground">
                                 {notification.type === "smtp" && "Email notifications"}
                                 {notification.type === "telegram" && "Telegram bot alerts"}

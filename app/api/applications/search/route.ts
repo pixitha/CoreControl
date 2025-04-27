@@ -23,7 +23,23 @@ export async function POST(request: NextRequest) {
         
         const searchResults = fuse.search(searchterm);
 
-        const results = searchResults.map(({ item }) => item);
+        const searchedApps = searchResults.map(({ item }) => item);
+        
+        // Get server IDs from the search results
+        const serverIds = searchedApps
+            .map(app => app.serverId)
+            .filter((id): id is number => id !== null);
+
+        // Fetch server data for these applications
+        const servers = await prisma.server.findMany({
+            where: { id: { in: serverIds } }
+        });
+
+        // Add server name to each application
+        const results = searchedApps.map(app => ({
+            ...app,
+            server: servers.find(s => s.id === app.serverId)?.name || "No server"
+        }));
 
         return NextResponse.json({ results });
     } catch (error: any) {

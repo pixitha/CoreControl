@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       applications: applicationsWithServers,
       servers: servers_all,
-      maxPage
+      maxPage,
+      totalItems: totalCount
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";

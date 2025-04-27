@@ -21,6 +21,7 @@ model application {
   icon          String
   publicURL     String
   localURL      String?
+  uptimecheckUrl String?
   createdAt     DateTime  @default(now())
   online         Boolean  @default(true)
 }
@@ -61,6 +62,7 @@ model server {
   ramUsage      String?
   diskUsage     String?
   online        Boolean   @default(true)
+  uptime        String?
 }
 
 model settings {
@@ -78,6 +80,7 @@ model user {
 
 model notification {
   id            Int       @id @default(autoincrement())
+  name          String
   enabled       Boolean   @default(true)
   type          String
   smtpHost     String?

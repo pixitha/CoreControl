@@ -64,6 +64,7 @@ import Chart from 'chart.js/auto'
 import NextLink from "next/link"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface ServerHistory {
   labels: string[];
@@ -98,11 +99,13 @@ interface Server {
   diskUsage: number;
   history?: ServerHistory;
   port: number;
+  uptime: string; 
 }
 
 interface GetServersResponse {
   servers: Server[]
   maxPage: number
+  totalItems: number
 }
 
 interface MonitoringData {
@@ -111,6 +114,7 @@ interface MonitoringData {
   cpuUsage: number
   ramUsage: number
   diskUsage: number
+  uptime: number
 }
 
 export default function Dashboard() {
@@ -136,6 +140,7 @@ export default function Dashboard() {
   const [maxPage, setMaxPage] = useState<number>(1)
   const [servers, setServers] = useState<Server[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const [totalItems, setTotalItems] = useState<number>(0)
 
   const [editId, setEditId] = useState<number | null>(null)
   const [editHost, setEditHost] = useState<boolean>(false)
@@ -161,21 +166,23 @@ export default function Dashboard() {
   const [monitoringInterval, setMonitoringInterval] = useState<NodeJS.Timeout | null>(null);
 
   const savedLayout = Cookies.get("layoutPreference-servers");
+  const savedItemsPerPage = Cookies.get("itemsPerPage-servers");
   const initialIsGridLayout = savedLayout === "grid";
-  const initialItemsPerPage = initialIsGridLayout ? 6 : 4;
+  const defaultItemsPerPage = initialIsGridLayout ? 6 : 4;
+  const initialItemsPerPage = savedItemsPerPage ? parseInt(savedItemsPerPage) : defaultItemsPerPage;
 
   const [isGridLayout, setIsGridLayout] = useState<boolean>(initialIsGridLayout);
   const [itemsPerPage, setItemsPerPage] = useState<number>(initialItemsPerPage);
+  const customInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const toggleLayout = () => {
-    const newLayout = !isGridLayout;
-    setIsGridLayout(newLayout);
-    Cookies.set("layoutPreference-servers", newLayout ? "grid" : "standard", {
+  const toggleLayout = (gridLayout: boolean) => {
+    setIsGridLayout(gridLayout);
+    Cookies.set("layoutPreference-servers", gridLayout ? "grid" : "standard", {
       expires: 365,
       path: "/",
       sameSite: "strict",
     });
-    setItemsPerPage(newLayout ? 6 : 4); // Update itemsPerPage based on new layout
   };
 
   const add = async () => {
@@ -231,6 +238,7 @@ export default function Dashboard() {
       setServers(response.data.servers)
       console.log(response.data.servers)
       setMaxPage(response.data.maxPage)
+      setTotalItems(response.data.totalItems)
       setLoading(false)
     } catch (error: any) {
       console.log(error.response)
@@ -355,8 +363,8 @@ export default function Dashboard() {
   }
 
   const iconCategories = {
-    Infrastructure: ["server", "network", "database", "cloud", "hard-drive", "router", "wifi", "antenna"],
-    Computing: ["cpu", "microchip", "memory-stick", "terminal", "code", "binary", "command"],
+    Infrastructure: ["server", "network", "database", "database-backup", "cloud", "hard-drive", "router", "wifi", "antenna"],
+    Computing: ["cpu", "microchip", "memory-stick", "terminal", "code", "binary", "command", "ethernet-port"],
     Monitoring: ["activity", "monitor", "gauge", "bar-chart", "line-chart", "pie-chart"],
     Security: ["shield", "lock", "key", "fingerprint", "scan-face"],
     Status: ["check-circle", "x-octagon", "alert-triangle", "alarm-check", "life-buoy"],
@@ -451,6 +459,61 @@ export default function Dashboard() {
     };
   }, []);
 
+  // Handler für benutzerdefinierte Zahleneingaben mit Verzögerung
+  const handleItemsPerPageChange = (value: string) => {
+    // Bestehenden Timer löschen
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Neuen Timer setzen
+    debounceTimerRef.current = setTimeout(() => {
+      const newItemsPerPage = parseInt(value);
+      
+      // Sicherstellen, dass der Wert im gültigen Bereich liegt
+      if (isNaN(newItemsPerPage) || newItemsPerPage < 1) {
+        toast.error("Bitte eine Zahl zwischen 1 und 100 eingeben");
+        return;
+      }
+      
+      const validatedValue = Math.min(Math.max(newItemsPerPage, 1), 100);
+      
+      setItemsPerPage(validatedValue);
+      setCurrentPage(1); // Zurück zur ersten Seite
+      Cookies.set("itemsPerPage-servers", String(validatedValue), {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+      
+      // Daten mit neuer Paginierung abrufen
+      getServers();
+    }, 600); // 600ms Verzögerung für bessere Eingabe mehrziffriger Zahlen
+  };
+
+  // Handler für voreingestellte Werte aus dem Dropdown
+  const handlePresetItemsPerPageChange = (value: string) => {
+    // Für voreingestellte Werte sofort anwenden
+    const newItemsPerPage = parseInt(value);
+    
+    // Nur Standardwerte hier verarbeiten
+    if ([4, 6, 10, 15, 20, 25].includes(newItemsPerPage)) {
+      setItemsPerPage(newItemsPerPage);
+      setCurrentPage(1); // Zurück zur ersten Seite
+      Cookies.set("itemsPerPage-servers", String(newItemsPerPage), {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+      
+      // Daten mit neuer Paginierung abrufen
+      getServers();
+    } else {
+      // Für benutzerdefinierte Werte den verzögerten Handler verwenden
+      handleItemsPerPageChange(value);
+    }
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -480,17 +543,119 @@ export default function Dashboard() {
         <div className="p-6">
           <div className="flex justify-between items-center">
             <span className="text-3xl font-bold">Your Servers</span>
-            <div className="flex gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={toggleLayout}>
-                      {isGridLayout ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{isGridLayout ? "Switch to list view" : "Switch to grid view"}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+            <div className="flex gap-2">              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" title="Change view">
+                    {isGridLayout ? (
+                      <LayoutGrid className="h-4 w-4" />
+                    ) : (
+                      <List className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => toggleLayout(false)}>
+                    <List className="h-4 w-4 mr-2" /> List View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleLayout(true)}>
+                    <LayoutGrid className="h-4 w-4 mr-2" /> Grid View
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Select
+                value={String(itemsPerPage)}
+                onValueChange={handlePresetItemsPerPageChange}
+                onOpenChange={(open) => {
+                  if (open && customInputRef.current) {
+                    customInputRef.current.value = String(itemsPerPage);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue>
+                    {itemsPerPage} {itemsPerPage === 1 ? 'item' : 'items'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {![4, 6, 10, 15, 20, 25].includes(itemsPerPage) ? (
+                    <SelectItem value={String(itemsPerPage)}>
+                      {itemsPerPage} {itemsPerPage === 1 ? 'item' : 'items'} (custom)
+                    </SelectItem>
+                  ) : null}
+                  <SelectItem value="4">4 items</SelectItem>
+                  <SelectItem value="6">6 items</SelectItem>
+                  <SelectItem value="10">10 items</SelectItem>
+                  <SelectItem value="15">15 items</SelectItem>
+                  <SelectItem value="20">20 items</SelectItem>
+                  <SelectItem value="25">25 items</SelectItem>
+                  <div className="p-2 border-t mt-1">
+                    <Label htmlFor="custom-items" className="text-xs font-medium">Custom (1-100)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        id="custom-items"
+                        ref={customInputRef}
+                        type="number"
+                        min="1"
+                        max="100"
+                        className="h-8"
+                        defaultValue={itemsPerPage}
+                        onChange={(e) => {
+                          // Änderung nicht sofort anwenden während des Tippens
+                          // Nur visuelles Feedback für die Validierung
+                          const value = parseInt(e.target.value);
+                          if (isNaN(value) || value < 1 || value > 100) {
+                            e.target.classList.add("border-red-500");
+                          } else {
+                            e.target.classList.remove("border-red-500");
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Änderung anwenden, wenn das Input den Fokus verliert
+                          const value = parseInt(e.target.value);
+                          if (value >= 1 && value <= 100) {
+                            handleItemsPerPageChange(e.target.value);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            // Bestehenden Debounce-Timer löschen, um sofort anzuwenden
+                            if (debounceTimerRef.current) {
+                              clearTimeout(debounceTimerRef.current);
+                              debounceTimerRef.current = null;
+                            }
+                            
+                            const value = parseInt((e.target as HTMLInputElement).value);
+                            if (value >= 1 && value <= 100) {
+                              // Änderung sofort bei Enter anwenden
+                              const validatedValue = Math.min(Math.max(value, 1), 100);
+                              setItemsPerPage(validatedValue);
+                              setCurrentPage(1);
+                              Cookies.set("itemsPerPage-servers", String(validatedValue), {
+                                expires: 365,
+                                path: "/",
+                                sameSite: "strict",
+                              });
+                              
+                              // Kurze Verzögerung hinzufügen für bessere Reaktionsfähigkeit
+                              setTimeout(() => {
+                                getServers();
+                                
+                                // Dropdown schließen
+                                document.body.click();
+                              }, 50);
+                            }
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">items</span>
+                    </div>
+                  </div>
+                </SelectContent>
+              </Select>
+              
               <AlertDialog onOpenChange={setIsAddDialogOpen}>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -858,8 +1023,13 @@ export default function Dashboard() {
                     >
                       <CardHeader>
                         {server.monitoring && (
-                          <div className="absolute top-4 right-4">
+                          <div className="absolute top-4 right-4 flex flex-col items-end">
                             <StatusIndicator isOnline={server.online} />
+                            {server.online && server.uptime && (
+                              <span className="text-xs text-muted-foreground mt-1">
+                                since {server.uptime}
+                              </span>
+                            )}
                           </div>
                         )}
                         <div className="flex items-center justify-between w-full">
@@ -1862,6 +2032,13 @@ export default function Dashboard() {
             </div>
           )}
           <div className="pt-4 pb-4">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-sm text-muted-foreground">
+                {totalItems > 0 
+                  ? `Showing ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} servers` 
+                  : "No servers found"}
+              </div>
+            </div>
             <Pagination>
               <PaginationContent>
                 <PaginationItem>

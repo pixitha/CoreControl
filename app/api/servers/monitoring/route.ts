@@ -11,6 +11,7 @@ export async function GET() {
         cpuUsage: true,
         ramUsage: true,
         diskUsage: true,
+        uptime: true
       }
     });
 
@@ -20,12 +21,14 @@ export async function GET() {
       cpuUsage: string | null;
       ramUsage: string | null;
       diskUsage: string | null;
+      uptime: string | null;
     }) => ({
       id: server.id,
       online: server.online,
       cpuUsage: server.cpuUsage ? parseInt(server.cpuUsage) : 0,
       ramUsage: server.ramUsage ? parseInt(server.ramUsage) : 0,
-      diskUsage: server.diskUsage ? parseInt(server.diskUsage) : 0
+      diskUsage: server.diskUsage ? parseInt(server.diskUsage) : 0,
+      uptime: server.uptime || ""
     }));
 
     return NextResponse.json(monitoringData)

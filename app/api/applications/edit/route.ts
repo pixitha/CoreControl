@@ -9,12 +9,13 @@ interface EditRequest {
     icon: string;
     publicURL: string;
     localURL: string;
+    uptimecheckUrl: string;
 }
 
 export async function PUT(request: NextRequest) {
     try {
         const body: EditRequest = await request.json();
-        const { id, name, description, serverId, icon, publicURL, localURL } = body;
+        const { id, name, description, serverId, icon, publicURL, localURL, uptimecheckUrl } = body;
 
         const existingApp = await prisma.application.findUnique({ where: { id } });
         if (!existingApp) {
@@ -29,7 +30,8 @@ export async function PUT(request: NextRequest) {
                 description,
                 icon,
                 publicURL,
-                localURL
+                localURL,
+                uptimecheckUrl
             }
         });
 

@@ -30,7 +30,7 @@ features:
     details: Simple and intuitive management interface for all your needs
   - icon: 🔔
     title: Notifications
-    details: Stay informed withalerts and notifications about your servers & applications status
+    details: Stay informed with alerts and notifications about your servers & applications status
   - icon: ✨
     title: Clean UI
     details: Modern and user-friendly interface designed for the best user experience

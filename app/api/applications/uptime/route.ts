@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 interface RequestBody {
     timespan?: number;
     page?: number;
+    itemsPerPage?: number;
   }
   
 
@@ -100,8 +101,7 @@ const getIntervalKey = (date: Date, timespan: number) => {
 
 export async function POST(request: NextRequest) {
     try {
-      const { timespan = 1, page = 1 }: RequestBody = await request.json();
-      const itemsPerPage = 5;
+      const { timespan = 1, page = 1, itemsPerPage = 5 }: RequestBody = await request.json();
       const skip = (page - 1) * itemsPerPage;
   
       // Get paginated and sorted applications

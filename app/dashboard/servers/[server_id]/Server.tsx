@@ -56,6 +56,7 @@ interface Server {
   diskUsage: number;
   history?: ServerHistory;
   port: number;
+  uptime?: string;
 }
 
 interface GetServersResponse {
@@ -439,8 +440,13 @@ export default function ServerDetail() {
                     </div>
                   </div>
                   {server.monitoring && (
-                    <div className="absolute top-0 right-4">
+                    <div className="absolute top-0 right-4 flex flex-col items-end">
                       <StatusIndicator isOnline={server.online} />
+                      {server.online && server.uptime && (
+                        <span className="text-xs text-muted-foreground mt-1 w-max text-right whitespace-nowrap">
+                          since {server.uptime}
+                        </span>
+                      )}
                     </div>
                   )}
                 </CardHeader>
@@ -600,7 +606,14 @@ export default function ServerDetail() {
                               </NextLink>
                             </div>
                             {hostedVM.monitoring && (
-                              <StatusIndicator isOnline={hostedVM.online} />
+                              <div className="flex flex-col items-end">
+                                <StatusIndicator isOnline={hostedVM.online} />
+                                {hostedVM.online && hostedVM.uptime && (
+                                  <span className="text-xs text-muted-foreground mt-1 w-max text-right whitespace-nowrap">
+                                    since {hostedVM.uptime}
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
 

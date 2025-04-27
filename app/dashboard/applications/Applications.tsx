@@ -25,6 +25,9 @@ import {
   List,
   Pencil,
   Zap,
+  ViewIcon,
+  Grid3X3,
+  HelpCircle,
 } from "lucide-react";
 import {
   Card,
@@ -65,7 +68,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Cookies from "js-cookie";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   Tooltip,
@@ -76,6 +79,12 @@ import {
 import { StatusIndicator } from "@/components/status-indicator";
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Application {
   id: number;
@@ -87,6 +96,7 @@ interface Application {
   server?: string;
   online: boolean;
   serverId: number;
+  uptimecheckUrl?: string;
 }
 
 interface Server {
@@ -98,6 +108,7 @@ interface ApplicationsResponse {
   applications: Application[];
   servers: Server[];
   maxPage: number;
+  totalItems?: number;
 }
 
 export default function Dashboard() {
@@ -107,6 +118,8 @@ export default function Dashboard() {
   const [publicURL, setPublicURL] = useState<string>("");
   const [localURL, setLocalURL] = useState<string>("");
   const [serverId, setServerId] = useState<number | null>(null);
+  const [customUptimeCheck, setCustomUptimeCheck] = useState<boolean>(false);
+  const [uptimecheckUrl, setUptimecheckUrl] = useState<string>("");
 
   const [editName, setEditName] = useState<string>("");
   const [editDescription, setEditDescription] = useState<string>("");
@@ -115,6 +128,8 @@ export default function Dashboard() {
   const [editLocalURL, setEditLocalURL] = useState<string>("");
   const [editId, setEditId] = useState<number | null>(null);
   const [editServerId, setEditServerId] = useState<number | null>(null);
+  const [editCustomUptimeCheck, setEditCustomUptimeCheck] = useState<boolean>(false);
+  const [editUptimecheckUrl, setEditUptimecheckUrl] = useState<string>("");
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [maxPage, setMaxPage] = useState<number>(1);
@@ -126,21 +141,72 @@ export default function Dashboard() {
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const savedLayout = Cookies.get("layoutPreference-app");
+  const savedItemsPerPage = Cookies.get("itemsPerPage-app");
   const initialIsGridLayout = savedLayout === "grid";
-  const initialItemsPerPage = initialIsGridLayout ? 15 : 5;
+  const initialIsCompactLayout = savedLayout === "compact";
+  const defaultItemsPerPage = initialIsGridLayout ? 15 : (initialIsCompactLayout ? 30 : 5);
+  const initialItemsPerPage = savedItemsPerPage ? parseInt(savedItemsPerPage) : defaultItemsPerPage;
 
   const [isGridLayout, setIsGridLayout] = useState<boolean>(initialIsGridLayout);
+  const [isCompactLayout, setIsCompactLayout] = useState<boolean>(initialIsCompactLayout);
   const [itemsPerPage, setItemsPerPage] = useState<number>(initialItemsPerPage);
+  const customInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const toggleLayout = () => {
-    const newLayout = !isGridLayout;
-    setIsGridLayout(newLayout);
-    Cookies.set("layoutPreference-app", newLayout ? "grid" : "standard", {
-      expires: 365,
-      path: "/",
-      sameSite: "strict",
-    });
-    setItemsPerPage(newLayout ? 15 : 5);
+  const toggleLayout = (layout: string) => {
+    if (layout === "standard") {
+      setIsGridLayout(false);
+      setIsCompactLayout(false);
+      Cookies.set("layoutPreference-app", "standard", {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+    } else if (layout === "grid") {
+      setIsGridLayout(true);
+      setIsCompactLayout(false);
+      Cookies.set("layoutPreference-app", "grid", {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+    } else if (layout === "compact") {
+      setIsGridLayout(false);
+      setIsCompactLayout(true);
+      Cookies.set("layoutPreference-app", "compact", {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+    }
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    // Clear any existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set a new timer
+    debounceTimerRef.current = setTimeout(() => {
+      const newItemsPerPage = parseInt(value);
+      
+      // Ensure the value is within the valid range
+      if (isNaN(newItemsPerPage) || newItemsPerPage < 1) {
+        toast.error("Please enter a number between 1 and 100");
+        return;
+      }
+      
+      const validatedValue = Math.min(Math.max(newItemsPerPage, 1), 100);
+      
+      setItemsPerPage(validatedValue);
+      setCurrentPage(1); // Reset to first page when changing items per page
+      Cookies.set("itemsPerPage-app", String(validatedValue), {
+        expires: 365,
+        path: "/",
+        sameSite: "strict",
+      });
+    }, 300); // 300ms delay
   };
 
   const add = async () => {
@@ -152,6 +218,7 @@ export default function Dashboard() {
         publicURL,
         localURL,
         serverId,
+        uptimecheckUrl: customUptimeCheck ? uptimecheckUrl : "",
       });
       getApplications();
       toast.success("Application added successfully");
@@ -171,12 +238,20 @@ export default function Dashboard() {
       setApplications(response.data.applications);
       setServers(response.data.servers);
       setMaxPage(response.data.maxPage);
+      if (response.data.totalItems !== undefined) {
+        setTotalItems(response.data.totalItems);
+      }
       setLoading(false);
     } catch (error: any) {
       console.log(error.response?.data);
       toast.error("Failed to get applications");
     }
   };
+
+  // Calculate current range of items being displayed
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   useEffect(() => {
     getApplications();
@@ -205,6 +280,14 @@ export default function Dashboard() {
     setEditIcon(app.icon || "");
     setEditLocalURL(app.localURL || "");
     setEditPublicURL(app.publicURL || "");
+    
+    if (app.uptimecheckUrl) {
+      setEditCustomUptimeCheck(true);
+      setEditUptimecheckUrl(app.uptimecheckUrl);
+    } else {
+      setEditCustomUptimeCheck(false);
+      setEditUptimecheckUrl("");
+    }
   };
 
   const edit = async () => {
@@ -219,6 +302,7 @@ export default function Dashboard() {
         icon: editIcon,
         publicURL: editPublicURL,
         localURL: editLocalURL,
+        uptimecheckUrl: editCustomUptimeCheck ? editUptimecheckUrl : "",
       });
       getApplications();
       setEditId(null);
@@ -294,20 +378,115 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <span className="text-3xl font-bold">Your Applications</span>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleLayout}
-                title={
-                  isGridLayout ? "Switch to list view" : "Switch to grid view"
-                }
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" title="Change view">
+                    {isCompactLayout ? (
+                      <Grid3X3 className="h-4 w-4" />
+                    ) : isGridLayout ? (
+                      <LayoutGrid className="h-4 w-4" />
+                    ) : (
+                      <List className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => toggleLayout("standard")}>
+                    <List className="h-4 w-4 mr-2" /> List View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleLayout("grid")}>
+                    <LayoutGrid className="h-4 w-4 mr-2" /> Grid View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleLayout("compact")}>
+                    <Grid3X3 className="h-4 w-4 mr-2" /> Compact View
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Select
+                value={String(itemsPerPage)}
+                onValueChange={handleItemsPerPageChange}
+                onOpenChange={(open) => {
+                  if (open && customInputRef.current) {
+                    customInputRef.current.value = String(itemsPerPage);
+                  }
+                }}
               >
-                {isGridLayout ? (
-                  <List className="h-4 w-4" />
-                ) : (
-                  <LayoutGrid className="h-4 w-4" />
-                )}
-              </Button>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue>
+                    {itemsPerPage} {itemsPerPage === 1 ? 'item' : 'items'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {![5, 10, 15, 20, 25].includes(itemsPerPage) ? (
+                    <SelectItem value={String(itemsPerPage)}>
+                      {itemsPerPage} {itemsPerPage === 1 ? 'item' : 'items'} (custom)
+                    </SelectItem>
+                  ) : null}
+                  <SelectItem value="5">5 items</SelectItem>
+                  <SelectItem value="10">10 items</SelectItem>
+                  <SelectItem value="15">15 items</SelectItem>
+                  <SelectItem value="20">20 items</SelectItem>
+                  <SelectItem value="25">25 items</SelectItem>
+                  <div className="p-2 border-t mt-1">
+                    <Label htmlFor="custom-items" className="text-xs font-medium">Custom (1-100)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        id="custom-items"
+                        ref={customInputRef}
+                        type="number"
+                        min="1"
+                        max="100"
+                        className="h-8"
+                        defaultValue={itemsPerPage}
+                        onChange={(e) => {
+                          // Don't immediately apply the change while typing
+                          // Just validate the input for visual feedback
+                          const value = parseInt(e.target.value);
+                          if (isNaN(value) || value < 1 || value > 100) {
+                            e.target.classList.add("border-red-500");
+                          } else {
+                            e.target.classList.remove("border-red-500");
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Apply the change when the input loses focus
+                          const value = parseInt(e.target.value);
+                          if (value >= 1 && value <= 100) {
+                            handleItemsPerPageChange(e.target.value);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            // Clear any existing debounce timer to apply immediately
+                            if (debounceTimerRef.current) {
+                              clearTimeout(debounceTimerRef.current);
+                              debounceTimerRef.current = null;
+                            }
+                            
+                            const value = parseInt((e.target as HTMLInputElement).value);
+                            if (value >= 1 && value <= 100) {
+                              // Apply change immediately on Enter
+                              const validatedValue = Math.min(Math.max(value, 1), 100);
+                              setItemsPerPage(validatedValue);
+                              setCurrentPage(1);
+                              Cookies.set("itemsPerPage-app", String(validatedValue), {
+                                expires: 365,
+                                path: "/",
+                                sameSite: "strict",
+                              });
+                              
+                              // Close the dropdown
+                              document.body.click();
+                            }
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">items</span>
+                    </div>
+                  </div>
+                </SelectContent>
+              </Select>
               {servers.length === 0 ? (
                 <p className="text-muted-foreground">
                   You must first add a server.
@@ -404,6 +583,36 @@ export default function Dashboard() {
                               onChange={(e) => setLocalURL(e.target.value)}
                             />
                           </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="custom-uptime-check"
+                              checked={customUptimeCheck}
+                              onChange={(e) => setCustomUptimeCheck(e.target.checked)}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <Label htmlFor="custom-uptime-check">Custom Uptime Check URL</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  When enabled, this URL replaces the Public URL for uptime monitoring checks
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          {customUptimeCheck && (
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label>Uptime Check URL</Label>
+                              <Input
+                                placeholder="https://example.com/status"
+                                value={uptimecheckUrl}
+                                onChange={(e) => setUptimecheckUrl(e.target.value)}
+                              />
+                            </div>
+                          )}
                         </div>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -433,59 +642,291 @@ export default function Dashboard() {
           {!loading ? (
             <div
               className={
-                isGridLayout
+                isCompactLayout
+                  ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2"
+                  : isGridLayout
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                   : "space-y-4"
               }
             >
               {applications.map((app) => (
-                <Card
-                  key={app.id}
-                  className={
-                    isGridLayout
-                      ? "h-full flex flex-col justify-between relative"
-                      : "w-full mb-4 relative"
-                  }
-                >
-                  <CardHeader>
-                    <div className="absolute top-2 right-2">
-                      <StatusIndicator isOnline={app.online} />
+                isCompactLayout ? (
+                  <div
+                    key={app.id}
+                    className="bg-card rounded-md border p-3 flex flex-col items-center justify-between h-[120px] w-full cursor-pointer hover:shadow-md transition-shadow relative"
+                    onClick={() => window.open(app.publicURL, "_blank")}
+                    title={app.name}
+                  >
+                    <div className="absolute top-1 right-1">
+                      <StatusIndicator isOnline={app.online} showLabel={false} />
                     </div>
-                    <div className="flex items-center justify-between w-full mt-4 mb-4">
-                      <div className="flex items-center">
-                        <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
-                          {app.icon ? (
-                            <img
-                              src={app.icon}
-                              alt={app.name}
-                              className="w-full h-full object-contain rounded-md"
-                            />
-                          ) : (
-                            <span className="text-gray-500 text-xs">Image</span>
-                          )}
-                        </div>
-                        <div className="ml-4">
-                          <CardTitle className="text-2xl font-bold">
-                            {app.name}
-                          </CardTitle>
-                          <CardDescription className="text-md">
-                            {app.description}
-                            {app.description && (
-                              <br className="hidden md:block" />
-                            )}
-                            Server: {app.server || "No server"}
-                          </CardDescription>
-                        </div>
+                    <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center">
+                      {app.icon ? (
+                        <img
+                          src={app.icon}
+                          alt={app.name}
+                          className="w-full h-full object-contain rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-500 text-xs">Icon</span>
+                      )}
+                    </div>
+                    <div className="text-center mt-2">
+                      <h3 className="text-sm font-medium truncate w-full max-w-[110px]">{app.name}</h3>
+                    </div>
+                  </div>
+                ) : (
+                  <Card
+                    key={app.id}
+                    className={
+                      isGridLayout
+                        ? "h-full flex flex-col justify-between relative"
+                        : "w-full mb-4 relative"
+                    }
+                  >
+                    <CardHeader>
+                      <div className="absolute top-2 right-2">
+                        <StatusIndicator isOnline={app.online} />
                       </div>
-                      <div className="flex flex-col items-end justify-start space-y-2 w-[190px]">
+                      <div className={`flex ${isGridLayout ? 'flex-col' : 'items-center justify-between'} w-full mt-4 mb-4`}>
+                        <div className="flex items-center">
+                          <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-md">
+                            {app.icon ? (
+                              <img
+                                src={app.icon}
+                                alt={app.name}
+                                className="w-full h-full object-contain rounded-md"
+                              />
+                            ) : (
+                              <span className="text-gray-500 text-xs">Image</span>
+                            )}
+                          </div>
+                          <div className="ml-4">
+                            <CardTitle className="text-2xl font-bold">
+                              {app.name}
+                            </CardTitle>
+                            <CardDescription className="text-md">
+                              {app.description}
+                              {app.description && (
+                                <br className="hidden md:block" />
+                              )}
+                              Server: {app.server || "No server"}
+                            </CardDescription>
+                          </div>
+                        </div>
+                        
+                        {!isGridLayout && (
+                          <div className="flex flex-col items-end justify-start space-y-2 w-[190px]">
+                            <div className="flex items-center gap-2 w-full">
+                              <div className="flex flex-col space-y-2 flex-grow">
+                                <Button
+                                  variant="outline"
+                                  className="gap-2 w-full"
+                                  onClick={() =>
+                                    window.open(app.publicURL, "_blank")
+                                  }
+                                >
+                                  <Link className="h-4 w-4" />
+                                  Public URL
+                                </Button>
+                                {app.localURL && (
+                                  <Button
+                                    variant="outline"
+                                    className="gap-2 w-full"
+                                    onClick={() =>
+                                      window.open(app.localURL, "_blank")
+                                    }
+                                  >
+                                    <Home className="h-4 w-4" />
+                                    Local URL
+                                  </Button>
+                                )}
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <Button
+                                  variant="destructive"
+                                  size="icon"
+                                  className="h-9 w-9"
+                                  onClick={() => deleteApplication(app.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      className="h-9 w-9"
+                                      onClick={() => openEditDialog(app)}
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Edit Application
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        <div className="space-y-4 pt-4">
+                                          <div className="grid w-full items-center gap-1.5">
+                                            <Label>Name</Label>
+                                            <Input
+                                              placeholder="e.g. Portainer"
+                                              value={editName}
+                                              onChange={(e) =>
+                                                setEditName(e.target.value)
+                                              }
+                                            />
+                                          </div>
+                                          <div className="grid w-full items-center gap-1.5">
+                                            <Label>Server</Label>
+                                            <Select
+                                              value={
+                                                editServerId !== null
+                                                  ? String(editServerId)
+                                                  : undefined
+                                              }
+                                              onValueChange={(v) =>
+                                                setEditServerId(Number(v))
+                                              }
+                                              required
+                                            >
+                                              <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select server" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                {servers.map((server) => (
+                                                  <SelectItem
+                                                    key={server.id}
+                                                    value={String(server.id)}
+                                                  >
+                                                    {server.name}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                          </div>
+                                          <div className="grid w-full items-center gap-1.5">
+                                            <Label>
+                                              Description{" "}
+                                              <span className="text-stone-600">
+                                                (optional)
+                                              </span>
+                                            </Label>
+                                            <Textarea
+                                              placeholder="Application description"
+                                              value={editDescription}
+                                              onChange={(e) =>
+                                                setEditDescription(e.target.value)
+                                              }
+                                            />
+                                          </div>
+                                          <div className="grid w-full items-center gap-1.5">
+                                            <Label>
+                                              Icon URL{" "}
+                                              <span className="text-stone-600">
+                                                (optional)
+                                              </span>
+                                            </Label>
+                                            <div className="flex gap-2">
+                                              <Input
+                                                placeholder="https://example.com/icon.png"
+                                                value={editIcon}
+                                                onChange={(e) =>
+                                                  setEditIcon(e.target.value)
+                                                }
+                                              />
+                                              <Button variant="outline" size="icon" onClick={generateEditIconURL}>
+                                                <Zap />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                          <div className="grid w-full items-center gap-1.5">
+                                            <Label>Public URL</Label>
+                                            <Input
+                                              placeholder="https://example.com"
+                                              value={editPublicURL}
+                                              onChange={(e) =>
+                                                setEditPublicURL(e.target.value)
+                                              }
+                                            />
+                                          </div>
+                                          <div className="grid w-full items-center gap-1.5">
+                                            <Label>
+                                              Local URL{" "}
+                                              <span className="text-stone-600">
+                                                (optional)
+                                              </span>
+                                            </Label>
+                                            <Input
+                                              placeholder="http://localhost:3000"
+                                              value={editLocalURL}
+                                              onChange={(e) =>
+                                                setEditLocalURL(e.target.value)
+                                              }
+                                            />
+                                          </div>
+                                          <div className="flex items-center space-x-2">
+                                            <input
+                                              type="checkbox"
+                                              id="edit-custom-uptime-check"
+                                              checked={editCustomUptimeCheck}
+                                              onChange={(e) => setEditCustomUptimeCheck(e.target.checked)}
+                                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                            />
+                                            <Label htmlFor="edit-custom-uptime-check">Custom Uptime Check URL</Label>
+                                            <TooltipProvider>
+                                              <Tooltip>
+                                                <TooltipTrigger>
+                                                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                  When enabled, this URL replaces the Public URL for uptime monitoring checks
+                                                </TooltipContent>
+                                              </Tooltip>
+                                            </TooltipProvider>
+                                          </div>
+                                          {editCustomUptimeCheck && (
+                                            <div className="grid w-full items-center gap-1.5">
+                                              <Label>Uptime Check URL</Label>
+                                              <Input
+                                                placeholder="https://example.com/status"
+                                                value={editUptimecheckUrl}
+                                                onChange={(e) => setEditUptimecheckUrl(e.target.value)}
+                                              />
+                                            </div>
+                                          )}
+                                        </div>
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={edit}
+                                        disabled={
+                                          !editName || !editPublicURL || !editServerId
+                                        }
+                                      >
+                                        Save Changes
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardHeader>
+                    
+                    {isGridLayout && (
+                      <CardFooter className="mt-auto">
                         <div className="flex items-center gap-2 w-full">
-                          <div className="flex flex-col space-y-2 flex-grow">
+                          <div className={`grid ${app.localURL ? 'grid-cols-2' : 'grid-cols-1'} gap-2 flex-grow`}>
                             <Button
                               variant="outline"
                               className="gap-2 w-full"
-                              onClick={() =>
-                                window.open(app.publicURL, "_blank")
-                              }
+                              onClick={() => window.open(app.publicURL, "_blank")}
                             >
                               <Link className="h-4 w-4" />
                               Public URL
@@ -494,16 +935,14 @@ export default function Dashboard() {
                               <Button
                                 variant="outline"
                                 className="gap-2 w-full"
-                                onClick={() =>
-                                  window.open(app.localURL, "_blank")
-                                }
+                                onClick={() => window.open(app.localURL, "_blank")}
                               >
                                 <Home className="h-4 w-4" />
                                 Local URL
                               </Button>
                             )}
                           </div>
-                          <div className="flex flex-col gap-2">
+                          <div className="flex gap-2">
                             <Button
                               variant="destructive"
                               size="icon"
@@ -627,6 +1066,36 @@ export default function Dashboard() {
                                           }
                                         />
                                       </div>
+                                      <div className="flex items-center space-x-2">
+                                        <input
+                                          type="checkbox"
+                                          id="edit-custom-uptime-check"
+                                          checked={editCustomUptimeCheck}
+                                          onChange={(e) => setEditCustomUptimeCheck(e.target.checked)}
+                                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        />
+                                        <Label htmlFor="edit-custom-uptime-check">Custom Uptime Check URL</Label>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger>
+                                              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              When enabled, this URL replaces the Public URL for uptime monitoring checks
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </div>
+                                      {editCustomUptimeCheck && (
+                                        <div className="grid w-full items-center gap-1.5">
+                                          <Label>Uptime Check URL</Label>
+                                          <Input
+                                            placeholder="https://example.com/status"
+                                            value={editUptimecheckUrl}
+                                            onChange={(e) => setEditUptimecheckUrl(e.target.value)}
+                                          />
+                                        </div>
+                                      )}
                                     </div>
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
@@ -645,10 +1114,10 @@ export default function Dashboard() {
                             </AlertDialog>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </Card>
+                      </CardFooter>
+                    )}
+                  </Card>
+                )
               ))}
             </div>
           ) : (
@@ -680,6 +1149,11 @@ export default function Dashboard() {
             </div>
           )}
           <div className="pt-4 pb-4">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-sm text-muted-foreground">
+                {totalItems > 0 ? `Showing ${startItem}-${endItem} of ${totalItems} applications` : "No applications found"}
+              </div>
+            </div>
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
