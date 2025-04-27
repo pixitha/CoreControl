@@ -36,7 +36,7 @@ func InitDB() (*sql.DB, error) {
 // GetApplications fetches all applications with public URLs
 func GetApplications(db *sql.DB) ([]models.Application, error) {
 	rows, err := db.Query(
-		`SELECT id, name, "publicURL", online, "uptimecheckURL" FROM application WHERE "publicURL" IS NOT NULL`,
+		`SELECT id, name, "publicURL", online, "uptimecheckUrl" FROM application WHERE "publicURL" IS NOT NULL`,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching applications: %v", err)
