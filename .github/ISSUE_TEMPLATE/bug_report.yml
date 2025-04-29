@@ -1,0 +1,67 @@
+name: 🐞 - Bug Report
+description: Report a problem or unexpected behavior.
+title: "[Bug]: "
+labels: ["unverified bug"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug! Please fill out the information below.
+  - type: input
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the issue you encountered.
+      placeholder: Tell us what happened...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to reproduce
+      description: List the steps needed to reproduce the issue.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version of the CoreControl you are using.
+      placeholder: e.g. v0.0.10
+    validations:
+      required: true
+  - type: input
+    id: logs
+    attributes:
+      label: Logs
+      description: The logs of the docker containers, if necessary.
+      placeholder: |
+        ```
+        [logs]
+        ```
+    validations:
+      required: false
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Add any other context about the problem here.
+      placeholder: Any extra details...
